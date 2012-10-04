@@ -1,0 +1,103 @@
+<?php
+
+/**
+ * @file
+ * Ensures sites have SOAP, libxml, and openssl enabled.
+ */
+
+
+/**
+ * Implements hook_schema().
+ */
+function commerce_iats_schema() {
+  $schema = array();
+
+  $schema['commerce_iats_customer_codes'] = array(
+    'description' => 'Table to store customer codes',
+    'primary key' => array('customer_code'),
+    'fields' => array(
+      'customer_code' => array(
+        'description' => 'Customer code returned from IATS',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+      'ip' => array(
+        'description' => 'Last IP from which this customer code was accessed or created',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => FALSE,
+      ),
+      'expiry' => array(
+        'description' => 'CC expiry yymm',
+        'type' => 'varchar',
+        'length' => 4,
+        'not null' => FALSE,
+      ),
+      'uid' => array(
+        'description' => 'Drupal user id',
+        'type' => 'int',
+        'not null' => FALSE,
+        'unsigned' => TRUE,
+        'default' => 0,
+      ),
+      'session_id' => array(
+        'description' => 'Last sesssion from which this customer code was accessed or created',
+        'type' => 'varchar',
+        'length' => '255',
+        'not null' => TRUE,
+      ),
+    ),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implements of hook_requirements().
+ */
+function commerce_iats_requirements($phase) {
+  $t = get_t();
+
+  $has_soap = class_exists('SoapClient');
+  $has_libxml = class_exists('libXMLError');
+  $has_openssl = defined('OPENSSL_VERSION_TEXT');
+
+  $requirements['commerce_iats_soap'] = array(
+    'title' => $t('SOAP'),
+    'value' => $has_soap ? $t('Enabled') : $t('Not found'),
+  );
+
+  if (!$has_soap) {
+    $requirements['commerce_iats_soap'] += array(
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('IATS requires the PHP <a href="!soap_url">SOAP extension</a>.', array('!soap_url' => 'http://php.net/manual/en/book.soap.php')),
+    );
+  }
+
+  $requirements['commerce_iats_libxml'] = array(
+    'title' => $t('libxml'),
+    'value' => $has_libxml ? $t('Enabled (@version)', array('@version' => LIBXML_DOTTED_VERSION)) : $t('Not found'),
+  );
+
+  if (!$has_libxml) {
+    $requirements['commerce_iats_libxml'] += array(
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('IATS requires the PHP <a href="!libxml_url">libxml extension</a>.', array('!libxml_url' => 'http://php.net/manual/en/book.libxml.php')),
+    );
+  }
+
+  $requirements['commerce_iats_openssl'] = array(
+    'title' => $t('OpenSSL'),
+    'value' => $has_openssl ? $t('Enablied (@version)', array('@version' => OPENSSL_VERSION_TEXT)) : $t('Not found'),
+  );
+
+  if (!$has_openssl) {
+    $requirements['commerce_iats_openssl'] += array(
+      'severity' => REQUIREMENT_ERROR,
+      'description' => $t('IATS requires the PHP <a href="!openssl_url">OpenSSL extension</a>.', array('!openssl_url' => 'http://php.net/manual/en/book.openssl.php')),
+    );
+  }
+
+  return $requirements;
+}
