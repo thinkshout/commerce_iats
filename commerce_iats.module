@@ -289,6 +289,12 @@ function commerce_iats_soap_process_submit_form_submit($payment_method, $pane_fo
     return commerce_iats_customer_code_charge_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge);
   }
 
+  // Determine the credit card type if possible for use in later code.
+  if (!empty($pane_values['credit_card']['number'])) {
+    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+    $card_type = commerce_payment_validate_credit_card_type($pane_values['credit_card']['number'], array_keys(commerce_iats_credit_card_types()));
+  }
+
   $payment_method['settings'] += commerce_iats_soap_process_default_settings();
 
   // Create and populate the request object with standard properties.
@@ -324,12 +330,13 @@ function commerce_iats_soap_process_submit_form_submit($payment_method, $pane_fo
     $processresult = $response->PROCESSRESULT;
     $auth_result = trim(current($processresult->AUTHORIZATIONRESULT));
     // Get the customer code if we have one.
-    $customercode = ($processresult->CUSTOMERCODE) ? '|' . current($processresult->CUSTOMERCODE) : '';
+    $customer_code = ($processresult->CUSTOMERCODE) ? current($processresult->CUSTOMERCODE) : NULL;
 
     // Prepare a transaction object to log the API response.
     $transaction = commerce_payment_transaction_new('iats_soap_process', $order->order_id);
     $transaction->instance_id = $payment_method['instance_id'];
-    $transaction->remote_id = trim(current($processresult->TRANSACTIONID)) . $customercode;
+    $customer_code_string = ($customer_code) ? '|' . $customer_code : '';
+    $transaction->remote_id = trim(current($processresult->TRANSACTIONID)) . $customer_code_string;
     $transaction->amount = $charge['amount'];
     $transaction->currency_code = $charge['currency_code'];
     // $transaction->payload[REQUEST_TIME] = $response;
@@ -390,7 +397,7 @@ function commerce_iats_soap_process_submit_form_submit($payment_method, $pane_fo
       $card_data->uid = $order->uid;
       $card_data->payment_method = $payment_method['method_id'];
       $card_data->instance_id = $payment_method['instance_id'];
-      $card_data->remote_id = $customercode;
+      $card_data->remote_id = $customer_code;
       $card_data->card_type = !empty($card_type) ? $card_type : 'card';
       $card_data->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';
       $card_data->card_number = substr($pane_values['credit_card']['number'], -4);
@@ -768,4 +775,24 @@ function commerce_iats_mop($type) {
     'discover' => 'DISC' // this is probably wrong, need to look it up!
   );
   return $mop[$type];
+}
+
+/**
+ * Helper method to get commerce_cardonfile entity from an IATS customer code.
+ */
+function commerce_iats_cardonfile_customer_code_load($customer_code) {
+
+  $return = array();
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'commerce_cardonfile')
+    ->propertyCondition('remote_id', $customer_code);
+
+  $result = $query->execute();
+
+  if (isset($result['commerce_cardonfile'])) {
+    return commerce_cardonfile_load(reset(array_keys($result['commerce_cardonfile'])));
+  }
+  else {
+    return FALSE;
+  }
 }
