@@ -76,11 +76,12 @@ function commerce_iats_refund_form_submit($form, &$form_state) {
 
   $iats_method = $payment_method['ProcessCreditCardRefundWithTransactionId'];
 
+  list($transaction_id, $customer_code) = explode('|', $transaction->remote_id);
   // Create and populate the request object.
   $request = (object) array(
     'total' => $amount * -1,
     'customerIPAddress' => ip_address(),
-    'transactionId' => $transaction->remote_id,
+    'transactionId' => $transaction_id,
     'comment' => t('Refund on order') . ' ' . $order->order_number,
   );
 
@@ -91,7 +92,8 @@ function commerce_iats_refund_form_submit($form, &$form_state) {
     // Prepare a transaction object to log the API response.
     $refund_transaction = commerce_payment_transaction_new('iats_soap_process', $order->order_id);
     $refund_transaction->instance_id = $payment_method['instance_id'];
-    $refund_transaction->remote_id = trim(current($processresult->TRANSACTIONID));
+    $customer_code_string = ($customer_code) ? '|' . $customer_code : '';
+    $refund_transaction->remote_id = trim(current($processresult->TRANSACTIONID)) . $customer_code_string;
     $refund_transaction->amount = $credit_amount;
     $refund_transaction->currency_code = $transaction->currency_code;
     // $transaction->payload[REQUEST_TIME] = $response;

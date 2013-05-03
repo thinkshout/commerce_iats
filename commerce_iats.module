@@ -157,9 +157,6 @@ function commerce_iats_soap_process_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
   $settings += commerce_iats_soap_process_default_settings();
 
-  // Required to get a list of all countries.
-  //require_once DRUPAL_ROOT . '/includes/locale.inc';
-
   $form = array();
 
   $form['agent_code'] = array(
@@ -178,7 +175,7 @@ function commerce_iats_soap_process_settings_form($settings = NULL) {
   );
   $form['transaction_mode'] = array(
     '#type' => 'radios',
-    '#title' => t('Transaction mode'),
+    '#title' => t('Transaction mode - NOT IMPLEMENTED'),
     '#description' => t('Adjust to live transactions when you are ready to start processing real payments.'),
     '#options' => array(
       IATS_TXN_MODE_PRODUCTION => t('Live transactions in the production environment'),
@@ -326,10 +323,13 @@ function commerce_iats_soap_process_submit_form_submit($payment_method, $pane_fo
   if ($response = commerce_iats_soap_api_request($payment_method, $request, $iats_method)) {
     $processresult = $response->PROCESSRESULT;
     $auth_result = trim(current($processresult->AUTHORIZATIONRESULT));
+    // Get the customer code if we have one.
+    $customercode = ($processresult->CUSTOMERCODE) ? '|' . current($processresult->CUSTOMERCODE) : '';
+
     // Prepare a transaction object to log the API response.
     $transaction = commerce_payment_transaction_new('iats_soap_process', $order->order_id);
     $transaction->instance_id = $payment_method['instance_id'];
-    $transaction->remote_id = trim(current($processresult->TRANSACTIONID));
+    $transaction->remote_id = trim(current($processresult->TRANSACTIONID)) . $customercode;
     $transaction->amount = $charge['amount'];
     $transaction->currency_code = $charge['currency_code'];
     // $transaction->payload[REQUEST_TIME] = $response;
@@ -386,14 +386,11 @@ function commerce_iats_soap_process_submit_form_submit($payment_method, $pane_fo
         $payment_details['cardCode'] = $pane_values['credit_card']['code'];
       }
 
-      // Store the customer code in the remote_id.
-      $remote_id = current($processresult->CUSTOMERCODE);
-
       $card_data = commerce_cardonfile_new();
       $card_data->uid = $order->uid;
       $card_data->payment_method = $payment_method['method_id'];
       $card_data->instance_id = $payment_method['instance_id'];
-      $card_data->remote_id = $remote_id;
+      $card_data->remote_id = $customercode;
       $card_data->card_type = !empty($card_type) ? $card_type : 'card';
       $card_data->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';
       $card_data->card_number = substr($pane_values['credit_card']['number'], -4);
@@ -508,7 +505,7 @@ function commerce_iats_cardonfile_charge($payment_method, $card_data, $order, $c
     // Prepare a transaction object to log the API response.
     $transaction = commerce_payment_transaction_new('iats_soap_process', $order->order_id);
     $transaction->instance_id = $payment_method['instance_id'];
-    $transaction->remote_id = trim(current($processresult->TRANSACTIONID));
+    $transaction->remote_id = trim(current($processresult->TRANSACTIONID)) . '|' . $card_data->remote_id;
     $transaction->amount = $charge['amount'];
     $transaction->currency_code = $charge['currency_code'];
     // $transaction->payload[REQUEST_TIME] = $response;
