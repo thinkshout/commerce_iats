@@ -5,54 +5,6 @@
  * Ensures sites have SOAP, libxml, and openssl enabled.
  */
 
-
-/**
- * Implements hook_schema().
- */
-function commerce_iats_schema() {
-  $schema = array();
-
-  $schema['commerce_iats_customer_codes'] = array(
-    'description' => 'Table to store customer codes',
-    'primary key' => array('customer_code'),
-    'fields' => array(
-      'customer_code' => array(
-        'description' => 'Customer code returned from IATS',
-        'type' => 'varchar',
-        'length' => '255',
-        'not null' => TRUE,
-      ),
-      'ip' => array(
-        'description' => 'Last IP from which this customer code was accessed or created',
-        'type' => 'varchar',
-        'length' => '255',
-        'not null' => FALSE,
-      ),
-      'expiry' => array(
-        'description' => 'CC expiry yymm',
-        'type' => 'varchar',
-        'length' => 4,
-        'not null' => FALSE,
-      ),
-      'uid' => array(
-        'description' => 'Drupal user id',
-        'type' => 'int',
-        'not null' => FALSE,
-        'unsigned' => TRUE,
-        'default' => 0,
-      ),
-      'session_id' => array(
-        'description' => 'Last sesssion from which this customer code was accessed or created',
-        'type' => 'varchar',
-        'length' => '255',
-        'not null' => TRUE,
-      ),
-    ),
-  );
-
-  return $schema;
-}
-
 /**
  * Implements of hook_requirements().
  */
@@ -100,4 +52,11 @@ function commerce_iats_requirements($phase) {
   }
 
   return $requirements;
+}
+
+/**
+ * Remove unused commerce_iats_customer_codes table.
+ */
+function commerce_iats_update_7200(&$sandbox) {
+  db_drop_table('commerce_iats_customer_codes');
 }
