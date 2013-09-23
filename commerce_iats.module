@@ -12,9 +12,11 @@ define('IATS_TXN_NS', 'xmlns');
 define('IATS_TXN_TRACE', TRUE);
 define('IATS_TXN_SUCCESS', 'Success');
 define('IATS_TXN_OK', 'OK');
-define('IATS_URL_PROCESSLINK','www.iatspayments.com/NetGate/ProcessLink.asmx?WSDL');
-define('IATS_URL_REPORTLINK','www.iatspayments.com/NetGate/ReportLink.asmx?WDSL');
-define('IATS_URL_CUSTOMERLINK','www.iatspayments.com/NetGate/CustomerLink.asmx?WDSL');
+define('IATS_NA_SERVER', 'www.iatspayments.com');
+define('IATS_UK_SERVER', 'www.uk.iatspayments.com');
+define('IATS_URL_PROCESSLINK','/NetGate/ProcessLink.asmx?WSDL');
+define('IATS_URL_REPORTLINK','/NetGate/ReportLink.asmx?WDSL');
+define('IATS_URL_CUSTOMERLINK','/NetGate/CustomerLink.asmx?WDSL');
 
 /**
  * Implements hook_menu().
@@ -145,6 +147,7 @@ function commerce_iats_soap_process_default_settings() {
     'agent_code' => '',
     'agent_password' => '',
     'transaction_mode' => IATS_TXN_MODE_TEST,
+    'server' => IATS_NA_SERVER,
     'iats_customer_code' => FALSE,
     'log' => array('request' => '0', 'response' => '0'),
   );
@@ -172,6 +175,16 @@ function commerce_iats_soap_process_settings_form($settings = NULL) {
     '#description' => t('Enter the corresponding password for this agent code.'),
     '#default_value' => $settings['agent_password'],
     '#required' => TRUE,
+  );
+  $form['server'] = array(
+    '#type' => 'radios',
+    '#title' => t('Transaction server'),
+    '#description' => t('Select the transaction server to use for processing payments.'),
+    '#options' => array(
+      IATS_NA_SERVER => t('US'),
+      IATS_UK_SERVER => t('UK'),
+    ),
+    '#default_value' => $settings['server'],
   );
   $form['transaction_mode'] = array(
     '#type' => 'radios',
@@ -231,7 +244,7 @@ function commerce_iats_soap_process_submit_form($payment_method, $pane_values, $
     'code' => '',
   );
 
-  // Limit credit card types, since IATS has a limited selection. 
+  // Limit credit card types, since IATS has a limited selection.
   $card_types = array_diff(array_values($payment_method['settings']['credit_card']['card_types']), array(0));
   if (!empty($card_types)) {
     if ($card_types === array(0)) {
@@ -572,7 +585,10 @@ function commerce_iats_cardonfile_charge($payment_method, $card_data, $order, $c
  */
 function commerce_iats_soap_api_request($payment_method, $request, $iats_method) {
   // Get the API endpoint URL for the method's transaction mode.
-  $url = commerce_iats_soap_wsdl_url($payment_method['settings']['transaction_mode']);
+  $url = commerce_iats_soap_wsdl_url(
+    $payment_method['settings']['server'],
+    $payment_method['settings']['transaction_mode']
+  );
 
   // Add information on PHP for troubleshooting purposes.
   $request->clientLibrary = 'PHP';
@@ -601,13 +617,13 @@ function commerce_iats_soap_api_request($payment_method, $request, $iats_method)
     $method = $iats_method['method'];
     $message = $iats_method['message'];
     $response = $iats_method['response'];
-    $type_ns = commerce_iats_soap_wsdl_url(IATS_TXN_NS);
+    $type_ns = commerce_iats_soap_wsdl_url('', IATS_TXN_NS);
     $soapClient = new SoapClient($url, array('trace' => IATS_TXN_TRACE));
     $request->agentCode = $payment_method['settings']['agent_code'];
     $request->password = $payment_method['settings']['agent_password'];
     /* build the request manually as per the IATS docs */
-    $xml = '<'.$message.' xmlns="'.$type_ns.'">'; 
-    foreach((array) $request as $k => $v) {  
+    $xml = '<'.$message.' xmlns="'.$type_ns.'">';
+    foreach((array) $request as $k => $v) {
        $xml .= '<'.$k.'>'.$v.'</'.$k.'>';
     }
     $xml .= '</'.$message.'>';
@@ -636,12 +652,12 @@ function commerce_iats_soap_api_request($payment_method, $request, $iats_method)
  * @return
  *   The URL to use to submit requests to the IATS SOAP server.
  */
-function commerce_iats_soap_wsdl_url($transaction_mode) {
+function commerce_iats_soap_wsdl_url($server, $transaction_mode) {
   switch ($transaction_mode) {
     case IATS_TXN_MODE_PRODUCTION:
-      return 'https://www.iatspayments.com/NetGate/ProcessLink.asmx?WSDL';
+      return 'https://' . $server . '/NetGate/ProcessLink.asmx?WSDL';
     case IATS_TXN_MODE_TEST:
-      return 'https://www.iatspayments.com/NetGate/ProcessLink.asmx?WSDL';
+      return 'https://' . $server . '/NetGate/ProcessLink.asmx?WSDL';
     case IATS_TXN_NS:
       return 'https://www.iatspayments.com/NetGate/';
   }
@@ -759,10 +775,10 @@ function commerce_iats_cvn_response($code) {
 
 function commerce_iats_credit_card_types() {
   return array(
-    'visa' => t('Visa'), 
-    'mastercard' => t('MasterCard'), 
-    'amex' => t('American Express'), 
-    'discover' => t('Discover Card'), 
+    'visa' => t('Visa'),
+    'mastercard' => t('MasterCard'),
+    'amex' => t('American Express'),
+    'discover' => t('Discover Card'),
   );
 }
 
