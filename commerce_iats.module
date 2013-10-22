@@ -126,6 +126,24 @@ function commerce_iats_commerce_payment_method_info() {
     'response' => 'ProcessCreditCardRefundWithTransactionIdV1Result',
   );
 
+  $payment_methods['iats_soap_customerlink'] = array(
+    'base' => 'commerce_iats_soap_customerlink',
+    'title' => t('IATS Webservice: CustomerLink'),
+    'short_title' => t('IATS Web Service'),
+    'display_title' => t('Customer link'),
+    'description' => t('Integrates the IATS SOAP webservice: '),
+//    'cardonfile' => array(
+//      'charge callback' => 'commerce_iats_cardonfile_charge',
+//      'update callback' => 'commerce_iats_cardonfile_update',
+//      'delete callback' => 'commerce_iats_cardonfile_delete',
+//    ),
+    'CreateCreditCardCustomerCode' => array(
+      'method' => 'CreateCreditCardCustomerCode',
+      'message' => 'CreateCreditCardCustomerCodeV1',
+      'response' => 'CreateCreditCardCustomerCodeV1Result',
+    ),
+  );
+
 //  $payment_methods['iats_soap_acheft'] = $base_payment_method;
 //  $payment_methods['iats_soap_acheft']['description'].= "ProcessACHEFTV1";
 //  $payment_methods['iats_soap_acheft']['method'] = "ProcessACHEFTV1";
@@ -812,3 +830,206 @@ function commerce_iats_cardonfile_customer_code_load($customer_code) {
     return FALSE;
   }
 }
+
+
+
+
+/**
+ * Payment method callback: settings form.
+ */
+function commerce_iats_soap_customerlink_settings_form($settings = NULL) {
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+  $settings += commerce_iats_soap_process_default_settings();
+
+  $form = array();
+
+  $form['agent_code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Agent Code'),
+    '#description' => t('This is the agent code used to login to the IATS website.'),
+    '#default_value' => $settings['agent_code'],
+    '#required' => TRUE,
+  );
+  $form['agent_password'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Password'),
+    '#description' => t('Enter the corresponding password for this agent code.'),
+    '#default_value' => $settings['agent_password'],
+    '#required' => TRUE,
+  );
+  $form['server'] = array(
+    '#type' => 'radios',
+    '#title' => t('Transaction server'),
+    '#description' => t('Select the transaction server to use for processing payments.'),
+    '#options' => array(
+      IATS_NA_SERVER => t('US'),
+      IATS_UK_SERVER => t('UK'),
+    ),
+    '#default_value' => $settings['server'],
+  );
+  $form['transaction_mode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Transaction mode - NOT IMPLEMENTED'),
+    '#description' => t('Adjust to live transactions when you are ready to start processing real payments.'),
+    '#options' => array(
+      IATS_TXN_MODE_PRODUCTION => t('Live transactions in the production environment'),
+      IATS_TXN_MODE_TEST => t('Test transactions in the test environment'),
+    ),
+    '#default_value' => $settings['transaction_mode'],
+  );
+  $form['log'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Log the following messages for debugging'),
+    '#options' => array(
+      'request' => t('API request messages'),
+      'response' => t('API response messages'),
+    ),
+    '#default_value' => $settings['log'],
+  );
+
+  $form['credit_card'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Credit card service settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['credit_card']['card_types'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Limit accepted credit cards to the following types'),
+    '#description' => t('If none are checked, any credit card type will be accepted.'),
+    '#options' => commerce_iats_credit_card_types(),
+    '#default_value' => isset($settings['credit_card']['card_types']) ? $settings['credit_card']['card_types'] : array(),
+  );
+  return $form;
+}
+
+
+
+/**
+ * Payment method callback: checkout form.
+ */
+function commerce_iats_soap_customerlink_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+  $fields = array();
+  // Limit credit card types, since IATS has a limited selection.
+  $card_types = array_diff(array_values($payment_method['settings']['credit_card']['card_types']), array(0));
+  if (!empty($card_types)) {
+    if ($card_types === array(0)) {
+      $card_types = commerce_iats_credit_card_types();
+    }
+    $fields['type'] = $card_types;
+  }
+
+  $form = commerce_payment_credit_card_form($fields);
+  return $form;
+}
+
+/**
+ * @param $payment_method
+ * @param $pane_form
+ * @param $pane_values
+ * @param $order
+ * @param $charge
+ */
+function commerce_iats_soap_customerlink_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
+  if ($response = commerce_iats_soap_api_customerlink_request($payment_method, $pane_values)) {
+    $result = $response->PROCESSRESULT->AUTHORIZATIONRESULT;
+
+
+    $processresult = $response->PROCESSRESULT;
+    if (strpos($processresult->AUTHORIZATIONRESULT, 'Error') !== FALSE) {
+
+      drupal_set_message(t('There was an error processing this transaction: @error.',
+        array('@error' => $processresult->AUTHORIZATIONRESULT))
+        , 'error');
+      return FALSE;
+    }
+
+    // Prepare a transaction object to log the API response.
+    $transaction = commerce_payment_transaction_new('iats_soap_process', $order->order_id);
+    $transaction->instance_id = $payment_method['instance_id'];
+
+    $transaction->remote_id = $response->PROCESSRESULT->CUSTOMERCODE;
+    $transaction->amount =0;
+    // TODO: Check server type.
+    $transaction->currency_code = 'USD';//$charge['currency_code'];
+    $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+
+    // Build a meaningful response message.
+    $message = array(
+      '<b>' . t('Customer code created.') . '</b>');
+
+    $transaction->message = implode('<br />', $message);
+
+    // Save the transaction information.
+    commerce_payment_transaction_save($transaction);
+  }
+
+
+}
+
+
+/**
+ *
+ */
+function commerce_iats_soap_api_customerlink_request($payment_method, $pane_values) {
+
+  // Get the API endpoint URL for the method's transaction mode.
+  //$url = 'https://www.iatspayments.com/NetGate/ProcessLink.asmx?WSDL';
+  $url = 'https://www.iatspayments.com/NetGate/CustomerLink.asmx?WSDL';
+  $beginDate = strtotime('10/23/2011');
+  $endDate = strtotime('10/23/2014');
+
+  // Create and populate the request object.
+  $request = array(
+    'customerIPAddress'=>'',
+    'customerCode'=>'',
+    'firstName'=>'Test',
+    'lastName'=>'Account',
+    'companyName'=>'',
+    'address'=>'1234 Any Street',
+    'city'=>'Schenectady',
+    'state'=>'NY',
+    'zipCode'=>'12345',
+    'phone'=>'',
+    'fax'=>'',
+    'alternatePhone'=>'',
+    'email'=>'',
+    'comment'=>'',
+    'recurring'=>FALSE,
+    'amount'=>'',
+    'beginDate'=>$beginDate,
+    'endDate'=>$endDate,
+    'scheduleType'=>'',
+    'scheduleDate'=>'',
+    'creditCardCustomerName'=>'Test Account',
+    'creditCardNum'=>$pane_values['credit_card']['number'],
+    'creditCardExpiry'=>$pane_values['credit_card']['exp_month'] . '/' . substr($pane_values['credit_card']['exp_year'], -2),
+    'mop'=>'VISA',
+  );
+  // Attempt the SOAP request and log the exception on failure.
+  // the agent user and password only gets put in here so it doesn't end up in a log above
+  try {
+    $method = $payment_method['CreateCreditCardCustomerCode']['method'];
+    $message =  $payment_method['CreateCreditCardCustomerCode']['message'];
+    $response =  $payment_method['CreateCreditCardCustomerCode']['response'];
+    $type_ns = commerce_iats_soap_wsdl_url('', IATS_TXN_NS);
+    $soapClient = new SoapClient($url, array('trace' => IATS_TXN_TRACE));
+    $request['agentCode'] = $payment_method['settings']['agent_code'];
+    $request['password'] = $payment_method['settings']['agent_password'];
+
+    $soapResponse = $soapClient->$method($request);
+  }
+  catch (SoapFault $exception) {
+    watchdog('commerce_iats', 'SoapFault: !exception', array('!exception' => '<pre>' . print_r($exception, TRUE) . '</pre>'), WATCHDOG_ERROR);
+    return FALSE;
+  }
+
+  // Log the response if specified.
+  if ($payment_method['settings']['log']['response'] == 'response') {
+    watchdog('commerce_iats', 'IATS SOAP response: !request', array('!request' => '<pre>' . check_plain(print_r($soapResponse, TRUE)) . '</pre>', WATCHDOG_DEBUG));
+  }
+  $xml_response = $soapResponse->$response->any;
+  return new SimpleXMLElement($xml_response);
+}
+
