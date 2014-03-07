@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Implements IATS payment services for use in Drupal Commerce.
+ * Implements iATS payment services for use in Drupal Commerce.
  */
 
 // TODO: Remove "soap" from method names.
@@ -46,6 +46,8 @@ function commerce_iats_menu() {
 }
 
 /**
+ * @todo: Refund functions belong in payment-specific include files.
+ *
  * Determines access to the refund form for IATS credit card
  * transactions
  *
@@ -203,11 +205,9 @@ function commerce_iats_commerce_payment_method_info() {
 }
 
 /**
- * @todo Possibly remove or otherwise integrate into wrapper.
- *
- * Returns the default settings for the IATS SOAP CC or ACHEFT payment methods.
+ * Returns the default settings for the iATS Credit Card and ACH/EFT payment methods.
  */
-function commerce_iats_soap_process_default_settings() {
+function commerce_iats_default_settings() {
   return array(
     'agent_code' => '',
     'agent_password' => '',
@@ -221,9 +221,10 @@ function commerce_iats_soap_process_default_settings() {
 /**
  * Payment method callback: settings form.
  */
+/*
 function commerce_iats_soap_process_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-  $settings += commerce_iats_soap_process_default_settings();
+  $settings += commerce_iats_default_settings();
 
   $form = array();
 
@@ -296,13 +297,15 @@ function commerce_iats_soap_process_settings_form($settings = NULL) {
   );
   return $form;
 }
+*/
 
 /**
  * Payment method callback: checkout form.
  */
+/*
 function commerce_iats_soap_process_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-  $payment_method['settings'] += commerce_iats_soap_process_default_settings();
+  $payment_method['settings'] += commerce_iats_default_settings();
 
   // Prepare the fields to include on the credit card form.
   $fields = array(
@@ -320,7 +323,7 @@ function commerce_iats_soap_process_submit_form($payment_method, $pane_values, $
 
   return commerce_payment_credit_card_form($fields);
 }
-
+*/
 /**
  * Payment method callback: checkout form validation.
  */
@@ -375,7 +378,7 @@ function commerce_iats_soap_process_submit_form_submit($payment_method, $pane_fo
     $card_type = commerce_payment_validate_credit_card_type($pane_values['credit_card']['number'], array_keys(commerce_iats_credit_card_types()));
   }
 
-  $payment_method['settings'] += commerce_iats_soap_process_default_settings();
+  $payment_method['settings'] += commerce_iats_default_settings();
 
   // Create and populate the request object with standard properties.
   $request = (object) array(
@@ -487,7 +490,7 @@ function commerce_iats_soap_process_submit_form_submit($payment_method, $pane_fo
 
       // Save and log the creation of the new card on file.
       commerce_cardonfile_save($card_data);
-      watchdog('commerce_iats', 'IATS Customer Code @customer_code created and saved to user @uid.', array('@customer_code' => (string) $processresult->CUSTOMERCODE, '@uid' => $order->uid));
+      watchdog('commerce_iats', 'iATS Customer Code @customer_code created and saved to user @uid.', array('@customer_code' => (string) $processresult->CUSTOMERCODE, '@uid' => $order->uid));
     }
   }
   else {
@@ -571,7 +574,7 @@ function commerce_iats_customer_code_charge_submit_form_submit($payment_method, 
  * Card on file callback for charging using a customer code.
  */
 function commerce_iats_cardonfile_charge($payment_method, $card_data, $order, $charge) {
-  $payment_method['settings'] += commerce_iats_soap_process_default_settings();
+  $payment_method['settings'] += commerce_iats_default_settings();
 
   $iats_method = $payment_method['ProcessCreditCardWithCustomerCode'];
 
@@ -900,15 +903,12 @@ function commerce_iats_cardonfile_customer_code_load($customer_code) {
   }
 }
 
-
-
-
 /**
  * Payment method callback: settings form.
  */
 function commerce_iats_soap_customerlink_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-  $settings += commerce_iats_soap_process_default_settings();
+  $settings += commerce_iats_default_settings();
 
   $form = array();
 
@@ -972,8 +972,6 @@ function commerce_iats_soap_customerlink_settings_form($settings = NULL) {
   return $form;
 }
 
-
-
 /**
  * Payment method callback: checkout form.
  */
@@ -1035,7 +1033,6 @@ function commerce_iats_soap_customerlink_submit_form_submit($payment_method, $pa
   }
 
 }
-
 
 /**
  * @todo: Remove call to SoapClient; replace with wrapper.

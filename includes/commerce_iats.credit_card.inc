@@ -28,28 +28,280 @@ function commerce_iats_commerce_payment_method_info() {
  * Payment method callback: settings form.
  */
 function commerce_iats_credit_card_settings_form($settings = NULL) {
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+  $settings += commerce_iats_default_settings();
 
+  $form = array();
+
+  $form['agent_code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Agent Code'),
+    '#description' => t('This is the agent code used to authenticate with the iATS website.'),
+    '#default_value' => $settings['agent_code'],
+    '#required' => TRUE,
+  );
+  $form['agent_password'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Password'),
+    '#description' => t('Enter the corresponding password for this agent code.'),
+    '#default_value' => $settings['agent_password'],
+    '#required' => TRUE,
+  );
+  $form['server'] = array(
+    '#type' => 'radios',
+    '#title' => t('Transaction Server'),
+    '#description' => t('Select the transaction server to use for processing payments.'),
+    '#options' => array(
+      IATS_NA_SERVER => t('US'),
+      IATS_UK_SERVER => t('UK'),
+    ),
+    '#default_value' => $settings['server'],
+  );
+  // This most likely isn't implemented.
+  // TODO: Implement transaction mode.
+  $form['transaction_mode'] = array(
+    '#type' => 'radios',
+    '#title' => t('Transaction Mode'),
+    '#description' => t('Adjust to live transactions when you are ready to start processing real payments.'),
+    '#options' => array(
+      IATS_TXN_MODE_PRODUCTION => t('Live transactions in the production environment'),
+      IATS_TXN_MODE_TEST => t('Test transactions in the test environment'),
+    ),
+    '#default_value' => $settings['transaction_mode'],
+  );
+  $form['log'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Log the following messages for debugging'),
+    '#options' => array(
+      'request' => t('API request messages'),
+      'response' => t('API response messages'),
+    ),
+    '#default_value' => $settings['log'],
+  );
+
+  // customerCode support requires the Card on File module.
+  if (module_exists('commerce_cardonfile')) {
+    $form['iats_customer_code'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Enable management of customer codes.'),
+      '#description' => t('This will save credit card data on the iATS server'),
+      '#default_value' => $settings['iats_customer_code'],
+    );
+  }
+
+  $form['credit_card'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Credit card service settings'),
+    '#collapsible' => TRUE,
+    '#collapsed' => TRUE,
+  );
+  $form['credit_card']['card_types'] = array(
+    '#type' => 'checkboxes',
+    '#title' => t('Limit accepted credit cards to the following types'),
+    '#description' => t('If none are checked, any credit card type will be accepted.'),
+    '#options' => commerce_iats_credit_card_types(),
+    '#default_value' => isset($settings['credit_card']['card_types']) ? $settings['credit_card']['card_types'] : array(),
+  );
+  return $form;
 }
 
 /**
  * Payment method callback: checkout form.
  */
 function commerce_iats_credit_card_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+  $payment_method['settings'] += commerce_iats_default_settings();
 
+  // Prepare the fields to include on the credit card form.
+  $fields = array(
+    'code' => '',
+  );
+
+  // Limit credit card types, since iATS has a limited selection.
+  $card_types = array_diff(array_values($payment_method['settings']['credit_card']['card_types']), array(0));
+  if (!empty($card_types)) {
+    if ($card_types === array(0)) {
+      $card_types = commerce_iats_credit_card_types();
+    }
+    $fields['type'] = $card_types;
+  }
+
+  return commerce_payment_credit_card_form($fields);
 }
 
 /**
  * Payment method callback: checkout form validation.
  */
 function commerce_iats_credit_card_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+  // If the customer specified a card on file, skip the normal validation.
+  if (module_exists('commerce_cardonfile') && !empty($payment_method['settings']['iats_customer_code']) &&
+    !empty($pane_values['cardonfile']) && ($pane_values['cardonfile'] !== 'new')) {
+    return;
+  }
 
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+
+  // Validate the credit card fields.
+  $settings = array(
+    'form_parents' => array_merge($form_parents, array('credit_card')),
+  );
+
+  if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
+    return FALSE;
+  }
 }
 
 /**
  * Payment method callback: checkout form submission.
  */
 function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+  if (empty($charge['amount'])) {
+    watchdog('commerce_iats', 'Empty charge amount: !charge for order !order', array(
+      '!charge' => '<pre>' . check_plain(print_r($charge, TRUE)) . '</pre>',
+      '!order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>',
+    ), WATCHDOG_DEBUG);
+  }
 
+  // If the customer specified payment using a card on file, attempt that now and simply return the result.
+  if (module_exists('commerce_cardonfile') && $payment_method['settings']['iats_customer_code'] &&
+    !empty($pane_values['cardonfile']) && $pane_values['cardonfile'] !== 'new') {
+    // Run transaction using ProcessCreditCardWithCustomerCode.
+    // TODO: Rename this method to reflect credit card payment type.
+    return commerce_iats_customer_code_charge_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge);
+  }
+
+  // If possible, determine the credit card type for use in later code.
+  if (!empty($pane_values['credit_card']['number'])) {
+    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+    $card_type = commerce_payment_validate_credit_card_type($pane_values['credit_card']['number'], array_keys(commerce_iats_credit_card_types()));
+  }
+
+  $payment_method['settings'] += commerce_iats_default_settings();
+
+  // Create and populate the request object with standard properties.
+  $request = (object) array(
+    // TODO: Invoice number needs to be user-editable.
+    'invoiceNum' => t('dc-@number', array('@number' => $order->order_number)),
+    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
+    'customerIPAddress' => ip_address(),
+  );
+
+  // Add the billing information.
+  commerce_iats_address($request, 'billing', $order, 'commerce_customer_billing');
+
+  // Add the credit card details.
+  $expiry_string = sprintf('%02d/%02d', $pane_values['credit_card']['exp_month'], ($pane_values['credit_card']['exp_year'] % 100));
+
+  if (!$payment_method['settings']['iats_customer_code']) {
+    // TODO: $iats_method doesn't matter now and can be removed.
+    $iats_method = $payment_method['ProcessCreditCard'];
+    $request->mop = commerce_iats_mop($pane_values['credit_card']['type']);
+  }
+  else {
+    $iats_method = $payment_method['CreateCustomerCodeAndProcessCreditCard'];
+  }
+
+  // TODO: Should blank spaces be removed here? Probably.
+  $request->{$iats_method['params']['cc_num']} = $pane_values['credit_card']['number'];
+  $request->{$iats_method['params']['cc_exp']} = $expiry_string;
+
+  // Add the CVV data, if included.
+  if (isset($pane_values['credit_card']['code'])) {
+    $request->cvv2 = $pane_values['credit_card']['code'];
+  }
+
+
+
+  // TODO: Replace transaction below with PHP Wrapper.
+
+  if ($response = commerce_iats_soap_api_request($payment_method, $request, $iats_method)) {
+    $processresult = $response->PROCESSRESULT;
+    $auth_result = trim(current($processresult->AUTHORIZATIONRESULT));
+    // Get the customer code if we have one.
+    $customer_code = ($processresult->CUSTOMERCODE) ? current($processresult->CUSTOMERCODE) : NULL;
+
+    // Prepare a transaction object to log the API response.
+    $transaction = commerce_payment_transaction_new('iats_soap_process', $order->order_id);
+    $transaction->instance_id = $payment_method['instance_id'];
+    $customer_code_string = ($customer_code) ? '|' . $customer_code : '';
+    $transaction->remote_id = trim(current($processresult->TRANSACTIONID)) . $customer_code_string;
+    $transaction->amount = $charge['amount'];
+    $transaction->currency_code = $charge['currency_code'];
+    // $transaction->payload[REQUEST_TIME] = $response;
+    // If we didn't get an approval response code...
+    // Note: do not use SUCCESS property, which just means IATS said "hello"
+    if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
+      // Create a failed transaction with the error message.
+      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+    }
+    else {
+      $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+    }
+
+    // Build a meaningful response message.
+    $message = array(
+      '<b>' . t('Credit Card Authorization and Capture') . '</b>',
+      '<b>' . t('@decision:', array('@decision' => $auth_result)) . '</b>',
+    );
+
+    // Add a CVV response if returned.
+    /* not supported by IATS ?
+    if (!empty($response->ccAuthReply->cvCode)) {
+      $message[] = '<b>' . t('CVN response:') . '</b> ' . commerce_iats_avs_response($response->ccAuthReply->cvCode);
+    } */
+
+    $transaction->message = implode('<br />', $message);
+
+    // Save the transaction information.
+    commerce_payment_transaction_save($transaction);
+
+    // If the payment failed, display an error and rebuild the form.
+    if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
+      drupal_set_message(t('We received the following error while attempting to process your card: @reason', array('@reason' => commerce_iats_reason_message($auth_result))), 'error');
+
+      if ($auth_result == 'REJECT: 5') {
+        drupal_set_message('You may have interrupted an authorization in progress - please contact us to process/complete your order.', 'error');
+      }
+      else {
+        drupal_set_message('Please enter your information again or try a different card.', 'error');
+      }
+      return FALSE;
+    }
+
+    // If Card on File storage is enabled and the form says to store data...
+    if (module_exists('commerce_cardonfile') && !empty($payment_method['settings']['iats_customer_code']) &&
+      !empty($pane_values['credit_card']['cardonfile_store']) && $pane_values['credit_card']['cardonfile_store'] && $processresult->CUSTOMERCODE) {
+      // Build a payment details array for the credit card.
+      $payment_details = array(
+        'cardNumber' => $pane_values['credit_card']['number'],
+        'expirationDate' => $pane_values['credit_card']['exp_year'] . '-' . $pane_values['credit_card']['exp_month'],
+      );
+
+      if (isset($pane_values['credit_card']['code'])) {
+        $payment_details['cardCode'] = $pane_values['credit_card']['code'];
+      }
+
+      $card_data = commerce_cardonfile_new();
+      $card_data->uid = $order->uid;
+      $card_data->payment_method = $payment_method['method_id'];
+      $card_data->instance_id = $payment_method['instance_id'];
+      $card_data->remote_id = $customer_code;
+      $card_data->card_type = !empty($card_type) ? $card_type : 'card';
+      $card_data->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';
+      $card_data->card_number = substr($pane_values['credit_card']['number'], -4);
+      $card_data->card_exp_month = $pane_values['credit_card']['exp_month'];
+      $card_data->card_exp_year = $pane_values['credit_card']['exp_year'];
+      $card_data->status = 1;
+
+      // Save and log the creation of the new card on file.
+      commerce_cardonfile_save($card_data);
+      watchdog('commerce_iats', 'iATS Customer Code @customer_code created and saved to user @uid.', array('@customer_code' => (string) $processresult->CUSTOMERCODE, '@uid' => $order->uid));
+    }
+  }
+  else {
+    drupal_set_message(t('We encountered an error contacting our payment processor. Please try submitting your payment again.'), 'error');
+    return FALSE;
+  }
 }
 
 
