@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Ensures sites have SOAP, libxml, and openssl enabled.
+ * Ensures sites have SOAP, and openssl enabled.
  */
 
 /**
@@ -12,7 +12,6 @@ function commerce_iats_requirements($phase) {
   $t = get_t();
 
   $has_soap = class_exists('SoapClient');
-  $has_libxml = class_exists('libXMLError');
   $has_openssl = defined('OPENSSL_VERSION_TEXT');
 
   $requirements['commerce_iats_soap'] = array(
@@ -24,18 +23,6 @@ function commerce_iats_requirements($phase) {
     $requirements['commerce_iats_soap'] += array(
       'severity' => REQUIREMENT_ERROR,
       'description' => $t('IATS requires the PHP <a href="!soap_url">SOAP extension</a>.', array('!soap_url' => 'http://php.net/manual/en/book.soap.php')),
-    );
-  }
-
-  $requirements['commerce_iats_libxml'] = array(
-    'title' => $t('libxml'),
-    'value' => $has_libxml ? $t('Enabled (@version)', array('@version' => LIBXML_DOTTED_VERSION)) : $t('Not found'),
-  );
-
-  if (!$has_libxml) {
-    $requirements['commerce_iats_libxml'] += array(
-      'severity' => REQUIREMENT_ERROR,
-      'description' => $t('IATS requires the PHP <a href="!libxml_url">libxml extension</a>.', array('!libxml_url' => 'http://php.net/manual/en/book.libxml.php')),
     );
   }
 
