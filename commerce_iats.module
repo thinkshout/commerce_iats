@@ -87,6 +87,36 @@ function commerce_iats_refund_access($order, $transaction) {
 function commerce_iats_commerce_payment_method_info() {
   $payment_methods = array();
 
+  $payment_methods['commerce_iats_credit_card'] = array(
+    'base' => 'commerce_iats_credit_card',
+    'title' => t('IATS Webservice: ProcessLink'),
+    'short_title' => t('IATS Web Service'),
+    'display_title' => t('Credit card'),
+    'description' => t('Integrates the IATS webservice: '),
+    'cardonfile' => array(
+      'charge callback' => 'commerce_iats_cardonfile_charge',
+      'update callback' => 'commerce_iats_cardonfile_update',
+      'delete callback' => 'commerce_iats_cardonfile_delete',
+    ),
+  );
+
+  // TODO: Possibly use second payment method for credit card
+  // processing with a customer code. Possibly combine it with
+  // commerce_iats_credit_card.
+  $payment_methods['commerce_iats_credit_card_customer_code'] = array();
+
+  // TODO: Is refund a payment method? Include here if so.
+  $payment_methods['commerce_iats_credit_card_refund'] = array();
+
+  $payment_methods['commerce_iats_credit_card_validate'] = array(
+    'base' => 'commerce_iats_credit_card_validate',
+    'title' => t('IATS Webservice: CustomerLink'),
+    'short_title' => t('IATS Web Service'),
+    'display_title' => t('Customer link'),
+    'description' => t('Integrates the IATS webservice: '),
+  );
+
+  /*
   $base_payment_method = array(
     'base' => 'commerce_iats_soap_process',
     'title' => t('IATS Webservice: ProcessLink'),
@@ -137,7 +167,8 @@ function commerce_iats_commerce_payment_method_info() {
     'message' => 'ProcessCreditCardRefundWithTransactionIdV1',
     'response' => 'ProcessCreditCardRefundWithTransactionIdV1Result',
   );
-
+*/
+  /*
   $payment_methods['iats_soap_customerlink'] = array(
     'base' => 'commerce_iats_soap_customerlink',
     'title' => t('IATS Webservice: CustomerLink'),
@@ -155,7 +186,7 @@ function commerce_iats_commerce_payment_method_info() {
       'response' => 'CreateCreditCardCustomerCodeV1Result',
     ),
   );
-
+*/
 //  $payment_methods['iats_soap_acheft'] = $base_payment_method;
 //  $payment_methods['iats_soap_acheft']['description'].= "ProcessACHEFTV1";
 //  $payment_methods['iats_soap_acheft']['method'] = "ProcessACHEFTV1";
