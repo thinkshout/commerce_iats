@@ -178,8 +178,8 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
 
   $payment_method['settings'] += commerce_iats_default_settings();
 
-  // Create and populate the request object with standard properties.
-  $request = (object) array(
+  // Create and populate the request  with standard properties.
+  $request = array(
     // TODO: Invoice number needs to be user-editable.
     'invoiceNum' => t('dc-@number', array('@number' => $order->order_number)),
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
@@ -192,44 +192,43 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   // Add the credit card details.
   $expiry_string = sprintf('%02d/%02d', $pane_values['credit_card']['exp_month'], ($pane_values['credit_card']['exp_year'] % 100));
 
-  if (!$payment_method['settings']['iats_customer_code']) {
-    // TODO: $iats_method doesn't matter now and can be removed.
-    $iats_method = $payment_method['ProcessCreditCard'];
-    $request->mop = commerce_iats_mop($pane_values['credit_card']['type']);
-  }
-  else {
-    $iats_method = $payment_method['CreateCustomerCodeAndProcessCreditCard'];
-  }
-
+  // TODO: Figure out what's going on with $iats_method here.
   // TODO: Should blank spaces be removed here? Probably.
-  $request->{$iats_method['params']['cc_num']} = $pane_values['credit_card']['number'];
-  $request->{$iats_method['params']['cc_exp']} = $expiry_string;
+  //$request[{$iats_method['params']['cc_num']} = $pane_values['credit_card']['number'];
+  //$request[{$iats_method['params']['cc_exp']} = $expiry_string;
 
   // Add the CVV data, if included.
   if (isset($pane_values['credit_card']['code'])) {
-    $request->cvv2 = $pane_values['credit_card']['code'];
+    $request['cvv2'] = $pane_values['credit_card']['code'];
   }
 
+  $request['mop'] = commerce_iats_mop($pane_values['credit_card']['type']);
 
+  // Instantiate the iATS ProcessLink class to process credit card payment.
+  $iats = new ProcessLink($payment_method['settings']['agent_code'], $payment_method['settings']['agent_password']);
+  $response = NULL;
 
-  // TODO: Replace transaction below with PHP Wrapper.
+  if ($payment_method['settings']['iats_customer_code']) {
+    // Process payment using customer code.
+    $response = $iats->processCreditCardWithCustomerCode($request);
+  }
+  else {
+    // Process payment without using customer code.
+    $response = $iats->processCreditCard($request);
+  }
 
-  if ($response = commerce_iats_soap_api_request($payment_method, $request, $iats_method)) {
-    $processresult = $response->PROCESSRESULT;
-    $auth_result = trim(current($processresult->AUTHORIZATIONRESULT));
-    // Get the customer code if we have one.
-    $customer_code = ($processresult->CUSTOMERCODE) ? current($processresult->CUSTOMERCODE) : NULL;
+  if ($response != NULL)
+  {
+    $auth_result = $response['AUTHORIZATIONRESULT'];
 
-    // Prepare a transaction object to log the API response.
+    $customer_code = (isset($response['CUSTOMERCODE']))? $response['CUSTOMERCODE'] : NULL;
+
     $transaction = commerce_payment_transaction_new('iats_soap_process', $order->order_id);
     $transaction->instance_id = $payment_method['instance_id'];
-    $customer_code_string = ($customer_code) ? '|' . $customer_code : '';
-    $transaction->remote_id = trim(current($processresult->TRANSACTIONID)) . $customer_code_string;
+    $transaction->remote_id = trim($response['TRANSACTIONID']) . '|' . $customer_code;
     $transaction->amount = $charge['amount'];
     $transaction->currency_code = $charge['currency_code'];
-    // $transaction->payload[REQUEST_TIME] = $response;
-    // If we didn't get an approval response code...
-    // Note: do not use SUCCESS property, which just means IATS said "hello"
+
     if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
       // Create a failed transaction with the error message.
       $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
@@ -243,12 +242,6 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
       '<b>' . t('Credit Card Authorization and Capture') . '</b>',
       '<b>' . t('@decision:', array('@decision' => $auth_result)) . '</b>',
     );
-
-    // Add a CVV response if returned.
-    /* not supported by IATS ?
-    if (!empty($response->ccAuthReply->cvCode)) {
-      $message[] = '<b>' . t('CVN response:') . '</b> ' . commerce_iats_avs_response($response->ccAuthReply->cvCode);
-    } */
 
     $transaction->message = implode('<br />', $message);
 
@@ -268,6 +261,112 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
       return FALSE;
     }
 
+    // Handle Card on File storage if enabled.
+    if (module_exists('commerce_cardonfile') && !empty($payment_method['settings']['iats_customer_code']) &&
+      !empty($pane_values['credit_card']['cardonfile_store']) && $pane_values['credit_card']['cardonfile_store'] && $customer_code) {
+      // Build a payment details array for the credit card.
+      $payment_details = array(
+        'cardNumber' => $pane_values['credit_card']['number'],
+        'expirationDate' => $pane_values['credit_card']['exp_year'] . '-' . $pane_values['credit_card']['exp_month'],
+      );
+
+      if (isset($pane_values['credit_card']['code'])) {
+        $payment_details['cardCode'] = $pane_values['credit_card']['code'];
+      }
+
+      $card_data = commerce_cardonfile_new();
+      $card_data->uid = $order->uid;
+      $card_data->payment_method = $payment_method['method_id'];
+      $card_data->instance_id = $payment_method['instance_id'];
+      $card_data->remote_id = $customer_code;
+      $card_data->card_type = !empty($card_type) ? $card_type : 'card';
+      $card_data->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';
+      $card_data->card_number = substr($pane_values['credit_card']['number'], -4);
+      $card_data->card_exp_month = $pane_values['credit_card']['exp_month'];
+      $card_data->card_exp_year = $pane_values['credit_card']['exp_year'];
+      $card_data->status = 1;
+
+      // Save and log the creation of the new card on file.
+      commerce_cardonfile_save($card_data);
+      watchdog('commerce_iats', 'iATS Customer Code @customer_code created and saved to user @uid.', array('@customer_code' => (string) $customer_code, '@uid' => $order->uid));
+  }
+  else
+  {
+    drupal_set_message(t('We encountered an error contacting our payment processor. Please try submitting your payment again.'), 'error');
+    return FALSE;
+  }
+
+
+  // TODO: Replace transaction below with PHP Wrapper.
+
+  //if ($response = commerce_iats_soap_api_request($payment_method, $request, $iats_method)) {
+    /*
+    $processresult = $response->PROCESSRESULT;
+    $auth_result = trim(current($processresult->AUTHORIZATIONRESULT));
+    // Get the customer code if we have one.
+    $customer_code = ($processresult->CUSTOMERCODE) ? current($processresult->CUSTOMERCODE) : NULL;
+*/
+
+    // Prepare a transaction object to log the API response.
+    /*
+    $transaction = commerce_payment_transaction_new('iats_soap_process', $order->order_id);
+    $transaction->instance_id = $payment_method['instance_id'];
+    $customer_code_string = ($customer_code) ? '|' . $customer_code : '';
+    $transaction->remote_id = trim(current($processresult->TRANSACTIONID)) . $customer_code_string;
+    $transaction->amount = $charge['amount'];
+    $transaction->currency_code = $charge['currency_code'];
+    */
+
+
+    // $transaction->payload[REQUEST_TIME] = $response;
+    // If we didn't get an approval response code...
+    // Note: do not use SUCCESS property, which just means IATS said "hello"
+    /*
+    if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
+      // Create a failed transaction with the error message.
+      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+    }
+    else {
+      $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+    }
+    */
+
+    // Build a meaningful response message.
+    /*
+    $message = array(
+      '<b>' . t('Credit Card Authorization and Capture') . '</b>',
+      '<b>' . t('@decision:', array('@decision' => $auth_result)) . '</b>',
+    );
+    */
+
+    // Add a CVV response if returned.
+    /* not supported by IATS ?
+    if (!empty($response->ccAuthReply->cvCode)) {
+      $message[] = '<b>' . t('CVN response:') . '</b> ' . commerce_iats_avs_response($response->ccAuthReply->cvCode);
+    } */
+
+    /*
+    $transaction->message = implode('<br />', $message);
+
+    // Save the transaction information.
+    commerce_payment_transaction_save($transaction);
+    */
+
+    // If the payment failed, display an error and rebuild the form.
+    /*
+    if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
+      drupal_set_message(t('We received the following error while attempting to process your card: @reason', array('@reason' => commerce_iats_reason_message($auth_result))), 'error');
+
+      if ($auth_result == 'REJECT: 5') {
+        drupal_set_message('You may have interrupted an authorization in progress - please contact us to process/complete your order.', 'error');
+      }
+      else {
+        drupal_set_message('Please enter your information again or try a different card.', 'error');
+      }
+      return FALSE;
+    }
+    */
+/*
     // If Card on File storage is enabled and the form says to store data...
     if (module_exists('commerce_cardonfile') && !empty($payment_method['settings']['iats_customer_code']) &&
       !empty($pane_values['credit_card']['cardonfile_store']) && $pane_values['credit_card']['cardonfile_store'] && $processresult->CUSTOMERCODE) {
@@ -302,6 +401,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     drupal_set_message(t('We encountered an error contacting our payment processor. Please try submitting your payment again.'), 'error');
     return FALSE;
   }
+*/
 }
 
 
