@@ -652,6 +652,7 @@ function commerce_iats_cardonfile_charge($payment_method, $card_data, $order, $c
  *   The response object from the API with properties pertinent to the requested
  *     services.
  */
+/*
 function commerce_iats_soap_api_request($payment_method, $request, $iats_method) {
   // Get the API endpoint URL for the method's transaction mode.
   $url = commerce_iats_soap_wsdl_url(
@@ -690,7 +691,7 @@ function commerce_iats_soap_api_request($payment_method, $request, $iats_method)
     $soapClient = new SoapClient($url, array('trace' => IATS_TXN_TRACE));
     $request->agentCode = $payment_method['settings']['agent_code'];
     $request->password = $payment_method['settings']['agent_password'];
-    /* build the request manually as per the IATS docs */
+    // build the request manually as per the IATS docs
     $xml = '<'.$message.' xmlns="'.$type_ns.'">';
     foreach((array) $request as $k => $v) {
        $xml .= '<'.$k.'>'.$v.'</'.$k.'>';
@@ -711,6 +712,7 @@ function commerce_iats_soap_api_request($payment_method, $request, $iats_method)
   $xml_response = $soapResponse->$response->any;
   return new SimpleXMLElement($xml_response);
 }
+*/
 
 /**
  * @todo: Remove this; handled by wrapper.
@@ -723,6 +725,7 @@ function commerce_iats_soap_api_request($payment_method, $request, $iats_method)
  * @return
  *   The URL to use to submit requests to the IATS SOAP server.
  */
+/*
 function commerce_iats_soap_wsdl_url($server, $transaction_mode) {
   switch ($transaction_mode) {
     case IATS_TXN_MODE_PRODUCTION:
@@ -733,6 +736,7 @@ function commerce_iats_soap_wsdl_url($server, $transaction_mode) {
       return 'https://www.iatspayments.com/NetGate/';
   }
 }
+*/
 
 /**
  * @todo: Remove this; handled by wrapper.
@@ -742,6 +746,7 @@ function commerce_iats_soap_wsdl_url($server, $transaction_mode) {
  * https://www.iatspayments.com/english/help/rejects.html
  * TODO: multilingual options?
  */
+/*
 function commerce_iats_reason_message($code) {
   switch ($code) {
 
@@ -811,12 +816,14 @@ function commerce_iats_reason_message($code) {
 
   return $code;
 }
-
+*/
 /**
  * @todo: Possibly integrate into wrapper if this is still relevant.
+ *  Currently isn't used for anything.
  *
  * Returns the message text for a CVV match.
  */
+/*
 function commerce_iats_cvn_response($code) {
   switch ($code) {
     case 'D':
@@ -845,6 +852,7 @@ function commerce_iats_cvn_response($code) {
 
   return '-';
 }
+*/
 
 /* replaces the standard function commerce_payment_credit_card_types() */
 
