@@ -8,7 +8,7 @@
 /**
  * Form callback: allows the user to issue a refund on a prior transaction.
  */
-function commerce_iats_refund_form($form, &$form_state, $order, $transaction) {
+function commerce_iats_credit_card_refund_form($form, &$form_state, $order, $transaction) {
   $form_state['order'] = $order;
   $form_state['transaction'] = $transaction;
 
@@ -42,7 +42,7 @@ function commerce_iats_refund_form($form, &$form_state, $order, $transaction) {
 /**
  * Validate handler: check the refund amount before attempting refund request.
  */
-function commerce_iats_refund_form_validate($form, &$form_state) {
+function commerce_iats_credit_card_refund_form_validate($form, &$form_state) {
   $transaction = $form_state['transaction'];
   $amount = $form_state['values']['amount'];
 
@@ -68,13 +68,13 @@ function commerce_iats_refund_form_validate($form, &$form_state) {
  *
  * Submit handler: process a refund via iATS.
  */
-function commerce_iats_refund_form_submit($form, &$form_state) {
+function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
   $amount = number_format($form_state['values']['amount'], 2, '.', '');
   $order = $form_state['order'];
   $payment_method = $form_state['payment_method'];
 
-  $payment_method['settings'] += commerce_iats_soap_process_default_settings();
+  $payment_method['settings'] += commerce_iats_default_settings();
 
   $iats_method = $payment_method['ProcessCreditCardRefundWithTransactionId'];
 
@@ -92,7 +92,7 @@ function commerce_iats_refund_form_submit($form, &$form_state) {
     $processresult = $response->PROCESSRESULT;
     $auth_result = trim(current($processresult->AUTHORIZATIONRESULT));
     // Prepare a transaction object to log the API response.
-    $refund_transaction = commerce_payment_transaction_new('iats_soap_process', $order->order_id);
+    $refund_transaction = commerce_payment_transaction_new('iats_credit_card', $order->order_id);
     $refund_transaction->instance_id = $payment_method['instance_id'];
     $customer_code_string = ($customer_code) ? '|' . $customer_code : '';
     $refund_transaction->remote_id = trim(current($processresult->TRANSACTIONID)) . $customer_code_string;

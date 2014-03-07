@@ -223,7 +223,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
 
     $customer_code = (isset($response['CUSTOMERCODE']))? $response['CUSTOMERCODE'] : NULL;
 
-    $transaction = commerce_payment_transaction_new('iats_soap_process', $order->order_id);
+    $transaction = commerce_payment_transaction_new('iats_credit_card', $order->order_id);
     $transaction->instance_id = $payment_method['instance_id'];
     $transaction->remote_id = trim($response['TRANSACTIONID']) . '|' . $customer_code;
     $transaction->amount = $charge['amount'];
