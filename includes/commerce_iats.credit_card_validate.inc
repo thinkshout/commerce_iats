@@ -10,7 +10,7 @@
 function commerce_iats_credit_card_validate_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
   $fields = array();
-  // Limit credit card types, since IATS has a limited selection.
+  // Limit credit card types, since iATS has a limited selection.
   $card_types = array_diff(array_values($payment_method['settings']['credit_card']['card_types']), array(0));
   if (!empty($card_types)) {
     if ($card_types === array(0)) {
@@ -26,7 +26,7 @@ function commerce_iats_credit_card_validate_submit_form($payment_method, $pane_v
 /**
  * Payment method callback: checkout form submission.
  */
-function commerce_iats_soap_customerlink_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
+function commerce_iats_credit_card_validate_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
   $request = array(
     'customerIPAddress' => ip_address(),
   );

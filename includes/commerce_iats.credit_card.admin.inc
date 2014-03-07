@@ -135,7 +135,7 @@ function commerce_iats_credit_card_refund_form_validate($form, &$form_state) {
 
   // Ensure the amount is less than or equal to the captured amount.
   if ($amount > commerce_currency_amount_to_decimal($transaction->amount, $transaction->currency_code)) {
-    form_set_error('amount', t('You cannot refund more than you captured through IATS.'));
+    form_set_error('amount', t('You cannot refund more than you captured through iATS.'));
   }
 
   // If the transaction is older than 120 days, display an error message and redirect.
