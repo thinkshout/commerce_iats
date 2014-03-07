@@ -87,6 +87,7 @@ function commerce_iats_refund_access($order, $transaction) {
 function commerce_iats_commerce_payment_method_info() {
   $payment_methods = array();
 
+  /*
   $payment_methods['iats_credit_card'] = array(
     'base' => 'commerce_iats_credit_card',
     'title' => t('IATS Webservice: ProcessLink'),
@@ -115,6 +116,7 @@ function commerce_iats_commerce_payment_method_info() {
     'display_title' => t('Customer link'),
     'description' => t('Integrates the IATS webservice: '),
   );
+*/
 
   /*
   $base_payment_method = array(
@@ -547,6 +549,7 @@ function commerce_iats_address($request, $type, $order, $field_name) {
 }
 
 /**
+ * @todo: Move into commerce_iats.credit_card.inc?
  * Imitates the checkout form submission callback for the CustomerCode payment method.
  */
 function commerce_iats_customer_code_charge_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
@@ -563,7 +566,7 @@ function commerce_iats_customer_code_charge_submit_form_submit($payment_method, 
 }
 
 /**
- * @todo: Conver to use wrapper.
+ * @todo: Convert to use wrapper.
  *
  * Card on file callback for charging using a customer code.
  */
