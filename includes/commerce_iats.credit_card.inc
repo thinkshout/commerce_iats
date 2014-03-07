@@ -89,11 +89,6 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   // Add the credit card details.
   $expiry_string = sprintf('%02d/%02d', $pane_values['credit_card']['exp_month'], ($pane_values['credit_card']['exp_year'] % 100));
 
-  // TODO: Figure out what's going on with $iats_method here.
-  // TODO: Should blank spaces be removed here? Probably.
-  //$request[{$iats_method['params']['cc_num']} = $pane_values['credit_card']['number'];
-  //$request[{$iats_method['params']['cc_exp']} = $expiry_string;
-
   // Add the CVV data, if included.
   if (isset($pane_values['credit_card']['code'])) {
     $request['cvv2'] = $pane_values['credit_card']['code'];
@@ -107,10 +102,18 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
 
   if ($payment_method['settings']['iats_customer_code']) {
     // Process payment using customer code.
+
+    $request['ccNum'] = str_replace(' ', '', $pane_values['credit_card']['number']);
+    $request['ccExp'] = $expiry_string;
+
     $response = $iats->createCustomerCodeAndProcessCreditCard($request);
   }
   else {
     // Process payment without using customer code.
+
+    $request['creditCardNum'] = str_replace(' ', '', $pane_values['credit_card']['number']);
+    $request['creditCardExpiry'] = $expiry_string;
+
     $response = $iats->processCreditCard($request);
   }
 

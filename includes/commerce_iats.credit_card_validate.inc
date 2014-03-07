@@ -37,10 +37,8 @@ function commerce_iats_soap_customerlink_submit_form_submit($payment_method, $pa
   // Add the credit card details.
   $expiry_string = sprintf('%02d/%02d', $pane_values['credit_card']['exp_month'], ($pane_values['credit_card']['exp_year'] % 100));
 
-  // TODO: Figure out what's going on with $iats_method here.
-  // TODO: Should blank spaces be removed here? Probably.
-  //$request[{$iats_method['params']['cc_num']} = $pane_values['credit_card']['number'];
-  //$request[{$iats_method['params']['cc_exp']} = $expiry_string;
+  $request['creditCardNum'] = str_replace(' ', '', $pane_values['credit_card']['number']);
+  $request['creditCardExpiry'] = $expiry_string;
 
   // Add the CVV data, if included.
   if (isset($pane_values['credit_card']['code'])) {
@@ -71,7 +69,6 @@ function commerce_iats_soap_customerlink_submit_form_submit($payment_method, $pa
 
     $transaction->remote_id = $response['CUSTOMERCODE'];
     $transaction->amount = 0;
-    // TODO: Check server type.
     $transaction->currency_code = 'USD';
     $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
 
