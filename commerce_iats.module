@@ -74,6 +74,11 @@ function commerce_iats_refund_access($order, $transaction) {
 }
 
 /**
+ * @todo: Replace short names with iATS-compatible names.
+ *  ie. cc = credit_card
+ * @todo: Remove method, message, response properties from payment methods
+ *  as we're not calling the API directly.
+ *
  * Implements hook_commerce_payment_method_info().
  *
  * This module makes use of some of the methods of the iatsProcess link
