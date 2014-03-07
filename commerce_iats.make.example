@@ -1,0 +1,5 @@
+; iatspayments
+projects[iatspayments][download][type] = git
+projects[iatspayments][download][branch] = master
+projects[iatspayments][download][url] = "git@github.com:iATSPayments/PHP.git"
+projects[iatspayments][destination_name] = libraries
