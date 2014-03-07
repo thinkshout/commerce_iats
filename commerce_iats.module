@@ -8,19 +8,14 @@
 // TODO: Remove "soap" from method names.
 // TODO: Add request and response logging from commerce_iats_soap_api_request to other methods.
 
-// TODO: Remove these where handled by wrapper.
-// IATS transaction mode definitions:
+// iATS transaction mode definitions.
 define('IATS_TXN_MODE_PRODUCTION', 'production');
 define('IATS_TXN_MODE_TEST', 'test');
-define('IATS_TXN_NS', 'xmlns');
-define('IATS_TXN_TRACE', TRUE);
-define('IATS_TXN_SUCCESS', 'Success');
 define('IATS_TXN_OK', 'OK');
-define('IATS_NA_SERVER', 'www.iatspayments.com');
-define('IATS_UK_SERVER', 'www.uk.iatspayments.com');
-define('IATS_URL_PROCESSLINK','/NetGate/ProcessLink.asmx?WSDL');
-define('IATS_URL_REPORTLINK','/NetGate/ReportLink.asmx?WDSL');
-define('IATS_URL_CUSTOMERLINK','/NetGate/CustomerLink.asmx?WDSL');
+
+// iATS server ID definitions.
+define('IATS_NA_SERVER_ID', 'NA');
+define('IATS_UK_SERVER_ID', 'UK');
 
 /**
  * Implements hook_menu().
@@ -111,7 +106,7 @@ function commerce_iats_default_settings() {
     'agent_code' => '',
     'agent_password' => '',
     'transaction_mode' => IATS_TXN_MODE_TEST,
-    'server' => IATS_NA_SERVER,
+    'server' => IATS_NA_SERVER_ID,
     'iats_customer_code' => FALSE,
     'log' => array('request' => '0', 'response' => '0'),
   );

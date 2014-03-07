@@ -32,8 +32,8 @@ function commerce_iats_credit_card_validate_settings_form($settings = NULL) {
     '#title' => t('Transaction Server'),
     '#description' => t('Select the transaction server to use for processing payments.'),
     '#options' => array(
-      IATS_NA_SERVER => t('US'),
-      IATS_UK_SERVER => t('UK'),
+      IATS_NA_SERVER_ID => t('US'),
+      IATS_UK_SERVER_ID => t('UK'),
     ),
     '#default_value' => $settings['server'],
   );
