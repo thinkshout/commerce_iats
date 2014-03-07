@@ -53,10 +53,3 @@ function commerce_iats_requirements($phase) {
 
   return $requirements;
 }
-
-/**
- * Remove unused commerce_iats_customer_codes table.
- */
-function commerce_iats_update_7200(&$sandbox) {
-  db_drop_table('commerce_iats_customer_codes');
-}
