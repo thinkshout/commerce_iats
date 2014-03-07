@@ -5,6 +5,7 @@
  * Implements IATS payment services for use in Drupal Commerce.
  */
 
+// TODO: Remove these where handled by wrapper.
 // IATS transaction mode definitions:
 define('IATS_TXN_MODE_PRODUCTION', 'production');
 define('IATS_TXN_MODE_TEST', 'test');
@@ -158,6 +159,8 @@ function commerce_iats_commerce_payment_method_info() {
 }
 
 /**
+ * @todo Possibly remove or otherwise integrate into wrapper.
+ *
  * Returns the default settings for the IATS SOAP CC or ACHEFT payment methods.
  */
 function commerce_iats_soap_process_default_settings() {
@@ -300,6 +303,8 @@ function commerce_iats_soap_process_submit_form_validate($payment_method, $pane_
 }
 
 /**
+ * @todo: Convert to use wrapper.
+ *
  * Payment method callback: checkout form submission.
  */
 function commerce_iats_soap_process_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
@@ -516,6 +521,8 @@ function commerce_iats_customer_code_charge_submit_form_submit($payment_method, 
 }
 
 /**
+ * @todo: Conver to use wrapper.
+ *
  * Card on file callback for charging using a customer code.
  */
 function commerce_iats_cardonfile_charge($payment_method, $card_data, $order, $charge) {
@@ -590,6 +597,8 @@ function commerce_iats_cardonfile_charge($payment_method, $card_data, $order, $c
 }
 
 /**
+ * @todo: Remove calls to this method; replace with calls to Wrapper.
+ *
  * Submits an API request through the IATS SOAP API Toolkit.
  *
  * @param $payment_method
@@ -662,6 +671,8 @@ function commerce_iats_soap_api_request($payment_method, $request, $iats_method)
 }
 
 /**
+ * @todo: Remove this; handled by wrapper.
+ *
  * Returns the URL to the IATS WSDL determined by transaction mode.
  *
  * @param $transaction_mode
@@ -682,6 +693,8 @@ function commerce_iats_soap_wsdl_url($server, $transaction_mode) {
 }
 
 /**
+ * @todo: Remove this; handled by wrapper.
+ *
  * Returns the message text for a credit card service reason code.
  * As per iats error codes
  * https://www.iatspayments.com/english/help/rejects.html
@@ -758,6 +771,8 @@ function commerce_iats_reason_message($code) {
 }
 
 /**
+ * @todo: Possibly integrate into wrapper if this is still relevant.
+ *
  * Returns the message text for a CVV match.
  */
 function commerce_iats_cvn_response($code) {
@@ -800,6 +815,7 @@ function commerce_iats_credit_card_types() {
   );
 }
 
+// TODO: Verify type codes with iATS documentation.
 /* conversion of commerce cc string to what IATS needs */
 function commerce_iats_mop($type) {
   $mop = array(
@@ -969,6 +985,8 @@ function commerce_iats_soap_customerlink_submit_form_submit($payment_method, $pa
 
 
 /**
+ * @todo: Remove call to SoapClient; replace with wrapper.
+ *
  * Sent CustomerLink request.
  */
 function commerce_iats_soap_api_customerlink_request($payment_method, $pane_values, $order) {

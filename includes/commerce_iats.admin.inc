@@ -64,7 +64,9 @@ function commerce_iats_refund_form_validate($form, &$form_state) {
 }
 
 /**
- * Submit handler: process a refund via IATS.
+ * @todo: Convert to use wrapper.
+ *
+ * Submit handler: process a refund via iATS.
  */
 function commerce_iats_refund_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
