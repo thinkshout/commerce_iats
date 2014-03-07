@@ -87,7 +87,7 @@ function commerce_iats_refund_access($order, $transaction) {
 function commerce_iats_commerce_payment_method_info() {
   $payment_methods = array();
 
-  $payment_methods['commerce_iats_credit_card'] = array(
+  $payment_methods['iats_credit_card'] = array(
     'base' => 'commerce_iats_credit_card',
     'title' => t('IATS Webservice: ProcessLink'),
     'short_title' => t('IATS Web Service'),
@@ -103,12 +103,12 @@ function commerce_iats_commerce_payment_method_info() {
   // TODO: Possibly use second payment method for credit card
   // processing with a customer code. Possibly combine it with
   // commerce_iats_credit_card.
-  $payment_methods['commerce_iats_credit_card_customer_code'] = array();
+  $payment_methods['iats_credit_card_customer_code'] = array();
 
   // TODO: Is refund a payment method? Include here if so.
-  $payment_methods['commerce_iats_credit_card_refund'] = array();
+  $payment_methods['iats_credit_card_refund'] = array();
 
-  $payment_methods['commerce_iats_credit_card_validate'] = array(
+  $payment_methods['iats_credit_card_validate'] = array(
     'base' => 'commerce_iats_credit_card_validate',
     'title' => t('IATS Webservice: CustomerLink'),
     'short_title' => t('IATS Web Service'),
