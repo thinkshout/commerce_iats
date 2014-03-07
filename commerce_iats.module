@@ -116,7 +116,7 @@ function commerce_iats_default_settings() {
 }
 
 /**
- * Populate a request with address information for use in a IATS API request.
+ * Populate a request with address information for use in a iATS API request.
  *
  * @param $request
  *   Request object
@@ -133,7 +133,7 @@ function commerce_iats_default_settings() {
  *
  * @return
  *   An object representing the address of the requested type for use in a
- *   IATS API request.
+ *   iATS API request.
  */
 function commerce_iats_address($request, $type, $order, $field_name) {
   // Return if the specified profile field doesn't exist.
@@ -167,33 +167,8 @@ function commerce_iats_address($request, $type, $order, $field_name) {
   return TRUE;
 }
 
-
-
-/* replaces the standard function commerce_payment_credit_card_types() */
-
-function commerce_iats_credit_card_types() {
-  return array(
-    'visa' => t('Visa'),
-    'mastercard' => t('MasterCard'),
-    'amex' => t('American Express'),
-    'discover' => t('Discover Card'),
-  );
-}
-
-// TODO: Verify type codes with iATS documentation.
-/* conversion of commerce cc string to what IATS needs */
-function commerce_iats_mop($type) {
-  $mop = array(
-    'visa' => 'VISA',
-    'mastercard' => 'MC',
-    'amex' => 'AMX',
-    'discover' => 'DISC' // this is probably wrong, need to look it up!
-  );
-  return $mop[$type];
-}
-
 /**
- * Helper method to get commerce_cardonfile entity from an IATS customer code.
+ * Helper method to get commerce_cardonfile entity from an iATS customer code.
  */
 function commerce_iats_cardonfile_customer_code_load($customer_code) {
 
