@@ -146,9 +146,7 @@ function commerce_iats_credit_card_refund_form_validate($form, &$form_state) {
 }
 
 /**
- * @todo: Convert to use wrapper.
- *
- * Submit handler: process a refund via iATS.
+ * Submit handler: process a credit card refund.
  */
 function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
   $transaction = $form_state['transaction'];
@@ -158,7 +156,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
 
   $payment_method['settings'] += commerce_iats_default_settings();
 
-  $iats_method = $payment_method['ProcessCreditCardRefundWithTransactionId'];
+  //$iats_method = $payment_method['ProcessCreditCardRefundWithTransactionId'];
 
   list($transaction_id, $customer_code) = explode('|', $transaction->remote_id);
   // Create and populate the request object.
@@ -169,20 +167,24 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     'comment' => t('Refund on order') . ' ' . $order->order_number,
   );
 
-  if ($response = commerce_iats_soap_api_request($payment_method, $request, $iats_method)) {
+  // Instantiate the iATS ProcessLink class to process credit card payment.
+  $iats = new ProcessLink($payment_method['settings']['agent_code'], $payment_method['settings']['agent_password']);
+
+  $response = $iats->processCreditCardRefundWithTransactionId($request);
+
+  if ($response != NULL) {
+    $auth_result = $response['AUTHORIZATIONRESULT'];
+
     $credit_amount = commerce_currency_decimal_to_amount($amount, $transaction->currency_code);
-    $processresult = $response->PROCESSRESULT;
-    $auth_result = trim(current($processresult->AUTHORIZATIONRESULT));
+
     // Prepare a transaction object to log the API response.
     $refund_transaction = commerce_payment_transaction_new('iats_credit_card', $order->order_id);
     $refund_transaction->instance_id = $payment_method['instance_id'];
     $customer_code_string = ($customer_code) ? '|' . $customer_code : '';
-    $refund_transaction->remote_id = trim(current($processresult->TRANSACTIONID)) . $customer_code_string;
+    $refund_transaction->remote_id = trim(current($response['TRANSACTIONID'])) . $customer_code_string;
     $refund_transaction->amount = $credit_amount;
     $refund_transaction->currency_code = $transaction->currency_code;
-    // $transaction->payload[REQUEST_TIME] = $response;
-    // If we didn't get an approval response code...
-    // Note: do not use SUCCESS property, which just means IATS said "hello"
+
     if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
       // Create a failed transaction with the error message.
       $refund_transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
@@ -202,16 +204,9 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     // Save the transaction information.
     commerce_payment_transaction_save($refund_transaction);
 
-    // If the payment failed, display an error and rebuild the form.
+    // If the refund failed, display an error and rebuild the form.
     if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
-      drupal_set_message(t('We received the following error while attempting to process your card: @reason', array('@reason' => commerce_iats_reason_message($auth_result))), 'error');
-
-      if ($auth_result == 'REJECT: 5') {
-        drupal_set_message('You may have interrupted an authorization in progress - please contact us to process/complete your order.', 'error');
-      }
-      else {
-        drupal_set_message('Please enter your information again or try a different card.', 'error');
-      }
+      drupal_set_message(t('We received the following error while attempting to process your card: @reason', array('@reason' => $auth_result)), 'error');
       return FALSE;
     }
   }
