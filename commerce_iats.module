@@ -5,6 +5,10 @@
  * Implements IATS payment services for use in Drupal Commerce.
  */
 
+// TODO: Remove "soap" from method names.
+// TODO: Make purpose of ProcessLink / CustomerLink clearer.
+// TODO: Use CustomerLink for creating a credit card customer code without payment (CC validation.)
+
 // TODO: Remove these where handled by wrapper.
 // IATS transaction mode definitions:
 define('IATS_TXN_MODE_PRODUCTION', 'production');
@@ -116,6 +120,8 @@ function commerce_iats_commerce_payment_method_info() {
     'message' => 'ProcessCreditCardWithCustomerCodeV1',
     'response' => 'ProcessCreditCardWithCustomerCodeV1Result',
   );
+
+  // TODO: This is in here twice and shouldn't be.
   $payment_methods['iats_soap_cc']['ProcessCreditCardRefundWithTransactionId'] = array(
     'method' => 'ProcessCreditCardRefundWithTransactionId',
     'message' => 'ProcessCreditCardRefundWithTransactionIdV1',
