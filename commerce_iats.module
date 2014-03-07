@@ -5,7 +5,6 @@
  * Implements iATS payment services for use in Drupal Commerce.
  */
 
-// TODO: Remove "soap" from method names.
 // TODO: Add request and response logging from commerce_iats_soap_api_request to other methods.
 
 // iATS transaction mode definitions.

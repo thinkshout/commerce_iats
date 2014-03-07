@@ -97,7 +97,10 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   $request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
 
   // Instantiate the iATS ProcessLink class to process credit card payment.
-  $iats = new ProcessLink($payment_method['settings']['agent_code'], $payment_method['settings']['agent_password']);
+  $iats = new ProcessLink($payment_method['settings']['agent_code'],
+    $payment_method['settings']['agent_password'],
+    $payment_method['settings']['server']);
+
   $response = NULL;
 
   if ($payment_method['settings']['iats_customer_code']) {
@@ -204,7 +207,10 @@ function commerce_iats_credit_card_cardonfile_charge($payment_method, $card_data
   $request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
 
   // Instantiate the iATS ProcessLink class to process credit card payment.
-  $iats = new ProcessLink($payment_method['settings']['agent_code'], $payment_method['settings']['agent_password']);
+  $iats = new ProcessLink($payment_method['settings']['agent_code'],
+    $payment_method['settings']['agent_password'],
+    $payment_method['settings']['server']);
+
   $response = $iats->processCreditCardWithCustomerCode($request);
 
   if ($response != NULL)

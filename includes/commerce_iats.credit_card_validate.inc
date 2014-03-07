@@ -48,7 +48,9 @@ function commerce_iats_credit_card_validate_submit_form_submit($payment_method, 
   $request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
 
   // Instantiate the iATS ProcessLink class to process credit card payment.
-  $iats = new CustomerLink($payment_method['settings']['agent_code'], $payment_method['settings']['agent_password']);
+  $iats = new CustomerLink($payment_method['settings']['agent_code'],
+    $payment_method['settings']['agent_password'],
+    $payment_method['settings']['server']);
 
   $response = $iats->createCreditCardCustomerCode($request);
 

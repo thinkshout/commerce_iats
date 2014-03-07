@@ -28,7 +28,6 @@ function commerce_iats_credit_card_settings_form($settings = NULL) {
     '#default_value' => $settings['agent_password'],
     '#required' => TRUE,
   );
-  // TODO: Pass server on to wrapper.
   $form['server'] = array(
     '#type' => 'radios',
     '#title' => t('Transaction Server'),
@@ -168,7 +167,9 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
   );
 
   // Instantiate the iATS ProcessLink class to process credit card payment.
-  $iats = new ProcessLink($payment_method['settings']['agent_code'], $payment_method['settings']['agent_password']);
+  $iats = new ProcessLink($payment_method['settings']['agent_code'],
+    $payment_method['settings']['agent_password'],
+    $payment_method['settings']['server']);
 
   $response = $iats->processCreditCardRefundWithTransactionId($request);
 
