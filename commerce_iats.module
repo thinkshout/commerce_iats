@@ -78,6 +78,7 @@ function commerce_iats_commerce_payment_method_info() {
     'short_title' => t('iATS Credit card payment'),
     'display_title' => t('Credit card'),
     'description' => t('Integrates the iATS ProcessLink webservice for credit card payments.'),
+    'file' => 'includes/commerce_iats.credit_card.inc',
     'cardonfile' => array(
       'charge callback' => 'commerce_iats_credit_card_cardonfile_charge',
       'update callback' => 'commerce_iats_credit_card_cardonfile_update', // TODO: Write method.
@@ -92,6 +93,7 @@ function commerce_iats_commerce_payment_method_info() {
     'short_title' => t('iATS Web Service'),
     'display_title' => t('Credit card validate'),
     'description' => t('Integrates the iATS CustomerLink webservice for credit card validation.'),
+    'file' => 'includes/commerce_iats.credit_card_validate.inc',
   );
 
   return $payment_methods;

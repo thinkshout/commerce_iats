@@ -8,8 +8,3 @@ dependencies[] = commerce_order
 core = 7.x
 
 dependencies[] = libraries (>=2)
-
-files[] = includes/commerce_iats.credit_card.admin.inc
-files[] = includes/commerce_iats.credit_card.inc
-files[] = includes/commerce_iats.credit_card_validate.admin.inc
-files[] = includes/commerce_iats.credit_card_validate.inc
