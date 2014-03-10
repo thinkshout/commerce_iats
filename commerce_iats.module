@@ -17,6 +17,27 @@ define('IATS_NA_SERVER_ID', 'NA');
 define('IATS_UK_SERVER_ID', 'UK');
 
 /**
+ * Implements hook_libraries_info().
+ */
+function iatspayments_libraries_info() {
+  $libraries['iatspayments'] = array(
+    'name' => 'iATS Payments API',
+    'vendor url' => 'http://www.iatspayments.com/',
+    'download url' => 'https://github.com/iATSPayments/PHP',
+    'files' => array(
+      'php' => array(
+        'lib/Core.php',
+        'lib/CustomerLink.php',
+        'lib/ProcessLink.php',
+        'lib/ReportLink.php',
+      ),
+    ),
+  );
+
+  return $libraries;
+}
+
+/**
  * Implements hook_menu().
  */
 function commerce_iats_menu() {

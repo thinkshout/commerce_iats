@@ -38,5 +38,27 @@ function commerce_iats_requirements($phase) {
     );
   }
 
+  if (in_array($phase, array('runtime', 'update'))) {
+    $library = libraries_detect('iatspayments');
+    $requirements['iatspayments'] = array(
+      'title' => $t('iATS Payments'),
+    );
+
+    if ($library['installed']) {
+      $requirements['iatspayments'] += array(
+        'value' => $library['version'],
+        'description' => $t('The iATS SOAP API wrapper library is installed correctly.'),
+        'severity' => REQUIREMENT_OK
+      );
+    }
+    else {
+      $requirements['iatspayments'] += array(
+        'value' => $library['error'],
+        'description' => $library['error message'],
+        'severity' => REQUIREMENT_ERROR,
+      );
+    }
+  }
+
   return $requirements;
 }
