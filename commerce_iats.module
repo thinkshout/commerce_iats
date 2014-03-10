@@ -19,22 +19,23 @@ define('IATS_UK_SERVER_ID', 'UK');
 /**
  * Implements hook_libraries_info().
  */
-function iatspayments_libraries_info() {
+function commerce_iats_libraries_info() {
   $libraries['iatspayments'] = array(
     'name' => 'iATS Payments API',
     'vendor url' => 'http://www.iatspayments.com/',
     'download url' => 'https://github.com/iATSPayments/PHP',
+    'path' => 'lib',
     'version arguments' => array(
-      'file' => 'lib/ProcessLink.php',
+      'file' => 'ProcessLink.php',
       // Version 1.0
-      'pattern' => '/\iATS API version \"((\d+)\.(\d+))\"/',
+      'pattern' => '/\iATS API version ((\d+)\.(\d+))/',
     ),
     'files' => array(
       'php' => array(
-        'lib/Core.php',
-        'lib/CustomerLink.php',
-        'lib/ProcessLink.php',
-        'lib/ReportLink.php',
+        'Core.php',
+        'CustomerLink.php',
+        'ProcessLink.php',
+        'ReportLink.php',
       ),
     ),
   );
@@ -209,4 +210,50 @@ function commerce_iats_cardonfile_customer_code_load($customer_code) {
   else {
     return FALSE;
   }
+}
+
+/**
+ * Gets an instance of the iATS Payments API ProcessLink service.
+ *
+ * @return ProcessLink
+ */
+function commerce_iats_get_processlink_service($payment_method) {
+  if (commerce_iats_load_library()) {
+    $service = new ProcessLink($payment_method['settings']['agent_code'],
+      $payment_method['settings']['agent_password'],
+      $payment_method['settings']['server']);
+
+    return $service;
+  }
+
+  return NULL;
+}
+
+/**
+ * Gets an instance of the iATS Payments API CustomerLink service.
+ *
+ * @return CustomerLink
+ */
+function commerce_iats_get_customerlink_service($payment_method) {
+  if (commerce_iats_load_library()) {
+    $service = new CustomerLink($payment_method['settings']['agent_code'],
+      $payment_method['settings']['agent_password'],
+      $payment_method['settings']['server']);
+
+    return $service;
+  }
+
+  return NULL;
+}
+
+function commerce_iats_load_library() {
+  $library = libraries_load('iatspayments');
+
+  if (!$library['installed']) {
+    watchdog('commerce_iats', 'The iATS Payments API could not be loaded: @message', array('@message' => $library['error_message']), WATCHDOG_ERROR);
+    drupal_set_message(t($library['error_message']), 'error');
+    return FALSE;
+  }
+
+  return TRUE;
 }

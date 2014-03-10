@@ -177,10 +177,12 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
 
   $request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
 
-  // Instantiate the iATS ProcessLink class to process credit card payment.
-  $iats = new ProcessLink($payment_method['settings']['agent_code'],
-    $payment_method['settings']['agent_password'],
-    $payment_method['settings']['server']);
+  $iats = commerce_iats_get_processlink_service($payment_method);
+  if ($iats == NULL)
+  {
+    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
+    return FALSE;
+  }
 
   $response = NULL;
 
@@ -287,10 +289,12 @@ function commerce_iats_credit_card_cardonfile_charge($payment_method, $card_data
 
   $request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
 
-  // Instantiate the iATS ProcessLink class to process credit card payment.
-  $iats = new ProcessLink($payment_method['settings']['agent_code'],
-    $payment_method['settings']['agent_password'],
-    $payment_method['settings']['server']);
+  $iats = commerce_iats_get_processlink_service($payment_method);
+  if ($iats == NULL)
+  {
+    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
+    return FALSE;
+  }
 
   $response = $iats->processCreditCardWithCustomerCode($request);
 

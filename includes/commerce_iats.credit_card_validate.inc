@@ -117,10 +117,12 @@ function commerce_iats_credit_card_validate_submit_form_submit($payment_method, 
 
   $request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
 
-  // Instantiate the iATS ProcessLink class to process credit card payment.
-  $iats = new CustomerLink($payment_method['settings']['agent_code'],
-    $payment_method['settings']['agent_password'],
-    $payment_method['settings']['server']);
+  $iats = commerce_iats_get_customerlink_service($payment_method);
+  if ($iats == NULL)
+  {
+    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
+    return FALSE;
+  }
 
   $response = $iats->createCreditCardCustomerCode($request);
 
