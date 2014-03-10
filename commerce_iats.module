@@ -78,7 +78,7 @@ function commerce_iats_menu() {
  * @return
  *   TRUE or FALSE indicating refund access.
  */
-function commerce_iats_refund_access($order, $transaction) {
+function commerce_iats_credit_card_refund_access($order, $transaction) {
   if (($transaction->payment_method != 'iats_credit_card')
     || ($transaction->status != 'success')
     || ($transaction->amount <= 0)) {
