@@ -57,7 +57,10 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
     'creditCardNum' => str_replace(' ', '', $pane_values['credit_card']['number']),
     'creditCardExpiry' => $expiry_string,
     'cvv2' => $pane_values['credit_card']['code'],
-    'currency' => $pane_values['currency_code'],
+    'recurring' => FALSE, // Only used for recurring payments.
+    'beginDate' => 0, // Only used for recurring payments.
+    'endDate' => 0, // Only used for recurring payments.
+    'currency' => 'USD',
   );
 
   // Add the billing information.
