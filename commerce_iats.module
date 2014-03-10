@@ -128,6 +128,22 @@ function commerce_iats_commerce_payment_method_info() {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Hides "Amount" and "Currency Code" fields when creating a customer code.
+ */
+function commerce_iats_form_commerce_payment_order_transaction_add_form_alter(&$form, &$form_state, $form_id)
+{
+  if (isset($form_state['values']['payment_method'])) {
+    $parts = explode('|', $form_state['values']['payment_method']);
+    if ($parts[0] == 'iats_credit_card_validate') {
+      $form['payment_terminal']['amount']['#access'] = FALSE;
+      $form['payment_terminal']['currency_code']['#access'] = FALSE;
+    }
+  }
+}
+
+/**
  * Returns the default settings for the iATS Credit Card and ACH/EFT payment methods.
  */
 function commerce_iats_default_settings() {
