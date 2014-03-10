@@ -24,6 +24,7 @@ function commerce_iats_libraries_info() {
     'name' => 'iATS Payments API',
     'vendor url' => 'http://www.iatspayments.com/',
     'download url' => 'https://github.com/iATSPayments/PHP',
+    'version' => '1.0',
     'path' => 'lib',
     'version arguments' => array(
       'file' => 'ProcessLink.php',
