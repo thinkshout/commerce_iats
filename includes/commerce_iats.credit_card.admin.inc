@@ -80,7 +80,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
   list($transaction_id, $customer_code) = explode('|', $transaction->remote_id);
   // Create and populate the request object.
   $request = (object) array(
-    'total' => $amount * -1,
+    'total' => ($amount * -1),
     'customerIPAddress' => ip_address(),
     'transactionId' => $transaction_id,
     'comment' => t('Refund on order') . ' ' . $order->order_number,
@@ -109,7 +109,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     $refund_transaction = commerce_payment_transaction_new('iats_credit_card', $order->order_id);
     $refund_transaction->instance_id = $payment_method['instance_id'];
     $refund_transaction->remote_id = $transaction_id . '|' . $customer_code;
-    $refund_transaction->amount = $credit_amount;
+    $refund_transaction->amount = ($credit_amount * -1);
     $refund_transaction->currency_code = $transaction->currency_code;
 
     if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
