@@ -185,7 +185,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     // Handle Card on File storage, if enabled.
     if (module_exists('commerce_cardonfile') && !empty($payment_method['settings']['iats_customer_code']) &&
       !empty($pane_values['credit_card']['cardonfile_store']) && $pane_values['credit_card']['cardonfile_store'] && $customer_code) {
-      commerce_iats_credit_card_save_card_on_file($order, $payment_method, $pane_values, $customer_code);
+      commerce_iats_credit_card_save_card_on_file($order, $payment_method, $pane_values, $customer_code, $card_type);
     }
   }
   else
@@ -219,17 +219,11 @@ function commerce_iats_credit_card_cardonfile_charge($payment_method, $card_data
     'customerIPAddress' => ip_address(),
     'customerCode' => $card_data->remote_id,
     'invoiceNum' => t('dc-@number', array('@number' => $order->order_number)),
+    'mop' => commerce_iats_credit_card_mop($card_data->card_type),
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'comment' => '',
     'currency' => $charge['currency_code'],
   );
-
-  // Add the CVV data, if included.
-  //if (isset($pane_values['credit_card']['code'])) {
-  //  $request['cvv2'] = $pane_values['credit_card']['code'];
-  //}
-
-  //$request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
 
   $iats = commerce_iats_get_processlink_service($payment_method);
   if ($iats == NULL)
@@ -290,7 +284,7 @@ function commerce_iats_credit_card_cardonfile_charge($payment_method, $card_data
  * @param $pane_values
  * @param $customer_code
  */
-function commerce_iats_credit_card_save_card_on_file($order, $payment_method, $pane_values, $customer_code)
+function commerce_iats_credit_card_save_card_on_file($order, $payment_method, $pane_values, $customer_code, $card_type)
 {
   // Build a payment details array for the credit card.
   $payment_details = array(
