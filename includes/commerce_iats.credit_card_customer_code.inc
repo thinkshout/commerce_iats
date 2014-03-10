@@ -108,5 +108,8 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
 
     // Save the transaction information.
     commerce_payment_transaction_save($transaction);
+
+    // Save the customer code as a card on file.
+    commerce_iats_credit_card_save_card_on_file($order, $payment_method, $pane_values, $customer_code, $card_type);
   }
 }
