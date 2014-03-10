@@ -40,12 +40,12 @@ function commerce_iats_credit_card_submit_form($payment_method, $pane_values, $c
 
   // Limit credit card types, since iATS has a limited selection.
   $card_types = array_diff(array_values($payment_method['settings']['credit_card']['card_types']), array(0));
-  if (!empty($card_types)) {
-    if ($card_types === array(0)) {
-      $card_types = commerce_iats_credit_card_types();
-    }
-    $fields['type'] = $card_types;
+  if (count($card_types) == 0)
+  {
+    $card_types = array_keys(commerce_iats_credit_card_types());
   }
+
+  $fields['type'] = $card_types;
 
   return commerce_payment_credit_card_form($fields);
 }
