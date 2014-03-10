@@ -114,14 +114,13 @@ function commerce_iats_commerce_payment_method_info() {
     ),
   );
 
-  // TODO: This method also creates customer code. Correct naming scheme?
-  $payment_methods['iats_credit_card_validate'] = array(
-    'base' => 'commerce_iats_credit_card_validate',
-    'title' => t('iATS Webservice: Credit card validation'),
+  $payment_methods['iats_credit_card_customer_code'] = array(
+    'base' => 'commerce_iats_credit_card_customer_code',
+    'title' => t('iATS Webservice: Credit card customer code creation'),
     'short_title' => t('iATS Web Service'),
-    'display_title' => t('Credit card validate'),
-    'description' => t('Integrates the iATS CustomerLink webservice for credit card validation.'),
-    'file' => 'includes/commerce_iats.credit_card_validate.inc',
+    'display_title' => t('Credit card customer code'),
+    'description' => t('Integrates the iATS CustomerLink webservice for the creation of credit card customer codes.'),
+    'file' => 'includes/commerce_iats.credit_card_customer_code.inc',
   );
 
   return $payment_methods;
@@ -136,7 +135,7 @@ function commerce_iats_form_commerce_payment_order_transaction_add_form_alter(&$
 {
   if (isset($form_state['values']['payment_method'])) {
     $parts = explode('|', $form_state['values']['payment_method']);
-    if ($parts[0] == 'iats_credit_card_validate') {
+    if ($parts[0] == 'iats_credit_card_customer_code') {
       $form['payment_terminal']['amount']['#access'] = FALSE;
       $form['payment_terminal']['currency_code']['#access'] = FALSE;
     }

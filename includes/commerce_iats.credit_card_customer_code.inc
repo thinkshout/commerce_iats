@@ -1,13 +1,13 @@
 <?php
 /**
 * @file
-* Implements iATS credit card validation services for use in Drupal Commerce.
+* Implements iATS credit card customer code services for use in Drupal Commerce.
 */
 
 /**
  * Payment method callback: settings form.
  */
-function commerce_iats_credit_card_validate_settings_form($settings = NULL) {
+function commerce_iats_credit_card_customer_code_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
   $settings += commerce_iats_default_settings();
 
@@ -77,7 +77,7 @@ function commerce_iats_credit_card_validate_settings_form($settings = NULL) {
 /**
  * Payment method callback: checkout form.
  */
-function commerce_iats_credit_card_validate_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+function commerce_iats_credit_card_customer_code_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
   // Prepare the fields to include on the credit card form.
@@ -101,7 +101,7 @@ function commerce_iats_credit_card_validate_submit_form($payment_method, $pane_v
 /**
  * Payment method callback: checkout form submission.
  */
-function commerce_iats_credit_card_validate_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
+function commerce_iats_credit_card_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
   if (!empty($pane_values['credit_card']['number'])) {
     module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
     $card_type = commerce_payment_validate_credit_card_type($pane_values['credit_card']['number'], array_keys(commerce_iats_credit_card_types()));
@@ -147,7 +147,7 @@ function commerce_iats_credit_card_validate_submit_form_submit($payment_method, 
     }
 
     // Prepare a transaction object to log the API response.
-    $transaction = commerce_payment_transaction_new('iats_credit_card_validate', $order->order_id);
+    $transaction = commerce_payment_transaction_new('iats_credit_card_customer_code', $order->order_id);
     $transaction->instance_id = $payment_method['instance_id'];
 
     $transaction->remote_id = $customer_code;
