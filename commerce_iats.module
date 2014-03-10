@@ -220,7 +220,7 @@ function commerce_iats_cardonfile_customer_code_load($customer_code) {
  */
 function commerce_iats_get_processlink_service($payment_method) {
   if (commerce_iats_load_library()) {
-    $service = new ProcessLink($payment_method['settings']['agent_code'],
+    $service = new iATS\ProcessLink($payment_method['settings']['agent_code'],
       $payment_method['settings']['agent_password'],
       $payment_method['settings']['server']);
 
@@ -237,7 +237,7 @@ function commerce_iats_get_processlink_service($payment_method) {
  */
 function commerce_iats_get_customerlink_service($payment_method) {
   if (commerce_iats_load_library()) {
-    $service = new CustomerLink($payment_method['settings']['agent_code'],
+    $service = new iATS\CustomerLink($payment_method['settings']['agent_code'],
       $payment_method['settings']['agent_password'],
       $payment_method['settings']['server']);
 
