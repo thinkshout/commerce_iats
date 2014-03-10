@@ -205,14 +205,19 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
 
   if ($response != NULL)
   {
-    $auth_result = $response['AUTHORIZATIONRESULT'];
+    $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
+    $transaction_id = (isset($response['TRANSACTIONID']))? trim($response['TRANSACTIONID']) : NULL;
+    $customer_code = (isset($response['CUSTOMERCODE']))? trim($response['CUSTOMERCODE']) : NULL;
 
-    $customer_code = (isset($response['CUSTOMERCODE']))? $response['CUSTOMERCODE'] : NULL;
+    if ($auth_result == NULL)
+    {
+      $auth_result = $response;
+    }
 
     // Prepare a transaction object to log the API response.
     $transaction = commerce_payment_transaction_new('iats_credit_card', $order->order_id);
     $transaction->instance_id = $payment_method['instance_id'];
-    $transaction->remote_id = trim($response['TRANSACTIONID']) . '|' . $customer_code;
+    $transaction->remote_id = $transaction_id . '|' . $customer_code;
     $transaction->amount = $charge['amount'];
     $transaction->currency_code = $charge['currency_code'];
 
