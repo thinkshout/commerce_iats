@@ -145,26 +145,18 @@ function commerce_iats_default_settings() {
  * Populate a request with address information for use in a iATS API request.
  *
  * @param $request
- *   Request object
- * @param $type
- *   The type of address object to return, either 'billing' or 'shipping'.
- *   Billing addresses include an e-mail address and IP address in addition to
- *   the actual billing address.
+ *   Request array
  * @param $order
  *   The order object containing the address information via a referenced
  *   customer profile.
  * @param $field_name
  *   The name of the customer profile reference field that links the order to
  *   the proper customer profile where the address data will be retrieved from.
- *
- * @return
- *   An object representing the address of the requested type for use in a
- *   iATS API request.
  */
-function commerce_iats_address($request, $type, $order, $field_name) {
+function commerce_iats_address(array &$request, $order, $field_name) {
   // Return if the specified profile field doesn't exist.
   if (empty($order->{$field_name})) {
-    watchdog('commerce_iats', 'Missing address data for !field_name: !order', array('!field_name' => $field_name, '!order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>', WATCHDOG_DEBUG));
+    watchdog('commerce_iats', 'Missing address data for @field_name: @order', array('@field_name' => $field_name, '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>', WATCHDOG_DEBUG));
     return;
   }
 
@@ -179,15 +171,15 @@ function commerce_iats_address($request, $type, $order, $field_name) {
   }
 
   // Add the basic address information to the request
-  $request->firstName = $address_data['first_name'];
-  $request->lastName = $address_data['last_name'];
-  $request->address = $address_data['thoroughfare'];
-  $request->city = $address_data['locality'];
-  $request->state = $address_data['administrative_area'];
-  $request->zipCode = $address_data['postal_code'];
-  $request->country = $address_data['country'];
+  $request['firstName'] = $address_data['first_name'];
+  $request['lastName'] = $address_data['last_name'];
+  $request['address'] = $address_data['thoroughfare'];
+  $request['city'] = $address_data['locality'];
+  $request['state'] = $address_data['administrative_area'];
+  $request['zipCode'] = $address_data['postal_code'];
+  $request['country'] = $address_data['country'];
   if ($address_data['premise']) {
-    $request->address .= ', '.$address_data['premise'];
+    $request['address'] .= ', '.$address_data['premise'];
   }
 
   return TRUE;
