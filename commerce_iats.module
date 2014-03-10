@@ -24,6 +24,11 @@ function iatspayments_libraries_info() {
     'name' => 'iATS Payments API',
     'vendor url' => 'http://www.iatspayments.com/',
     'download url' => 'https://github.com/iATSPayments/PHP',
+    'version arguments' => array(
+      'file' => 'lib/ProcessLink.php',
+      // Version 1.0
+      'pattern' => '/\iATS API version \"((\d+)\.(\d+))\"/',
+    ),
     'files' => array(
       'php' => array(
         'lib/Core.php',
