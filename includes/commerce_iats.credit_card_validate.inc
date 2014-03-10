@@ -79,7 +79,12 @@ function commerce_iats_credit_card_validate_settings_form($settings = NULL) {
  */
 function commerce_iats_credit_card_validate_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-  $fields = array();
+
+  // Prepare the fields to include on the credit card form.
+  $fields = array(
+    'code' => '',
+  );
+
   // Limit credit card types, since iATS has a limited selection.
   $card_types = array_diff(array_values($payment_method['settings']['credit_card']['card_types']), array(0));
   if (!empty($card_types)) {
