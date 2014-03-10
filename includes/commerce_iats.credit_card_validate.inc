@@ -97,25 +97,24 @@ function commerce_iats_credit_card_validate_submit_form($payment_method, $pane_v
  * Payment method callback: checkout form submission.
  */
 function commerce_iats_credit_card_validate_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
+  if (!empty($pane_values['credit_card']['number'])) {
+    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+    $card_type = commerce_payment_validate_credit_card_type($pane_values['credit_card']['number'], array_keys(commerce_iats_credit_card_types()));
+  }
+
+  $expiry_string = sprintf('%02d/%02d', $pane_values['credit_card']['exp_month'], ($pane_values['credit_card']['exp_year'] % 100));
+
   $request = array(
     'customerIPAddress' => ip_address(),
+    'mop' => commerce_iats_credit_card_mop($card_type),
+    'creditCardNum' => str_replace(' ', '', $pane_values['credit_card']['number']),
+    'creditCardExpiry' => $expiry_string,
+    'cvv2' => $pane_values['credit_card']['code'],
+    'currency' => $pane_values['currency_code'],
   );
 
   // Add the billing information.
-  commerce_iats_address($request, 'billing', $order, 'commerce_customer_billing');
-
-  // Add the credit card details.
-  $expiry_string = sprintf('%02d/%02d', $pane_values['credit_card']['exp_month'], ($pane_values['credit_card']['exp_year'] % 100));
-
-  $request['creditCardNum'] = str_replace(' ', '', $pane_values['credit_card']['number']);
-  $request['creditCardExpiry'] = $expiry_string;
-
-  // Add the CVV data, if included.
-  if (isset($pane_values['credit_card']['code'])) {
-    $request['cvv2'] = $pane_values['credit_card']['code'];
-  }
-
-  $request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
+  commerce_iats_address($request, $order, 'commerce_customer_billing');
 
   $iats = commerce_iats_get_customerlink_service($payment_method);
   if ($iats == NULL)
@@ -127,7 +126,12 @@ function commerce_iats_credit_card_validate_submit_form_submit($payment_method, 
   $response = $iats->createCreditCardCustomerCode($request);
 
   if ($response != NULL) {
-    $auth_result = $response['AUTHORIZATIONRESULT'];
+    $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
+    $customer_code = (isset($response['CUSTOMERCODE']))? trim($response['CUSTOMERCODE']) : NULL;
+
+    if ($auth_result == NULL) {
+      $auth_result = $response;
+    }
 
     if (strpos($auth_result, 'Error') !== FALSE) {
 
@@ -141,7 +145,7 @@ function commerce_iats_credit_card_validate_submit_form_submit($payment_method, 
     $transaction = commerce_payment_transaction_new('iats_credit_card_validate', $order->order_id);
     $transaction->instance_id = $payment_method['instance_id'];
 
-    $transaction->remote_id = $response['CUSTOMERCODE'];
+    $transaction->remote_id = $customer_code;
     $transaction->amount = 0;
     $transaction->currency_code = 'USD';
     $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;

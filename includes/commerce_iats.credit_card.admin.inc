@@ -96,14 +96,19 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
   $response = $iats->processCreditCardRefundWithTransactionId($request);
 
   if ($response != NULL) {
-    $auth_result = $response['AUTHORIZATIONRESULT'];
+    $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
+    $transaction_id = (isset($response['TRANSACTIONID']))? trim($response['TRANSACTIONID']) : NULL;
+
+    if ($auth_result == NULL) {
+      $auth_result = $response;
+    }
 
     $credit_amount = commerce_currency_decimal_to_amount($amount, $transaction->currency_code);
 
     // Prepare a transaction object to log the API response.
     $refund_transaction = commerce_payment_transaction_new('iats_credit_card', $order->order_id);
     $refund_transaction->instance_id = $payment_method['instance_id'];
-    $refund_transaction->remote_id = trim(current($response['TRANSACTIONID'])) . '|' . $customer_code;
+    $refund_transaction->remote_id = $transaction_id . '|' . $customer_code;
     $refund_transaction->amount = $credit_amount;
     $refund_transaction->currency_code = $transaction->currency_code;
 

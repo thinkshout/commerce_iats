@@ -158,24 +158,20 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
 
   // Create and populate the request  with standard properties.
   $request = array(
+    'customerIPAddress' => ip_address(),
     // TODO: Invoice number needs to be user-editable.
     'invoiceNum' => t('dc-@number', array('@number' => $order->order_number)),
+    'mop' => commerce_iats_credit_card_mop($card_type),
+    'cvv2' => $pane_values['credit_card']['code'],
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
-    'customerIPAddress' => ip_address(),
+    'currency' => $charge['currency_code'],
   );
 
   // Add the billing information.
-  commerce_iats_address($request, 'billing', $order, 'commerce_customer_billing');
+  commerce_iats_address($request, $order, 'commerce_customer_billing');
 
   // Add the credit card details.
   $expiry_string = sprintf('%02d/%02d', $pane_values['credit_card']['exp_month'], ($pane_values['credit_card']['exp_year'] % 100));
-
-  // Add the CVV data, if included.
-  if (isset($pane_values['credit_card']['code'])) {
-    $request['cvv2'] = $pane_values['credit_card']['code'];
-  }
-
-  $request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
 
   $iats = commerce_iats_get_processlink_service($payment_method);
   if ($iats == NULL)
@@ -203,14 +199,12 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     $response = $iats->processCreditCard($request);
   }
 
-  if ($response != NULL)
-  {
+  if ($response != NULL) {
     $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
     $transaction_id = (isset($response['TRANSACTIONID']))? trim($response['TRANSACTIONID']) : NULL;
     $customer_code = (isset($response['CUSTOMERCODE']))? trim($response['CUSTOMERCODE']) : NULL;
 
-    if ($auth_result == NULL)
-    {
+    if ($auth_result == NULL) {
       $auth_result = $response;
     }
 
@@ -280,19 +274,20 @@ function commerce_iats_credit_card_cardonfile_charge($payment_method, $card_data
 
   // Create and populate the request object.
   $request = array(
-    'invoiceNum' => t('dc-@number', array('@number' => $order->order_number)),
-    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'customerIPAddress' => ip_address(),
     'customerCode' => $card_data->remote_id,
+    'invoiceNum' => t('dc-@number', array('@number' => $order->order_number)),
+    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'comment' => '',
+    'currency' => $charge['currency_code'],
   );
 
   // Add the CVV data, if included.
-  if (isset($pane_values['credit_card']['code'])) {
-    $request['cvv2'] = $pane_values['credit_card']['code'];
-  }
+  //if (isset($pane_values['credit_card']['code'])) {
+  //  $request['cvv2'] = $pane_values['credit_card']['code'];
+  //}
 
-  $request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
+  //$request['mop'] = commerce_iats_credit_card_mop($pane_values['credit_card']['type']);
 
   $iats = commerce_iats_get_processlink_service($payment_method);
   if ($iats == NULL)
@@ -303,14 +298,18 @@ function commerce_iats_credit_card_cardonfile_charge($payment_method, $card_data
 
   $response = $iats->processCreditCardWithCustomerCode($request);
 
-  if ($response != NULL)
-  {
-    $auth_result = $response['AUTHORIZATIONRESULT'];
+  if ($response != NULL) {
+    $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
+    $transaction_id = (isset($response['TRANSACTIONID']))? trim($response['TRANSACTIONID']) : NULL;
+
+    if ($auth_result == NULL) {
+      $auth_result = $response;
+    }
 
     // Prepare a transaction object to log the API response.
     $transaction = commerce_payment_transaction_new('iats_credit_card', $order->order_id);
     $transaction->instance_id = $payment_method['instance_id'];
-    $transaction->remote_id = trim($response['TRANSACTIONID']) . '|' . $card_data->remote_id;
+    $transaction->remote_id = $transaction_id . '|' . $card_data->remote_id;
     $transaction->amount = $charge['amount'];
     $transaction->currency_code = $charge['currency_code'];
 
