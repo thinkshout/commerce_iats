@@ -376,33 +376,3 @@ function commerce_iats_credit_card_save_card_on_file($order, $payment_method, $p
   commerce_cardonfile_save($card_data);
   watchdog('commerce_iats', 'iATS Customer Code @customer_code created and saved to user @uid.', array('@customer_code' => (string) $customer_code, '@uid' => $order->uid));
 }
-
-/**
- * Replaces the standard function commerce_payment_credit_card_types() with custom types.
- *
- * @return array Array of credit card types.
- */
-function commerce_iats_credit_card_types() {
-  return array(
-    'visa' => t('Visa'),
-    'mastercard' => t('MasterCard'),
-    'amex' => t('American Express'),
-    'discover' => t('Discover Card'),
-  );
-}
-
-/**
- * Converts a Commerce credit card type to  an iATS-compatible credit card type.
- *
- * @param string $type The Commerce credit card type.
- * @return string The iATS credit card type.
- */
-function commerce_iats_credit_card_mop($type) {
-  $mop = array(
-    'visa' => 'VISA',
-    'mastercard' => 'MC',
-    'amex' => 'AMX',
-    'discover' => 'DSC',
-  );
-  return $mop[$type];
-}
