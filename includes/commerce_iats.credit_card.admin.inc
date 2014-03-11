@@ -99,7 +99,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     return FALSE;
   }
 
-  if ($payment_method['settings']['log']['request'] == 'request') {
+  if ($payment_method['settings']['log']['request'] === 'request') {
     commerce_iats_log_request($payment_method, $request);
   }
 
@@ -107,7 +107,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
 
   if ($response != NULL) {
 
-    if ($payment_method['settings']['log']['response'] == 'response') {
+    if ($payment_method['settings']['log']['response'] === 'response') {
       commerce_iats_log_response($payment_method, $response);
     }
 
