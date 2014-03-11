@@ -200,7 +200,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     // Build a meaningful response message.
     $message = array(
       '<b>' . t('Credit Card Authorization and Capture') . '</b>',
-      '<b>' . t('@decision:', array('@decision' => $auth_result)) . '</b>',
+      '<b>' . t('@decision', array('@decision' => $auth_result)) . '</b>',
     );
 
     $transaction->message = implode('<br />', $message);

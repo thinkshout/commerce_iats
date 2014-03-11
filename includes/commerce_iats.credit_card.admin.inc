@@ -138,7 +138,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     // Build a meaningful response message.
     $message = array(
       '<b>' . t('Credit Card Refund') . '</b>',
-      '<b>' . t('@decision:', array('@decision' => $auth_result)) . '</b>',
+      '<b>' . t('@decision', array('@decision' => $auth_result)) . '</b>',
     );
 
     $refund_transaction->message = implode('<br />', $message);
