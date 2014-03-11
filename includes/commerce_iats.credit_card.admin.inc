@@ -83,7 +83,11 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     'total' => ($amount * -1),
     'customerIPAddress' => ip_address(),
     'transactionId' => $transaction_id,
-    'mop' => '', // TODO: Get card type.
+    // Method of Payment (MOP) required for iATS PHP wrapper to accept refund,
+    // but not used in request.
+    // Real MOP not available at time of refund; using default MOP instead.
+    // TODO: Find a better solution to MOP on refund transactions.
+    'mop' => commerce_iats_credit_card_mop('visa'),
     'currency' => $transaction->currency_code,
     'comment' => t('Refund on order') . ' ' . $order->order_number,
   );
