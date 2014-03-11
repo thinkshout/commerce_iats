@@ -158,7 +158,16 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     $response = $iats->processCreditCard($request);
   }
 
+  if ($payment_method['settings']['log']['request'] == 'request') {
+    commerce_iats_log_request($payment_method, $request);
+  }
+
   if ($response != NULL) {
+
+    if ($payment_method['settings']['log']['response'] == 'response') {
+      commerce_iats_log_response($payment_method, $response);
+    }
+
     $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
     $transaction_id = (isset($response['TRANSACTIONID']))? trim($response['TRANSACTIONID']) : NULL;
 

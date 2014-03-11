@@ -73,9 +73,18 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
     return FALSE;
   }
 
+  if ($payment_method['settings']['log']['request'] == 'request') {
+    commerce_iats_log_request($payment_method, $request);
+  }
+
   $response = $iats->createCreditCardCustomerCode($request);
 
   if ($response != NULL) {
+
+    if ($payment_method['settings']['log']['response'] == 'response') {
+      commerce_iats_log_response($payment_method, $response);
+    }
+
     $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
     $customer_code = (isset($response['CUSTOMERCODE']))? trim($response['CUSTOMERCODE']) : NULL;
 

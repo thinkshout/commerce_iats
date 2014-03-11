@@ -5,8 +5,6 @@
  * Implements iATS payment services for use in Drupal Commerce.
  */
 
-// TODO: Add request and response logging from commerce_iats_soap_api_request to other methods.
-
 // iATS transaction mode definitions.
 define('IATS_TXN_MODE_PRODUCTION', 'production');
 define('IATS_TXN_MODE_TEST', 'test');
@@ -359,6 +357,54 @@ function commerce_iats_credit_card_save_card_on_file($order, $payment_method, $p
 }
 
 /**
+ * Logs an API request.
+ *
+ * @param array $payment_method
+ * @param array $request
+ */
+function commerce_iats_log_request(array $payment_method, array $request)
+{
+  if (isset($request['ccNum']))
+  {
+    $request['ccNum'] = commerce_iats_mark_credit_card_number($request['ccNum']);
+  }
+  else if (isset($request['creditCardNum']))
+  {
+    $request['creditCardNum'] = commerce_iats_mark_credit_card_number($request['creditCardNum']);
+  }
+
+  if (isset($request['cvv2']) && !empty($request['cvv2']))
+  {
+    $request['cvv2'] = str_repeat('X', strlen($request['cvv2']));
+  }
+
+  watchdog('commerce_iats', 'iATS API request to @method: @request', array('@method' => $payment_method['short_title'], '@request' => '<pre>' . check_plain(print_r($request, TRUE)) . '</pre>'), WATCHDOG_DEBUG);
+}
+
+/**
+ * Logs an API response.
+ *
+ * @param array $payment_method
+ * @param array $response
+ */
+function commerce_iats_log_response(array $payment_method, array $response)
+{
+  watchdog('commerce_iats', 'iATS API response from @method: @request', array('@method' => $payment_method['short_title'], '@request' => '<pre>' . check_plain(print_r($response, TRUE)) . '</pre>'), WATCHDOG_DEBUG);
+}
+
+/**
+ * Masks all but the last four digits of a credit card number.
+ *
+ * @param string $credit_card_number Unmasked credit card number.
+ * @return string Masked credit card number.
+ */
+function commerce_iats_mark_credit_card_number($credit_card_number)
+{
+  return str_repeat('X', strlen($credit_card_number) - 4) . substr($credit_card_number, -4);
+}
+
+/**
+ * @todo: Move into include file.
  * Gets an instance of the iATS Payments API ProcessLink service.
  *
  * @return ProcessLink
@@ -376,6 +422,7 @@ function commerce_iats_get_processlink_service($payment_method) {
 }
 
 /**
+ * @todo: Move into include file.
  * Gets an instance of the iATS Payments API CustomerLink service.
  *
  * @return CustomerLink
