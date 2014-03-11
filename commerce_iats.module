@@ -50,7 +50,7 @@ function commerce_iats_menu() {
   $items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/iats-credit-card-refund'] = array(
     'title' => 'Refund',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('commerce_iats_credit_card_refund_form', 3, 5),
+    'page arguments' => array('commerce_iats_credit_card_refund_form', 5),
     'access callback' => 'commerce_iats_credit_card_refund_access',
     'access arguments' => array(3, 5),
     'type' => MENU_DEFAULT_LOCAL_TASK,
@@ -65,15 +65,13 @@ function commerce_iats_menu() {
 /**
  * Determines access to the refund form for iATS credit card transactions.
  *
- * @param $order
- *   The order the transaction is on.
- * @param $transaction
+ * @param object $transaction
  *   The payment transaction object to be refunded.
  *
- * @return
+ * @return bool
  *   TRUE or FALSE indicating refund access.
  */
-function commerce_iats_credit_card_refund_access($order, $transaction) {
+function commerce_iats_credit_card_refund_access($transaction) {
   if (($transaction->payment_method != 'iats_credit_card')
     || ($transaction->status != 'success')
     || ($transaction->amount <= 0)) {
@@ -122,11 +120,9 @@ function commerce_iats_commerce_payment_method_info() {
 
 /**
  * Implements hook_form_FORM_ID_alter().
- *
- * Hides "Amount" and "Currency Code" fields when creating a customer code.
  */
-function commerce_iats_form_commerce_payment_order_transaction_add_form_alter(&$form, &$form_state, $form_id)
-{
+function commerce_iats_form_commerce_payment_order_transaction_add_form_alter(&$form, &$form_state, $form_id) {
+  // Hides "Amount" and "Currency Code" fields when creating a customer code.
   if (isset($form_state['values']['payment_method'])) {
     $parts = explode('|', $form_state['values']['payment_method']);
     if ($parts[0] == 'iats_credit_card_customer_code') {
@@ -140,12 +136,12 @@ function commerce_iats_form_commerce_payment_order_transaction_add_form_alter(&$
  * Gets base fields settings form fields for credit card based payment methods.
  *
  * @param array $settings
- *    Form field default values array.
+ *   Form field default values array.
+ *
  * @return array
- *    Base fields for settings form.
+ *   Base fields for settings form.
  */
-function commerce_iats_credit_card_settings_form_base(array $settings = NULL)
-{
+function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
   $form = array();
 
   $form['agent_code'] = array(
@@ -215,14 +211,17 @@ function commerce_iats_default_settings() {
 /**
  * Populate a request with address information for use in a iATS API request.
  *
- * @param $request
+ * @param array $request
  *   Request array
- * @param $order
+ * @param object $order
  *   The order object containing the address information via a referenced
  *   customer profile.
- * @param $field_name
+ * @param string $field_name
  *   The name of the customer profile reference field that links the order to
  *   the proper customer profile where the address data will be retrieved from.
+ *
+ * @return mixed
+ *   Updates pass by reference.
  */
 function commerce_iats_address(array &$request, $order, $field_name) {
   // Return if the specified profile field doesn't exist.
@@ -241,7 +240,7 @@ function commerce_iats_address(array &$request, $order, $field_name) {
     $address_data['last_name'] = implode(' ', $name_parts);
   }
 
-  // Add the basic address information to the request
+  // Add the basic address information to the request.
   $request['firstName'] = $address_data['first_name'];
   $request['lastName'] = $address_data['last_name'];
   $request['address'] = $address_data['thoroughfare'];
@@ -250,7 +249,7 @@ function commerce_iats_address(array &$request, $order, $field_name) {
   $request['zipCode'] = $address_data['postal_code'];
   $request['country'] = $address_data['country'];
   if ($address_data['premise']) {
-    $request['address'] .= ', '.$address_data['premise'];
+    $request['address'] .= ', ' . $address_data['premise'];
   }
 
   return TRUE;
@@ -260,8 +259,6 @@ function commerce_iats_address(array &$request, $order, $field_name) {
  * Helper method to get commerce_cardonfile entity from an iATS customer code.
  */
 function commerce_iats_cardonfile_customer_code_load($customer_code) {
-
-  $return = array();
   $query = new EntityFieldQuery();
   $query->entityCondition('entity_type', 'commerce_cardonfile')
     ->propertyCondition('remote_id', $customer_code);
@@ -280,7 +277,7 @@ function commerce_iats_cardonfile_customer_code_load($customer_code) {
  * Replaces the standard function commerce_payment_credit_card_types() with custom types.
  *
  * @return array
- *    Array of credit card types.
+ *   Array of credit card types.
  */
 function commerce_iats_credit_card_types() {
   return array(
@@ -317,9 +314,10 @@ function commerce_iats_credit_card_mop($type) {
  * @param array $pane_values
  * @param string $customer_code
  * @param string $card_type
+ *
+ * @return NULL
  */
-function commerce_iats_credit_card_save_card_on_file($order, array $payment_method, array $pane_values, $customer_code, $card_type)
-{
+function commerce_iats_credit_card_save_card_on_file($order, array $payment_method, array $pane_values, $customer_code, $card_type) {
   // Build a payment details array for the credit card.
   $payment_details = array(
     'cardNumber' => $pane_values['credit_card']['number'],
@@ -344,7 +342,12 @@ function commerce_iats_credit_card_save_card_on_file($order, array $payment_meth
 
   // Save and log the creation of the new card on file.
   commerce_cardonfile_save($card_data);
-  watchdog('commerce_iats', 'iATS Customer Code @customer_code created and saved to user @uid.', array('@customer_code' => (string) $customer_code, '@uid' => $order->uid));
+  watchdog('commerce_iats',
+    'iATS Customer Code @customer_code created and saved to user @uid.',
+    array(
+      '@customer_code' => (string) $customer_code,
+      '@uid' => $order->uid)
+  );
 }
 
 /**
@@ -353,23 +356,24 @@ function commerce_iats_credit_card_save_card_on_file($order, array $payment_meth
  * @param array $payment_method
  * @param array $request
  */
-function commerce_iats_log_request(array $payment_method, array $request)
-{
-  if (isset($request['ccNum']))
-  {
-    $request['ccNum'] = commerce_iats_mark_credit_card_number($request['ccNum']);
+function commerce_iats_log_request(array $payment_method, array $request) {
+  if (isset($request['ccNum'])) {
+    $request['ccNum'] = commerce_iats_mask_credit_card_number($request['ccNum']);
   }
-  else if (isset($request['creditCardNum']))
-  {
-    $request['creditCardNum'] = commerce_iats_mark_credit_card_number($request['creditCardNum']);
+  elseif (isset($request['creditCardNum'])) {
+    $request['creditCardNum'] = commerce_iats_mask_credit_card_number($request['creditCardNum']);
   }
 
-  if (isset($request['cvv2']) && !empty($request['cvv2']))
-  {
+  if (isset($request['cvv2']) && !empty($request['cvv2'])) {
     $request['cvv2'] = str_repeat('X', strlen($request['cvv2']));
   }
 
-  watchdog('commerce_iats', 'iATS API request to @method: @request', array('@method' => $payment_method['short_title'], '@request' => '<pre>' . check_plain(print_r($request, TRUE)) . '</pre>'), WATCHDOG_DEBUG);
+  watchdog('commerce_iats', 'iATS API request to @method: @request',
+    array(
+      '@method' => $payment_method['short_title'],
+      '@request' => '<pre>' . check_plain(print_r($request, TRUE)) . '</pre>',
+    ),
+    WATCHDOG_DEBUG);
 }
 
 /**
@@ -377,23 +381,28 @@ function commerce_iats_log_request(array $payment_method, array $request)
  *
  * @param array $payment_method
  * @param mixed $response
- *    Response array or error string.
+ *   Response array or error string.
  */
-function commerce_iats_log_response(array $payment_method, $response)
-{
-  watchdog('commerce_iats', 'iATS API response from @method: @request', array('@method' => $payment_method['short_title'], '@request' => '<pre>' . check_plain(print_r($response, TRUE)) . '</pre>'), WATCHDOG_DEBUG);
+function commerce_iats_log_response(array $payment_method, $response) {
+  watchdog('commerce_iats',
+    'iATS API response from @method: @request',
+    array(
+      '@method' => $payment_method['short_title'],
+      '@request' => '<pre>' . check_plain(print_r($response, TRUE)) . '</pre>',
+    ),
+    WATCHDOG_DEBUG);
 }
 
 /**
  * Masks all but the last four digits of a credit card number.
  *
  * @param string $credit_card_number
- *    Unmasked credit card number.
+ *   Unmasked credit card number.
+ *
  * @return string
- *    Masked credit card number.
+ *   Masked credit card number.
  */
-function commerce_iats_mark_credit_card_number($credit_card_number)
-{
+function commerce_iats_mask_credit_card_number($credit_card_number) {
   return str_repeat('X', strlen($credit_card_number) - 4) . substr($credit_card_number, -4);
 }
 
@@ -419,7 +428,7 @@ function commerce_iats_get_processlink_service(array $payment_method) {
  * Loads the iATS Payments PHP API wrapper as a library.
  *
  * @return bool
- *    True if library was successfully loaded.
+ *   True if library was successfully loaded.
  */
 function commerce_iats_load_library() {
   $library = libraries_load('iatspayments');

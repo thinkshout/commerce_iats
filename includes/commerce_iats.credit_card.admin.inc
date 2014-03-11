@@ -93,8 +93,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
   );
 
   $iats = commerce_iats_get_processlink_service($payment_method);
-  if ($iats == NULL)
-  {
+  if ($iats == NULL) {
     drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
     return FALSE;
   }
@@ -111,8 +110,8 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
       commerce_iats_log_response($payment_method, $response);
     }
 
-    $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
-    $transaction_id = (isset($response['TRANSACTIONID']))? trim($response['TRANSACTIONID']) : NULL;
+    $auth_result = (isset($response['AUTHORIZATIONRESULT'])) ? trim($response['AUTHORIZATIONRESULT']) : NULL;
+    $transaction_id = (isset($response['TRANSACTIONID'])) ? trim($response['TRANSACTIONID']) : NULL;
 
     if ($auth_result == NULL) {
       $auth_result = $response;

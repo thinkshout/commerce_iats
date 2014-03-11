@@ -48,7 +48,7 @@ function commerce_iats_requirements($phase) {
       $requirements['iatspayments'] += array(
         'value' => $library['version'],
         'description' => $t('The iATS Payments PHP API wrapper is installed correctly.'),
-        'severity' => REQUIREMENT_OK
+        'severity' => REQUIREMENT_OK,
       );
     }
     else {

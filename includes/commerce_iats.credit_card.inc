@@ -48,8 +48,7 @@ function commerce_iats_credit_card_submit_form($payment_method, $pane_values, $c
 
   // Limit credit card types, since iATS has a limited selection.
   $card_types = array_diff(array_values($payment_method['settings']['credit_card']['card_types']), array(0));
-  if (count($card_types) == 0)
-  {
+  if (count($card_types) == 0) {
     $card_types = array_keys(commerce_iats_credit_card_types());
   }
 
@@ -91,12 +90,12 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     ), WATCHDOG_DEBUG);
   }
 
-  $using_customer_code = false;
+  $using_customer_code = FALSE;
 
   // Determine if the customer is using an exsting card on file (customer code.)
   if (module_exists('commerce_cardonfile') && $payment_method['settings']['iats_customer_code'] &&
     !empty($pane_values['cardonfile']) && $pane_values['cardonfile'] !== 'new') {
-    $using_customer_code = true;
+    $using_customer_code = TRUE;
   }
 
   // If possible, determine the credit card type for use in later code.
@@ -110,7 +109,10 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   // Create and populate the request with standard properties.
   $request = array(
     'customerIPAddress' => ip_address(),
-    'invoiceNum' => t($payment_method['settings']['invoice_prefix'] . '@number', array('@number' => $order->order_number)),
+    'invoiceNum' => t('@prefix@number', array(
+      '@prefix' => $payment_method['settings']['invoice_prefix'],
+      '@number' => $order->order_number,
+    )),
     'mop' => commerce_iats_credit_card_mop($card_type),
     'cvv2' => $pane_values['credit_card']['code'],
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
@@ -124,8 +126,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   $expiry_string = sprintf('%02d/%02d', $pane_values['credit_card']['exp_month'], ($pane_values['credit_card']['exp_year'] % 100));
 
   $iats = commerce_iats_get_processlink_service($payment_method);
-  if ($iats == NULL)
-  {
+  if ($iats == NULL) {
     drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
     return FALSE;
   }
@@ -134,7 +135,6 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
 
   if ($using_customer_code) {
     // Process payment using an existing customer code.
-
     $card_data = commerce_cardonfile_load($pane_values['cardonfile']);
 
     // Fail now if it is no longer available or the card is inactive.
@@ -148,9 +148,8 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
 
     $response = $iats->processCreditCardWithCustomerCode($request);
   }
-  else if ($payment_method['settings']['iats_customer_code']) {
+  elseif ($payment_method['settings']['iats_customer_code']) {
     // Process payment and create a new customer code.
-
     $request['ccNum'] = str_replace(' ', '', $pane_values['credit_card']['number']);
     $request['ccExp'] = $expiry_string;
 
@@ -158,7 +157,6 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   }
   else {
     // Process payment without using customer code.
-
     $request['creditCardNum'] = str_replace(' ', '', $pane_values['credit_card']['number']);
     $request['creditCardExpiry'] = $expiry_string;
 
@@ -170,19 +168,18 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   }
 
   if ($response != NULL) {
-
     if ($payment_method['settings']['log']['response'] === 'response') {
       commerce_iats_log_response($payment_method, $response);
     }
 
-    $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
-    $transaction_id = (isset($response['TRANSACTIONID']))? trim($response['TRANSACTIONID']) : NULL;
+    $auth_result = (isset($response['AUTHORIZATIONRESULT'])) ? trim($response['AUTHORIZATIONRESULT']) : NULL;
+    $transaction_id = (isset($response['TRANSACTIONID'])) ? trim($response['TRANSACTIONID']) : NULL;
 
     if ($using_customer_code) {
       $customer_code = $card_data->remote_id;
     }
     else {
-      $customer_code = (isset($response['CUSTOMERCODE']))? trim($response['CUSTOMERCODE']) : NULL;
+      $customer_code = (isset($response['CUSTOMERCODE'])) ? trim($response['CUSTOMERCODE']) : NULL;
     }
 
     if ($auth_result == NULL) {
@@ -227,8 +224,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
       commerce_iats_credit_card_save_card_on_file($order, $payment_method, $pane_values, $customer_code, $card_type);
     }
   }
-  else
-  {
+  else {
     drupal_set_message(t('We encountered an error contacting our payment processor. Please try submitting your payment again.'), 'error');
     return FALSE;
   }

@@ -29,8 +29,7 @@ function commerce_iats_credit_card_customer_code_submit_form($payment_method, $p
 
   // Limit credit card types, since iATS has a limited selection.
   $card_types = array_diff(array_values($payment_method['settings']['credit_card']['card_types']), array(0));
-  if (count($card_types) == 0)
-  {
+  if (count($card_types) == 0) {
     $card_types = array_keys(commerce_iats_credit_card_types());
   }
 
@@ -46,7 +45,9 @@ function commerce_iats_credit_card_customer_code_submit_form($payment_method, $p
 function commerce_iats_credit_card_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
   if (!empty($pane_values['credit_card']['number'])) {
     module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-    $card_type = commerce_payment_validate_credit_card_type($pane_values['credit_card']['number'], array_keys(commerce_iats_credit_card_types()));
+    $card_type = commerce_payment_validate_credit_card_type($pane_values['credit_card']['number'],
+      array_keys(commerce_iats_credit_card_types())
+    );
   }
 
   $expiry_string = sprintf('%02d/%02d', $pane_values['credit_card']['exp_month'], ($pane_values['credit_card']['exp_year'] % 100));
@@ -85,8 +86,8 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
       commerce_iats_log_response($payment_method, $response);
     }
 
-    $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
-    $customer_code = (isset($response['CUSTOMERCODE']))? trim($response['CUSTOMERCODE']) : NULL;
+    $auth_result = (isset($response['AUTHORIZATIONRESULT'])) ? trim($response['AUTHORIZATIONRESULT']) : NULL;
+    $customer_code = (isset($response['CUSTOMERCODE'])) ? trim($response['CUSTOMERCODE']) : NULL;
 
     if ($auth_result == NULL) {
       $auth_result = $response;
@@ -95,8 +96,9 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
     if (strpos($auth_result, 'Error') !== FALSE) {
 
       drupal_set_message(t('There was an error processing this transaction: @error.',
-          array('@error' => $auth_result))
-        , 'error');
+        array('@error' => $auth_result)),
+        'error'
+      );
       return FALSE;
     }
 
