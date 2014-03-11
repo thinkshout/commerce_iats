@@ -99,6 +99,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   }
 
   // If possible, determine the credit card type for use in later code.
+  $card_type = NULL;
   if (!empty($pane_values['credit_card']['number'])) {
     module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
     $card_type = commerce_payment_validate_credit_card_type($pane_values['credit_card']['number'], array_keys(commerce_iats_credit_card_types()));
@@ -113,11 +114,14 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
       '@prefix' => $payment_method['settings']['invoice_prefix'],
       '@number' => $order->order_number,
     )),
-    'mop' => commerce_iats_credit_card_mop($card_type),
     'cvv2' => $pane_values['credit_card']['code'],
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
   );
+
+  if ($card_type != NULL) {
+    $request['mop'] = commerce_iats_credit_card_mop($card_type);
+  }
 
   // Add the billing information.
   commerce_iats_address($request, $order, 'commerce_customer_billing');
