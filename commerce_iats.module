@@ -50,9 +50,9 @@ function commerce_iats_menu() {
   $items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/iats-credit-card-refund'] = array(
     'title' => 'Refund',
     'page callback' => 'drupal_get_form',
-    'page arguments' => array('commerce_iats_credit_card_refund_form', 5),
+    'page arguments' => array('commerce_iats_credit_card_refund_form', 3, 5),
     'access callback' => 'commerce_iats_credit_card_refund_access',
-    'access arguments' => array(3, 5),
+    'access arguments' => array(5),
     'type' => MENU_DEFAULT_LOCAL_TASK,
     'context' => MENU_CONTEXT_INLINE,
     'weight' => 2,
