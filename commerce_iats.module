@@ -376,9 +376,10 @@ function commerce_iats_log_request(array $payment_method, array $request)
  * Logs an API response.
  *
  * @param array $payment_method
- * @param array $response
+ * @param mixed $response
+ *    Response array or error string.
  */
-function commerce_iats_log_response(array $payment_method, array $response)
+function commerce_iats_log_response(array $payment_method, $response)
 {
   watchdog('commerce_iats', 'iATS API response from @method: @request', array('@method' => $payment_method['short_title'], '@request' => '<pre>' . check_plain(print_r($response, TRUE)) . '</pre>'), WATCHDOG_DEBUG);
 }
