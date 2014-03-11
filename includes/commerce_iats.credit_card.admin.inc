@@ -75,14 +75,15 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
 
   $payment_method['settings'] += commerce_iats_default_settings();
 
-  //$iats_method = $payment_method['ProcessCreditCardRefundWithTransactionId'];
-
   list($transaction_id, $customer_code) = explode('|', $transaction->remote_id);
+
   // Create and populate the request object.
-  $request = (object) array(
+  $request = array(
     'total' => ($amount * -1),
     'customerIPAddress' => ip_address(),
     'transactionId' => $transaction_id,
+    'mop' => '', // TODO: Get card type.
+    'currency' => $transaction->currency_code,
     'comment' => t('Refund on order') . ' ' . $order->order_number,
   );
 
