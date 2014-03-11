@@ -1,10 +1,10 @@
 # Commerce iATS Module for Drupal Commerce
 
-A module to implement the iATS Payments payment processing services in Drupal Commerce.
+A module to implement the [iATS Payments](http://iatspayments.com/) payment processing services in Drupal Commerce.
 
 ## Features
 * Provides payment methods that utilize the iATS PHP API Wrapper
-* Enables the use of iATS Customer Codes with the [Commerce Card on File](https://drupal.org/project/commerce_cardonfile) module.
+* Enables the use of iATS Customer Codes with the [Commerce Card on File](https://drupal.org/project/commerce_cardonfile) module
 
 ## Requirements
 
