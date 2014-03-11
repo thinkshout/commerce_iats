@@ -103,7 +103,6 @@ function commerce_iats_commerce_payment_method_info() {
     'description' => t('Integrates the iATS ProcessLink webservice for credit card payments.'),
     'file' => 'includes/commerce_iats.credit_card.inc',
     'cardonfile' => array(
-      'charge callback' => 'commerce_iats_credit_card_cardonfile_charge',
       'update callback' => 'commerce_iats_credit_card_cardonfile_update', // TODO: Write method.
       'delete callback' => 'commerce_iats_credit_card_cardonfile_delete', // TODO: Write method.
     ),
