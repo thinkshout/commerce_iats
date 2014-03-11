@@ -83,11 +83,12 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     ), WATCHDOG_DEBUG);
   }
 
-  // TODO: Refactor this.
-  // If the customer specified payment using a card on file, attempt that now and simply return the result.
+  $using_customer_code = false;
+
+  // Determine if the customer is using an exsting card on file (customer code.)
   if (module_exists('commerce_cardonfile') && $payment_method['settings']['iats_customer_code'] &&
     !empty($pane_values['cardonfile']) && $pane_values['cardonfile'] !== 'new') {
-    return commerce_iats_credit_card_customer_code_charge_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge);
+    $using_customer_code = true;
   }
 
   // If possible, determine the credit card type for use in later code.
@@ -98,7 +99,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
 
   $payment_method['settings'] += commerce_iats_default_settings();
 
-  // Create and populate the request  with standard properties.
+  // Create and populate the request with standard properties.
   $request = array(
     'customerIPAddress' => ip_address(),
     // TODO: Invoice number needs to be user-editable.
@@ -124,8 +125,24 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
 
   $response = NULL;
 
-  if ($payment_method['settings']['iats_customer_code']) {
-    // Process payment using customer code.
+  if ($using_customer_code) {
+    // Process payment using an existing customer code.
+
+    $card_data = commerce_cardonfile_load($pane_values['cardonfile']);
+
+    // Fail now if it is no longer available or the card is inactive.
+    if (empty($card_data) || $card_data->status == 0) {
+      drupal_set_message(t('The requested card on file is no longer valid.'), 'error');
+      return FALSE;
+    }
+
+    $request['customerCode'] = $card_data->remote_id;
+    $request['mop'] = commerce_iats_credit_card_mop($card_data->card_type);
+
+    $response = $iats->processCreditCardWithCustomerCode($request);
+  }
+  else if ($payment_method['settings']['iats_customer_code']) {
+    // Process payment and create a new customer code.
 
     $request['ccNum'] = str_replace(' ', '', $pane_values['credit_card']['number']);
     $request['ccExp'] = $expiry_string;
@@ -144,7 +161,13 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   if ($response != NULL) {
     $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
     $transaction_id = (isset($response['TRANSACTIONID']))? trim($response['TRANSACTIONID']) : NULL;
-    $customer_code = (isset($response['CUSTOMERCODE']))? trim($response['CUSTOMERCODE']) : NULL;
+
+    if ($using_customer_code) {
+      $customer_code = $card_data->remote_id;
+    }
+    else {
+      $customer_code = (isset($response['CUSTOMERCODE']))? trim($response['CUSTOMERCODE']) : NULL;
+    }
 
     if ($auth_result == NULL) {
       $auth_result = $response;
@@ -192,86 +215,5 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   {
     drupal_set_message(t('We encountered an error contacting our payment processor. Please try submitting your payment again.'), 'error');
     return FALSE;
-  }
-}
-
-/**
- * Imitates the checkout form submission callback for the CustomerCode payment method.
- */
-function commerce_iats_credit_card_customer_code_charge_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
-  // First attempt to load the card on file.
-  $card_data = commerce_cardonfile_load($pane_values['cardonfile']);
-
-  // Fail now if it is no longer available or the card is inactive.
-  if (empty($card_data) || $card_data->status == 0) {
-    drupal_set_message(t('The requested card on file is no longer valid.'), 'error');
-    return FALSE;
-  }
-
-  return commerce_iats_credit_card_cardonfile_charge($payment_method, $card_data, $order, $charge);
-}
-
-function commerce_iats_credit_card_cardonfile_charge($payment_method, $card_data, $order, $charge) {
-  $payment_method['settings'] += commerce_iats_default_settings();
-
-  // Create and populate the request object.
-  $request = array(
-    'customerIPAddress' => ip_address(),
-    'customerCode' => $card_data->remote_id,
-    'invoiceNum' => t('dc-@number', array('@number' => $order->order_number)),
-    'mop' => commerce_iats_credit_card_mop($card_data->card_type),
-    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
-    'comment' => '',
-    'currency' => $charge['currency_code'],
-  );
-
-  $iats = commerce_iats_get_processlink_service($payment_method);
-  if ($iats == NULL)
-  {
-    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
-    return FALSE;
-  }
-
-  $response = $iats->processCreditCardWithCustomerCode($request);
-
-  if ($response != NULL) {
-    $auth_result = (isset($response['AUTHORIZATIONRESULT']))? trim($response['AUTHORIZATIONRESULT']) : NULL;
-    $transaction_id = (isset($response['TRANSACTIONID']))? trim($response['TRANSACTIONID']) : NULL;
-
-    if ($auth_result == NULL) {
-      $auth_result = $response;
-    }
-
-    // Prepare a transaction object to log the API response.
-    $transaction = commerce_payment_transaction_new('iats_credit_card', $order->order_id);
-    $transaction->instance_id = $payment_method['instance_id'];
-    $transaction->remote_id = $transaction_id . '|' . $card_data->remote_id;
-    $transaction->amount = $charge['amount'];
-    $transaction->currency_code = $charge['currency_code'];
-
-    if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
-      // Create a failed transaction with the error message.
-      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
-    }
-    else {
-      $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
-    }
-
-    // Build a meaningful response message.
-    $message = array(
-      '<b>' . t('Credit Card Authorization and Capture using Customer Code') . '</b>',
-      '<b>' . t('@decision:', array('@decision' => $auth_result)) . '</b>',
-    );
-
-    $transaction->message = implode('<br />', $message);
-
-    // Save the transaction information.
-    commerce_payment_transaction_save($transaction);
-
-    // If the payment failed, display an error and rebuild the form.
-    if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
-      drupal_set_message(t('We received the following error while attempting to process your card: @reason', array('@reason' => $auth_result)), 'error');
-      return FALSE;
-    }
   }
 }
