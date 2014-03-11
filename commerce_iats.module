@@ -404,7 +404,6 @@ function commerce_iats_mark_credit_card_number($credit_card_number)
 }
 
 /**
- * @todo: Move into include file.
  * Gets an instance of the iATS Payments API ProcessLink service.
  *
  * @return ProcessLink
@@ -412,24 +411,6 @@ function commerce_iats_mark_credit_card_number($credit_card_number)
 function commerce_iats_get_processlink_service($payment_method) {
   if (commerce_iats_load_library()) {
     $service = new iATS\ProcessLink($payment_method['settings']['agent_code'],
-      $payment_method['settings']['agent_password'],
-      $payment_method['settings']['server']);
-
-    return $service;
-  }
-
-  return NULL;
-}
-
-/**
- * @todo: Move into include file.
- * Gets an instance of the iATS Payments API CustomerLink service.
- *
- * @return CustomerLink
- */
-function commerce_iats_get_customerlink_service($payment_method) {
-  if (commerce_iats_load_library()) {
-    $service = new iATS\CustomerLink($payment_method['settings']['agent_code'],
       $payment_method['settings']['agent_password'],
       $payment_method['settings']['server']);
 

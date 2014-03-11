@@ -122,3 +122,20 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
     commerce_iats_credit_card_save_card_on_file($order, $payment_method, $pane_values, $customer_code, $card_type);
   }
 }
+
+/**
+ * Gets an instance of the iATS Payments API CustomerLink service.
+ *
+ * @return CustomerLink
+ */
+function commerce_iats_get_customerlink_service($payment_method) {
+  if (commerce_iats_load_library()) {
+    $service = new iATS\CustomerLink($payment_method['settings']['agent_code'],
+      $payment_method['settings']['agent_password'],
+      $payment_method['settings']['server']);
+
+    return $service;
+  }
+
+  return NULL;
+}
