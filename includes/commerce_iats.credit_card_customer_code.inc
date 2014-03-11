@@ -1,8 +1,8 @@
 <?php
 /**
-* @file
-* Implements iATS credit card customer code services for use in Drupal Commerce.
-*/
+ * @file
+ * Implements iATS Payments credit card customer code services for use in Drupal Commerce.
+ */
 
 /**
  * Payment method callback: settings form.
@@ -126,9 +126,10 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
 /**
  * Gets an instance of the iATS Payments API CustomerLink service.
  *
- * @return CustomerLink
+ * @param array $payment_method
+ * @return iATS\CustomerLink
  */
-function commerce_iats_get_customerlink_service($payment_method) {
+function commerce_iats_get_customerlink_service(array $payment_method) {
   if (commerce_iats_load_library()) {
     $service = new iATS\CustomerLink($payment_method['settings']['agent_code'],
       $payment_method['settings']['agent_password'],

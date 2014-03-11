@@ -2,9 +2,10 @@
 
 /**
  * @file
- * Implements iATS payment services for use in Drupal Commerce.
+ * Implements iATS Payments API for use in Drupal Commerce.
  */
 
+// iATS response code definitions.
 define('IATS_TXN_OK', 'OK');
 
 // iATS server ID definitions.
@@ -62,8 +63,7 @@ function commerce_iats_menu() {
 }
 
 /**
- * Determines access to the refund form for iATS credit card
- * transactions
+ * Determines access to the refund form for iATS credit card transactions.
  *
  * @param $order
  *   The order the transaction is on.
@@ -140,10 +140,12 @@ function commerce_iats_form_commerce_payment_order_transaction_add_form_alter(&$
 /**
  * Gets base fields settings form fields for credit card based payment methods.
  *
- * @param array $settings Form default values array.
- * @return array Base settings form fields.
+ * @param array $settings
+ *    Form field default values array.
+ * @return array
+ *    Base fields for settings form.
  */
-function commerce_iats_credit_card_settings_form_base($settings = NULL)
+function commerce_iats_credit_card_settings_form_base(array $settings = NULL)
 {
   $form = array();
 
@@ -277,7 +279,8 @@ function commerce_iats_cardonfile_customer_code_load($customer_code) {
 /**
  * Replaces the standard function commerce_payment_credit_card_types() with custom types.
  *
- * @return array Array of credit card types.
+ * @return array
+ *    Array of credit card types.
  */
 function commerce_iats_credit_card_types() {
   return array(
@@ -291,8 +294,10 @@ function commerce_iats_credit_card_types() {
 /**
  * Converts a Commerce credit card type to  an iATS-compatible credit card type.
  *
- * @param string $type The Commerce credit card type.
- * @return string The iATS credit card type.
+ * @param string $type
+ *    The Commerce credit card type.
+ * @return string
+ *    The iATS credit card type.
  */
 function commerce_iats_credit_card_mop($type) {
   $mop = array(
@@ -307,12 +312,13 @@ function commerce_iats_credit_card_mop($type) {
 /**
  * Creates a new card on file record for the user making this transaction.
  *
- * @param $order
- * @param $payment_method
- * @param $pane_values
- * @param $customer_code
+ * @param object $order
+ * @param array $payment_method
+ * @param array $pane_values
+ * @param string $customer_code
+ * @param string $card_type
  */
-function commerce_iats_credit_card_save_card_on_file($order, $payment_method, $pane_values, $customer_code, $card_type)
+function commerce_iats_credit_card_save_card_on_file($order, array $payment_method, array $pane_values, $customer_code, $card_type)
 {
   // Build a payment details array for the credit card.
   $payment_details = array(
@@ -380,8 +386,10 @@ function commerce_iats_log_response(array $payment_method, array $response)
 /**
  * Masks all but the last four digits of a credit card number.
  *
- * @param string $credit_card_number Unmasked credit card number.
- * @return string Masked credit card number.
+ * @param string $credit_card_number
+ *    Unmasked credit card number.
+ * @return string
+ *    Masked credit card number.
  */
 function commerce_iats_mark_credit_card_number($credit_card_number)
 {
@@ -391,9 +399,10 @@ function commerce_iats_mark_credit_card_number($credit_card_number)
 /**
  * Gets an instance of the iATS Payments API ProcessLink service.
  *
- * @return ProcessLink
+ * @param array $payment_method
+ * @return iATS\ProcessLink
  */
-function commerce_iats_get_processlink_service($payment_method) {
+function commerce_iats_get_processlink_service(array $payment_method) {
   if (commerce_iats_load_library()) {
     $service = new iATS\ProcessLink($payment_method['settings']['agent_code'],
       $payment_method['settings']['agent_password'],
@@ -405,6 +414,12 @@ function commerce_iats_get_processlink_service($payment_method) {
   return NULL;
 }
 
+/**
+ * Loads the iATS Payments PHP API wrapper as a library.
+ *
+ * @return bool
+ *    True if library was successfully loaded.
+ */
 function commerce_iats_load_library() {
   $library = libraries_load('iatspayments');
 

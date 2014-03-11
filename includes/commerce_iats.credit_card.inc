@@ -1,7 +1,7 @@
 <?php
 /**
  * @file
- * Implements iATS credit card payment services for use in Drupal Commerce.
+ * Implements iATS Payments credit card services for use in Drupal Commerce.
  */
 
 /**

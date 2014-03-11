@@ -2,7 +2,7 @@
 
 /**
  * @file
- * Ensures sites have SOAP, and openssl enabled.
+ * Validates requirements for payment processing using this module.
  */
 
 /**
@@ -47,7 +47,7 @@ function commerce_iats_requirements($phase) {
     if ($library['installed']) {
       $requirements['iatspayments'] += array(
         'value' => $library['version'],
-        'description' => $t('The iATS SOAP API wrapper library is installed correctly.'),
+        'description' => $t('The iATS Payments PHP API wrapper is installed correctly.'),
         'severity' => REQUIREMENT_OK
       );
     }

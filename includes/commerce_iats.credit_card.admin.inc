@@ -2,7 +2,8 @@
 
 /**
  * @file
- * Administrative forms for the Commerce iATS module.
+ * Administrative forms for the credit card processing functionality
+ * of the Commerce iATS module.
  */
 
 /**
