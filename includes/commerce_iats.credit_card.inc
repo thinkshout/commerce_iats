@@ -13,6 +13,14 @@ function commerce_iats_credit_card_settings_form($settings = NULL) {
 
   $form = commerce_iats_credit_card_settings_form_base($settings);
 
+  $form['invoice_prefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Invoice Prefix'),
+    '#description' => t('Invoice numbers consist of this value followed by the order number. ie. INVOICE-1, INVOICE-2'),
+    '#default_value' => $settings['invoice_prefix'],
+    '#required' => TRUE,
+  );
+
   // customerCode support requires the Card on File module.
   if (module_exists('commerce_cardonfile')) {
     $form['iats_customer_code'] = array(
@@ -102,8 +110,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   // Create and populate the request with standard properties.
   $request = array(
     'customerIPAddress' => ip_address(),
-    // TODO: Invoice number needs to be user-editable.
-    'invoiceNum' => t('dc-@number', array('@number' => $order->order_number)),
+    'invoiceNum' => t($payment_method['settings']['invoice_prefix'] . '@number', array('@number' => $order->order_number)),
     'mop' => commerce_iats_credit_card_mop($card_type),
     'cvv2' => $pane_values['credit_card']['code'],
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),

@@ -208,6 +208,7 @@ function commerce_iats_default_settings() {
     'server' => IATS_NA_SERVER_ID,
     'iats_customer_code' => FALSE,
     'log' => array('request' => '0', 'response' => '0'),
+    'invoice_prefix' => 'INVOICE-',
   );
 }
 
