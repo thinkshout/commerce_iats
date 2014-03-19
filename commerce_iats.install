@@ -28,7 +28,7 @@ function commerce_iats_requirements($phase) {
 
   $requirements['commerce_iats_openssl'] = array(
     'title' => $t('OpenSSL'),
-    'value' => $has_openssl ? $t('Enablied (@version)', array('@version' => OPENSSL_VERSION_TEXT)) : $t('Not found'),
+    'value' => $has_openssl ? $t('Enabled (@version)', array('@version' => OPENSSL_VERSION_TEXT)) : $t('Not found'),
   );
 
   if (!$has_openssl) {
