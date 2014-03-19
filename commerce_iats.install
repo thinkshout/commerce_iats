@@ -6,7 +6,7 @@
  */
 
 /**
- * Implements of hook_requirements().
+ * Implements hook_requirements().
  */
 function commerce_iats_requirements($phase) {
   $t = get_t();
