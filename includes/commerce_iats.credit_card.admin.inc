@@ -118,7 +118,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     $refund_transaction->amount = ($credit_amount * -1);
     $refund_transaction->currency_code = $transaction->currency_code;
 
-    if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
+    if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
       // Create a failed transaction with the error message.
       $refund_transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
     }
@@ -138,7 +138,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     commerce_payment_transaction_save($refund_transaction);
 
     // If the refund failed, display an error and rebuild the form.
-    if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
+    if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
       drupal_set_message(t('We received the following error while attempting to process your card: @reason', array('@reason' => $auth_result)), 'error');
       return FALSE;
     }

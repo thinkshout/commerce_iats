@@ -192,7 +192,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     $transaction->amount = $charge['amount'];
     $transaction->currency_code = $charge['currency_code'];
 
-    if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
+    if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
       // Create a failed transaction with the error message.
       $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
     }
@@ -212,7 +212,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     commerce_payment_transaction_save($transaction);
 
     // If the payment failed, display an error and rebuild the form.
-    if (substr($auth_result, 0, 2) != IATS_TXN_OK) {
+    if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
       drupal_set_message(t('We received the following error while attempting to process your card: @reason', array('@reason' => $auth_result)), 'error');
       return FALSE;
     }
