@@ -309,15 +309,20 @@ function commerce_iats_credit_card_mop($type) {
 /**
  * Creates a new card on file record for the user making this transaction.
  *
- * TODO: Describe parameters.
- *
  * @param object $order
+ *  The order processed during this transaction.
  * @param array $payment_method
+ *  The payment method used during this transaction.
  * @param array $pane_values
+ *  The values from the submitted form.
  * @param string $customer_code
+ *  The iATS customer code returned by the iATS API following a transaction
+ *  that created a new customer code.
  * @param string $card_type
+ *  The credit card type used during this transaction.
  *
- * @return NULL
+ * @return bool
+ *  TRUE or FALSE indicating success of saving card on file.
  */
 function commerce_iats_credit_card_save_card_on_file($order, array $payment_method, array $pane_values, $customer_code, $card_type) {
   // Build a payment details array for the credit card.
