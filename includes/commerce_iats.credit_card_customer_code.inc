@@ -9,7 +9,6 @@
  */
 function commerce_iats_credit_card_customer_code_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-  $settings += commerce_iats_default_settings();
 
   $form = commerce_iats_credit_card_settings_form_base($settings);
 

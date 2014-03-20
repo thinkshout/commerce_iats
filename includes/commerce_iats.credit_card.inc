@@ -9,7 +9,6 @@
  */
 function commerce_iats_credit_card_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-  $settings += commerce_iats_default_settings();
 
   $form = commerce_iats_credit_card_settings_form_base($settings);
 
@@ -17,7 +16,7 @@ function commerce_iats_credit_card_settings_form($settings = NULL) {
     '#type' => 'textfield',
     '#title' => t('Invoice Prefix'),
     '#description' => t('Invoice numbers consist of this value followed by the order number. ie. INVOICE-1, INVOICE-2'),
-    '#default_value' => $settings['invoice_prefix'],
+    '#default_value' => 'INVOICE-',
     '#required' => TRUE,
   );
 
@@ -27,7 +26,6 @@ function commerce_iats_credit_card_settings_form($settings = NULL) {
       '#type' => 'checkbox',
       '#title' => t('Enable management of customer codes.'),
       '#description' => t('This will save credit card data on the iATS server'),
-      '#default_value' => $settings['iats_customer_code'],
     );
   }
 
@@ -39,7 +37,6 @@ function commerce_iats_credit_card_settings_form($settings = NULL) {
  */
 function commerce_iats_credit_card_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-  $payment_method['settings'] += commerce_iats_default_settings();
 
   // Prepare the fields to include on the credit card form.
   $fields = array(
@@ -104,8 +101,6 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
     $card_type = commerce_payment_validate_credit_card_type($pane_values['credit_card']['number'], array_keys(commerce_iats_credit_card_types()));
   }
-
-  $payment_method['settings'] += commerce_iats_default_settings();
 
   // Create and populate the request with standard properties.
   $request = array(

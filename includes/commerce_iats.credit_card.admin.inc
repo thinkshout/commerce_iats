@@ -74,8 +74,6 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
   $order = $form_state['order'];
   $payment_method = $form_state['payment_method'];
 
-  $payment_method['settings'] += commerce_iats_default_settings();
-
   list($transaction_id, $customer_code) = explode('|', $transaction->remote_id);
 
   // Create and populate the request object.
