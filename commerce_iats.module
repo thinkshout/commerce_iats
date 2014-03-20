@@ -229,8 +229,15 @@ function commerce_iats_default_settings() {
 function commerce_iats_address(array &$request, $order, $field_name) {
   // Return if the specified profile field doesn't exist.
   if (empty($order->{$field_name})) {
-    watchdog('commerce_iats', 'Missing address data for @field_name: @order', array('@field_name' => $field_name, '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>', WATCHDOG_DEBUG));
-    return;
+    watchdog('commerce_iats', 'Missing address data for @field_name: @order',
+      array(
+        '@field_name' => $field_name,
+        '@order' => '<pre>' . print_r($order, TRUE) . '</pre>',
+      ),
+      WATCHDOG_DEBUG
+    );
+
+    return FALSE;
   }
 
   // Prepare the address data for use in the request address.
