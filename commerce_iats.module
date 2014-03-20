@@ -273,6 +273,12 @@ function commerce_iats_cardonfile_customer_code_load($customer_code) {
 /**
  * Define credit card types accepted by iATS.
  *
+ * Array keys must match keys in Commerce module file
+ *  commerce_payment.credit_card.inc:commerce_payment_credit_card_types
+ *
+ * The method commerce_payment_credit_card_form uses array_intersect_key
+ * to validate keys in this array, making any custom keys invalid.
+ *
  * @return array
  *   Array of credit card types.
  */
@@ -286,9 +292,10 @@ function commerce_iats_credit_card_types() {
 }
 
 /**
- * Converts a Commerce credit card type to  an iATS-compatible credit card type.
+ * Converts a Commerce credit card type to an iATS-compatible credit card type.
  *
- * TODO: Why not just define with these keys in commerce_iats_credit_card_types()?
+ * This conversion method is used to allow for custom credit card types.
+ * See comment block of commerce_iats_credit_card_types for explanation.
  *
  * @param string $type
  *   The Commerce credit card type.
