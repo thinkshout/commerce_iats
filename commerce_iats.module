@@ -413,31 +413,15 @@ function commerce_iats_mask_credit_card_number($credit_card_number) {
  * @return iATS\ProcessLink
  */
 function commerce_iats_get_processlink_service(array $payment_method) {
-  if (commerce_iats_load_library()) {
-    $service = new iATS\ProcessLink($payment_method['settings']['agent_code'],
+  if (libraries_load('iatspayments')) {
+    $service = new iATS\ProcessLink(
+      $payment_method['settings']['agent_code'],
       $payment_method['settings']['agent_password'],
-      $payment_method['settings']['server']);
+      $payment_method['settings']['server']
+    );
 
     return $service;
   }
 
   return NULL;
-}
-
-/**
- * Loads the iATS Payments PHP API wrapper as a library.
- *
- * @return bool
- *   True if library was successfully loaded.
- */
-function commerce_iats_load_library() {
-  $library = libraries_load('iatspayments');
-
-  if (!$library['installed']) {
-    watchdog('commerce_iats', 'The iATS Payments API could not be loaded: @message', array('@message' => $library['error_message']), WATCHDOG_ERROR);
-    drupal_set_message(t($library['error_message']), 'error');
-    return FALSE;
-  }
-
-  return TRUE;
 }

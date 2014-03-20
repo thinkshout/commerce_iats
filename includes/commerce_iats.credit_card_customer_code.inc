@@ -132,7 +132,7 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
  * @return iATS\CustomerLink
  */
 function commerce_iats_get_customerlink_service(array $payment_method) {
-  if (commerce_iats_load_library()) {
+  if (libraries_load('iatspayments')) {
     $service = new iATS\CustomerLink($payment_method['settings']['agent_code'],
       $payment_method['settings']['agent_password'],
       $payment_method['settings']['server']);
