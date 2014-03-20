@@ -100,9 +100,11 @@ function commerce_iats_commerce_payment_method_info() {
     'display_title' => t('Credit card'),
     'description' => t('Integrates the iATS ProcessLink webservice for credit card payments.'),
     'file' => 'includes/commerce_iats.credit_card.inc',
-    // TODO: I couldn't find any docs explaining this key?
+    // Define callback methods used by Commerce Card on File.
     'cardonfile' => array(
+      // Called when card on file is updated.
       'update callback' => 'commerce_iats_credit_card_cardonfile_update', // TODO: Write method.
+      // Called when card on file is deleted.
       'delete callback' => 'commerce_iats_credit_card_cardonfile_delete', // TODO: Write method.
     ),
   );
