@@ -271,10 +271,10 @@ function commerce_iats_address(array &$request, $order, $field_name) {
  */
 function commerce_iats_cardonfile_customer_code_load($customer_code) {
   $query = new EntityFieldQuery();
-  $query->entityCondition('entity_type', 'commerce_cardonfile')
-    ->propertyCondition('remote_id', $customer_code);
-
-  $result = $query->execute();
+  $result = $query
+    ->entityCondition('entity_type', 'commerce_cardonfile')
+    ->propertyCondition('remote_id', $customer_code)
+    ->execute();
 
   if (isset($result['commerce_cardonfile'])) {
     return commerce_cardonfile_load(reset(array_keys($result['commerce_cardonfile'])));
