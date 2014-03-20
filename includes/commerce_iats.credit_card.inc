@@ -220,7 +220,9 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
     // Handle Card on File storage, if enabled.
     if (module_exists('commerce_cardonfile') && !empty($payment_method['settings']['iats_customer_code']) &&
       !empty($pane_values['credit_card']['cardonfile_store']) && $pane_values['credit_card']['cardonfile_store'] && $customer_code) {
-      commerce_iats_credit_card_save_card_on_file($order, $payment_method, $pane_values, $customer_code, $card_type);
+      if (!commerce_iats_credit_card_save_card_on_file($order, $payment_method, $pane_values, $customer_code, $card_type)) {
+        drupal_set_message(t('The transaction completed successfully, but we were unable to store your card for future use.'), 'warning');
+      }
     }
   }
   else {
