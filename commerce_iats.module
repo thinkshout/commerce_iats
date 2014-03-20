@@ -151,12 +151,14 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
     '#type' => 'textfield',
     '#title' => t('Agent Code'),
     '#description' => t('This is the agent code used to authenticate with the iATS website.'),
+    '#default_value' => (isset($settings['agent_code']))? $settings['agent_code'] : '',
     '#required' => TRUE,
   );
   $form['agent_password'] = array(
     '#type' => 'textfield',
     '#title' => t('Password'),
     '#description' => t('Enter the corresponding password for this agent code.'),
+    '#default_value' => (isset($settings['agent_password']))? $settings['agent_password'] : '',
     '#required' => TRUE,
   );
   $form['server'] = array(
@@ -167,7 +169,7 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
       COMMERCE_IATS_NA_SERVER_ID => t('NA'),
       COMMERCE_IATS_UK_SERVER_ID => t('UK'),
     ),
-    '#default_value' => COMMERCE_IATS_NA_SERVER_ID,
+    '#default_value' => (isset($settings['server']))? $settings['server'] : COMMERCE_IATS_NA_SERVER_ID,
   );
   $form['log'] = array(
     '#type' => 'checkboxes',
@@ -176,6 +178,7 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
       'request' => t('API request messages'),
       'response' => t('API response messages'),
     ),
+    '#default_value' => (isset($settings['log']))? $settings['log'] : NULL,
   );
   $form['credit_card'] = array(
     '#type' => 'fieldset',

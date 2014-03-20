@@ -16,7 +16,7 @@ function commerce_iats_credit_card_settings_form($settings = NULL) {
     '#type' => 'textfield',
     '#title' => t('Invoice Prefix'),
     '#description' => t('Invoice numbers consist of this value followed by the order number. ie. INVOICE-1, INVOICE-2'),
-    '#default_value' => 'INVOICE-',
+    '#default_value' => (isset($settings['invoice_prefix']))? $settings['invoice_prefix'] : 'INVOICE-',
     '#required' => TRUE,
   );
 
@@ -26,6 +26,7 @@ function commerce_iats_credit_card_settings_form($settings = NULL) {
       '#type' => 'checkbox',
       '#title' => t('Enable management of customer codes.'),
       '#description' => t('This will save credit card data on the iATS server'),
+      '#default_value' => (isset($settings['iats_customer_code']))? $settings['iats_customer_code'] : NULL,
     );
   }
 
