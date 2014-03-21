@@ -66,7 +66,7 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
   // Add the billing information.
   commerce_iats_address($request, $order, 'commerce_customer_billing');
 
-  $iats = commerce_iats_get_customerlink_service($payment_method);
+  $iats = commerce_iats_get_service('CustomerLink', $payment_method);
   if ($iats == NULL)
   {
     drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
@@ -124,22 +124,4 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
       drupal_set_message(t('We were unable to store your card for future use.'), 'error');
     }
   }
-}
-
-/**
- * Gets an instance of the iATS Payments API CustomerLink service.
- *
- * @param array $payment_method
- * @return iATS\CustomerLink
- */
-function commerce_iats_get_customerlink_service(array $payment_method) {
-  if (libraries_load('iatspayments')) {
-    $service = new iATS\CustomerLink($payment_method['settings']['agent_code'],
-      $payment_method['settings']['agent_password'],
-      $payment_method['settings']['server']);
-
-    return $service;
-  }
-
-  return NULL;
 }

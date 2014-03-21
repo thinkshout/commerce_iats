@@ -84,7 +84,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     'comment' => t('Refund on order') . ' ' . $order->order_number,
   );
 
-  $iats = commerce_iats_get_processlink_service($payment_method);
+  $iats = commerce_iats_get_service('ProcessLink', $payment_method);
   if ($iats == NULL) {
     drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
     return FALSE;

@@ -439,21 +439,25 @@ function commerce_iats_mask_credit_card_number($credit_card_number) {
 }
 
 /**
- * Gets an instance of the iATS Payments API ProcessLink service.
+ * Gets an instance of an iATS Payments API service.
  *
+ * @param string $service_name
+ *   The iATS service to get. 'ProcessLink' or 'CustomerLink'
  * @param array $payment_method
- * @return iATS\ProcessLink
+ *   The payment method, used to popualte iATS API settings.
+ *
+ * @return Mixed
+ *   The instantiated iATS Payments API service.
  */
-function commerce_iats_get_processlink_service(array $payment_method) {
+function commerce_iats_get_service($service_name, array $payment_method) {
   if (libraries_load('iatspayments')) {
-    $service = new iATS\ProcessLink(
+    $service_name = 'iATS\\' . $service_name;
+    $service = new $service_name(
       $payment_method['settings']['agent_code'],
       $payment_method['settings']['agent_password'],
       $payment_method['settings']['server']
     );
-
     return $service;
   }
-
   return NULL;
 }

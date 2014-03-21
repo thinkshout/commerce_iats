@@ -125,7 +125,7 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
   // Add the credit card details.
   $expiry_string = sprintf('%02d/%02d', $pane_values['credit_card']['exp_month'], ($pane_values['credit_card']['exp_year'] % 100));
 
-  $iats = commerce_iats_get_processlink_service($payment_method);
+  $iats = commerce_iats_get_service('ProcessLink', $payment_method);
   if ($iats == NULL) {
     drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
     return FALSE;
