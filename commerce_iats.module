@@ -408,6 +408,37 @@ function commerce_iats_mask_credit_card_number($credit_card_number) {
 }
 
 /**
+ * Formats an array of credit card data in a way appropriate for iATS.
+ *
+ * @param array $card_data Unformatted credit card data from form.
+ * @return array Formatted credit card data.
+ */
+function commerce_iats_format_credit_card_data(array $card_data) {
+  // Determine card type.
+  $card_type = NULL;
+  if (!empty($card_data['number'])) {
+    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+    $card_type = commerce_payment_validate_credit_card_type($card_data['number'], array_keys(commerce_iats_credit_card_types()));
+  }
+
+  if ($card_type != NULL) {
+    $card_type = commerce_iats_credit_card_mop($card_type);
+  }
+
+  // Format credit card data.
+  $card_number = str_replace(' ', '', $card_data['number']);
+  $expiry = sprintf('%02d/%02d', $card_data['exp_month'], ($card_data['exp_year'] % 100));
+
+  $formatted_card_data = array(
+    'type' => $card_type,
+    'number' => $card_number,
+    'expiry' => $expiry,
+  );
+
+  return $formatted_card_data;
+}
+
+/**
  * Gets an instance of an iATS Payments API service.
  *
  * @param string $service_name

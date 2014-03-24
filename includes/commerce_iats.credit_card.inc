@@ -89,16 +89,8 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
  *  API response array or error string.
  */
 function commerce_iats_process_credit_card_payment($payment_method, $payment_data, $order, $charge) {
-  // Determine card type.
-  $card_type = NULL;
-  if (!empty($payment_data['credit_card']['number'])) {
-    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
-    $card_type = commerce_payment_validate_credit_card_type($payment_data['credit_card']['number'], array_keys(commerce_iats_credit_card_types()));
-  }
-
   // Format credit card data.
-  $card_number = str_replace(' ', '', $payment_data['credit_card']['number']);
-  $expiry_string = sprintf('%02d/%02d', $payment_data['credit_card']['exp_month'], ($payment_data['credit_card']['exp_year'] % 100));
+  $formatted_card_data = commerce_iats_format_credit_card_data($payment_data['credit_card']);
 
   // Create and populate the API request.
   $request = array(
@@ -107,10 +99,10 @@ function commerce_iats_process_credit_card_payment($payment_method, $payment_dat
       '@prefix' => $payment_method['settings']['invoice_prefix'],
       '@number' => $order->order_number,
     )),
-    'creditCardNum' => $card_number,
-    'creditCardExpiry' => $expiry_string,
+    'creditCardNum' => $formatted_card_data['number'],
+    'creditCardExpiry' => $formatted_card_data['expiry'],
     'cvv2' => $payment_data['credit_card']['code'],
-    'mop' => ($card_type != NULL)? commerce_iats_credit_card_mop($card_type) : NULL,
+    'mop' => $formatted_card_data['card_type'],
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
   );

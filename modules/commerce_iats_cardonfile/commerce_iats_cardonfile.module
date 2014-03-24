@@ -5,13 +5,13 @@
  */
 function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_methods) {
   $payment_methods['iats_credit_card']['cardonfile'] = array(
-    // TODO: Document and write method.
+    // Called when card is charged. Note: Only the Commerce Recurring module
+    // calls this method automatically. When using just the Commerce module,
+    // we call this method manually via a form submit handler.
     'charge callback' => 'commerce_iats_cardonfile_credit_card_charge',
     // Called when card on file is updated.
-    // TODO: Write method.
     'update callback' => 'commerce_iats_cardonfile_credit_card_update',
     // Called when card on file is deleted.
-    // TODO: Write method.
     'delete callback' => 'commerce_iats_cardonfile_credit_card_delete',
   );
 
@@ -64,15 +64,26 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
         return FALSE;
       }
 
+      $card_data->code = $pane_values['credit_card']['code'];
+
       commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
     }
   }
 }
 
 function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data, $order, $charge = NULL) {
-
-  // TODO: Populate request.
-  $request = array();
+  // Create and populate the request with standard properties.
+  $request = array(
+    'customerIPAddress' => ip_address(),
+    'customerCode' => $card_data->remote_id,
+    'invoiceNum' => t('@prefix@number', array(
+      '@prefix' => $payment_method['settings']['invoice_prefix'],
+      '@number' => $order->order_number,
+    )),
+    'cvv2' => $card_data->code,
+    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
+    'currency' => $charge['currency_code'],
+  );
 
   // Get the API service.
   $iats = commerce_iats_get_service('ProcessLink', $payment_method);
@@ -91,10 +102,27 @@ function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data
   return $response;
 }
 
-function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method, $card_data, $order, $charge = NULL) {
+function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method, $payment_data, $order, $charge = NULL) {
+  // Format credit card data.
+  $formatted_card_data = commerce_iats_format_credit_card_data($payment_data['credit_card']);
 
-  // TODO: Populate request.
-  $request = array();
+  // Create and populate the API request.
+  $request = array(
+    'customerIPAddress' => ip_address(),
+    'invoiceNum' => t('@prefix@number', array(
+      '@prefix' => $payment_method['settings']['invoice_prefix'],
+      '@number' => $order->order_number,
+    )),
+    'creditCardNum' => $formatted_card_data['number'],
+    'creditCardExpiry' => $formatted_card_data['expiry'],
+    'cvv2' => $payment_data['credit_card']['code'],
+    'mop' => $formatted_card_data['card_type'],
+    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
+    'currency' => $charge['currency_code'],
+  );
+
+  // Add the billing information.
+  commerce_iats_address($request, $order, 'commerce_customer_billing');
 
   // Get the API service.
   $iats = commerce_iats_get_service('ProcessLink', $payment_method);
