@@ -1,6 +1,6 @@
 name = Commerce iATS
 description = Implements iATS payment services for use with Drupal Commerce.
-package = Commerce (contrib)
+package = Commerce iATS (contrib)
 dependencies[] = commerce
 ; TOOD: Do we need commerce UI?
 dependencies[] = commerce_ui
