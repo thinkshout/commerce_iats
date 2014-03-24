@@ -39,6 +39,8 @@ function commerce_iats_credit_card_customer_code_submit_form($payment_method, $p
 }
 
 /**
+ * TODO: Refactor to use commerce_iats_process_payment.
+ *
  * Payment method callback: checkout form submission.
  */
 function commerce_iats_credit_card_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {

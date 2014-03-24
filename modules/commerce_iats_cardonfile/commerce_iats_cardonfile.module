@@ -29,31 +29,99 @@ function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_m
  * Implements hook_form_FORM_ID_alter().
  */
 function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_form_alter(&$form, &$form_state, $form_id) {
-  // Hide "Amount" and "Currency Code" fields when creating a customer code.
   if (isset($form_state['values']['payment_method'])) {
     $parts = explode('|', $form_state['values']['payment_method']);
+
     if ($parts[0] == 'iats_credit_card_customer_code') {
+      // Hide "Amount" and "Currency Code" fields when creating a customer code.
       $form['payment_terminal']['amount']['#access'] = FALSE;
       $form['payment_terminal']['currency_code']['#access'] = FALSE;
+    }
+    else if ($parts[0] == 'iats_credit_card_customer_code') {
+      // Override form submit handler.
+      $form['#submit'] = array('commerce_iats_cardonfile_credit_card_submit_form_submit');
     }
   }
 }
 
-function commerce_iats_cardonfile_credit_card_charge() {
+function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+  // Determine if the customer is using an exsting card on file.
+  if ($payment_method['settings']['iats_customer_code']
+    && !empty($pane_values['cardonfile'])
+  ) {
+    if ($pane_values['cardonfile'] === 'new') {
+      // Create a new card on file record.
+      $payment_data = $pane_values;
+
+      commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_create_and_charge');
+    } else {
+      // Get the card on file data.
+      $card_data = commerce_cardonfile_load($pane_values['cardonfile']);
+
+      // Fail now if it is no longer available or the card is inactive.
+      if (empty($card_data) || $card_data->status == 0) {
+        drupal_set_message(t('The requested card on file is no longer valid.'), 'error');
+        return FALSE;
+      }
+
+      commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
+    }
+  }
+}
+
+function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data, $order, $charge = NULL) {
+
+  // TODO: Populate request.
+  $request = array();
+
+  // Get the API service.
+  $iats = commerce_iats_get_service('ProcessLink', $payment_method);
+  if ($iats == NULL) {
+    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
+    return NULL;
+  }
+
+  // Log the request.
+  if ($payment_method['settings']['log']['request'] === 'request') {
+    commerce_iats_log_request($payment_method, $request);
+  }
+
+  $response = $iats->processCreditCardWithCustomerCode($request);
+
+  return $response;
+}
+
+function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method, $card_data, $order, $charge = NULL) {
+
+  // TODO: Populate request.
+  $request = array();
+
+  // Get the API service.
+  $iats = commerce_iats_get_service('ProcessLink', $payment_method);
+  if ($iats == NULL) {
+    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
+    return NULL;
+  }
+
+  // Log the request.
+  if ($payment_method['settings']['log']['request'] === 'request') {
+    commerce_iats_log_request($payment_method, $request);
+  }
+
+  $response = $iats->createCustomerCodeAndProcessCreditCard($request);
+
+  return $response;
+}
+
+function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payment_method, $card_data) {
 
 }
 
-function commerce_iats_cardonfile_credit_card_update() {
-
-}
-
-function commerce_iats_cardonfile_credit_card_delete() {
+function commerce_iats_cardonfile_credit_card_delete($form, &$form_state, $payment_method, $card_data) {
 
 }
 
 /**
- * TODO: Refactor to use commerce_iats_process_payment
- *
  * Creates a new card on file record for the user making this transaction.
  *
  * @param object $order
