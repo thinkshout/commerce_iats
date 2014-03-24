@@ -76,7 +76,8 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
   $amount = ($form_state['values']['amount'] * -1);
 
   $charge = array(
-    'amount' => number_format($amount, 2, '.', '')
+    'amount' => number_format($amount, 2, '.', ''),
+    'currency_code' => NULL,
   );
 
   commerce_iats_process_payment($form_state['payment_method'], $payment_data, $form_state['order'], $charge, 'commerce_iats_process_credit_card_refund');
