@@ -40,6 +40,19 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function commerce_iats_cardonfile_form_rules_ui_edit_element_alter(&$form, &$form_state, $form_id) {
+  // Add Customer Code management option to form.
+  $form['iats_customer_code'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Enable management of customer codes.'),
+    '#description' => t('This will save credit card data on the iATS server'),
+    '#default_value' => (isset($settings['iats_customer_code']))? $settings['iats_customer_code'] : NULL,
+  );
+}
+
+/**
  * TODO: Refactor to use commerce_iats_process_payment
  *
  * Creates a new card on file record for the user making this transaction.
