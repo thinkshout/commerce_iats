@@ -21,7 +21,7 @@ function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_m
     'short_title' => t('iATS Web Service'),
     'display_title' => t('Credit card customer code'),
     'description' => t('Integrates the iATS CustomerLink webservice for the creation of credit card customer codes.'),
-    'file' => 'includes/commerce_iatscardonfile.credit_card_customer_code.inc',
+    'file' => 'includes/commerce_iats_cardonfile.credit_card_customer_code.inc',
   );
 }
 
