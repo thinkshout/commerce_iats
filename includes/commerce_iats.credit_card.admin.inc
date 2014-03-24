@@ -72,11 +72,11 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     'transaction' => $form_state['transaction'],
   );
 
-  // Charge must be negative for refunds.
-  $amount = ($form_state['values']['amount'] * -1);
+  $amount = number_format(($form_state['values']['amount'] * -1), 2, '.', '');
 
   $charge = array(
-    'amount' => number_format($amount, 2, '.', ''),
+    // Charge must be negative for refunds.
+    'amount' => ($amount * -1),
     'currency_code' => NULL,
   );
 
