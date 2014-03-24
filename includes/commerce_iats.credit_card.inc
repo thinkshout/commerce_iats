@@ -102,7 +102,7 @@ function commerce_iats_process_credit_card_payment($payment_method, $payment_dat
     'creditCardNum' => $formatted_card_data['number'],
     'creditCardExpiry' => $formatted_card_data['expiry'],
     'cvv2' => $payment_data['credit_card']['code'],
-    'mop' => $formatted_card_data['card_type'],
+    'mop' => $formatted_card_data['type'],
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
   );
