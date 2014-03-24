@@ -52,6 +52,18 @@ function commerce_iats_cardonfile_form_rules_ui_edit_element_alter(&$form, &$for
   );
 }
 
+function commerce_iats_cardonfile_credit_card_charge() {
+
+}
+
+function commerce_iats_cardonfile_credit_card_update() {
+
+}
+
+function commerce_iats_cardonfile_credit_card_delete() {
+
+}
+
 /**
  * TODO: Refactor to use commerce_iats_process_payment
  *
