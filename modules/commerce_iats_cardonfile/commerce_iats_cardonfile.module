@@ -21,7 +21,7 @@ function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_m
     'short_title' => t('iATS Web Service'),
     'display_title' => t('Credit card customer code'),
     'description' => t('Integrates the iATS CustomerLink webservice for the creation of credit card customer codes.'),
-    'file' => 'includes/commerce_iats.credit_card_customer_code.inc',
+    'file' => 'includes/commerce_iatscardonfile.credit_card_customer_code.inc',
   );
 }
 
@@ -40,6 +40,8 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
 }
 
 /**
+ * TODO: Refactor to use commerce_iats_process_payment
+ *
  * Creates a new card on file record for the user making this transaction.
  *
  * @param object $order
