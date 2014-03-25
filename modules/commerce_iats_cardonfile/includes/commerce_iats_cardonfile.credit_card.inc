@@ -60,12 +60,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_meth
 }
 
 /**
- * @param $payment_method
- * @param $pane_form
- * @param $pane_values
- * @param $order
- * @param $charge
- * @return bool
+ * Payment method callback: checkout form submission.
  */
 function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
   // Validate credit card charge.
@@ -107,6 +102,9 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
 }
 
 /**
+ * Processes a credit card payment using a stored card on file via the
+ * iATS Payments API.
+ *
  * @param $payment_method
  * @param $card_data
  * @param $order
@@ -114,7 +112,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
  * @return null
  */
 function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data, $order, $charge = NULL) {
-  // Create and populate the request with standard properties.
+  // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
     'customerCode' => $card_data->remote_id,
