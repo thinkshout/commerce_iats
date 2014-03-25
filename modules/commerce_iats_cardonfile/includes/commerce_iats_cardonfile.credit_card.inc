@@ -30,8 +30,6 @@ function commerce_iats_cardonfile_credit_card_settings_form($settings = NULL) {
 function commerce_iats_cardonfile_credit_card_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
-  xdebug_print_function_stack();
-
   // Prepare the fields to include on the credit card form.
   $fields = array(
     'code' => '',
@@ -73,10 +71,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_meth
  * @return bool
  */
 function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
-  // Determine if the customer is using an exsting card on file.
-  if ($payment_method['settings']['iats_customer_code']
-    && !empty($pane_values['cardonfile'])
-  ) {
+  if (!empty($pane_values['cardonfile'])) {
     if ($pane_values['cardonfile'] === 'new') {
       // Create a new card on file record.
       $payment_data = $pane_values;
@@ -94,6 +89,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
 
       $card_data->code = $pane_values['credit_card']['code'];
 
+      // TODO: Pass in store card option.
       commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
     }
   }
