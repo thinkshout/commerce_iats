@@ -148,7 +148,7 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
       'request' => t('API request messages'),
       'response' => t('API response messages'),
     ),
-    '#default_value' => (isset($settings['log']))? $settings['log'] : NULL,
+    '#default_value' => (isset($settings['log']))? $settings['log'] : array(),
   );
   $form['credit_card'] = array(
     '#type' => 'fieldset',
