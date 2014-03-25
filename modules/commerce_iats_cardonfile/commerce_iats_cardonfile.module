@@ -54,7 +54,7 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
  * Implements hook_form_alter().
  */
 function commerce_iats_cardonfile_form_alter(&$form, &$form_state, $form_id) {
-  if (($form_id == 'commerce_cardonfile_card_form') || ($form_id == 'commerce_cardonfile_card_form')) {
+  if (($form_id == 'commerce_cardonfile_card_form') || ($form_id == 'commerce_cardonfile_delete_form')) {
     // Include credit_card_update / credit_card_delete callback methods.
     module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card');
   }

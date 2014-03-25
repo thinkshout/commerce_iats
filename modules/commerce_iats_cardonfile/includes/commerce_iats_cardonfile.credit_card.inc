@@ -249,15 +249,16 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
   $iats = commerce_iats_get_service('CustomerLink', $payment_method);
   if ($iats == NULL) {
     drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
-    return NULL;
+    return FALSE;
   }
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
-    commerce_iats_log_request($payment_method, 'commerce_iats_cardonfile_credit_card_update', $request);
+    commerce_iats_log_request($payment_method,
+      'commerce_iats_cardonfile_credit_card_update', $request);
   }
 
-  // Process the credit card payment.
+  // Process the credit card update.
   $response = $iats->updateCreditCardCustomerCode($request);
 
   $auth_result = (isset($response['AUTHORIZATIONRESULT'])) ?
@@ -271,14 +272,45 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
 }
 
 /**
+ * Payment method callback: card delete form.
+ *
  * Deletes credit card details stored with iATS Payments.
  *
- * @param $form
- * @param $form_state
- * @param $payment_method
- * @param $card_data
+ * TODO: If a customer code has been used in a prior transaction,
+ * the iATS API will return the error code:
+ * "CAN NOT DELETE CUSTOMER, THE CUSTOMER CODE HAS BEEN USED"
+ * and not delete the customer code.
+ * Need to evaluate whether this callback is appropriate for iATS.
  */
 function commerce_iats_cardonfile_credit_card_delete($form, &$form_state, $payment_method, $card_data) {
-  // TODO: Populate method.
-  return TRUE;
+    // Create and populate the API request.
+    $request = array(
+      'customerIPAddress' => ip_address(),
+      'customerCode' => $card_data->remote_id,
+    );
+
+    // Get the API service.
+    $iats = commerce_iats_get_service('CustomerLink', $payment_method);
+    if ($iats == NULL) {
+      drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
+      return FALSE;
+    }
+
+    // Log the request.
+    if ($payment_method['settings']['log']['request'] === 'request') {
+      commerce_iats_log_request($payment_method,
+        'commerce_iats_cardonfile_credit_card_delete', $request);
+    }
+
+    // Process the credit card deletion.
+    $response = $iats->deleteCustomerCode($request);
+
+    $auth_result = (isset($response['AUTHORIZATIONRESULT'])) ?
+      trim($response['AUTHORIZATIONRESULT']) : NULL;
+
+    if ($auth_result == NULL) {
+      $auth_result = $response;
+    }
+
+    return (substr($auth_result, 0, 2) == COMMERCE_IATS_TXN_OK);
 }
