@@ -51,19 +51,13 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * Implements hook_form_alter().
  */
-function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$form, &$form_state, $form_id) {
-  // Include credit_card_update callback method.
-  module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card');
-}
-
-/**
- * Implements hook_form_FORM_ID_alter().
- */
-function commerce_iats_cardonfile_form_commerce_cardonfile_delete_form_alter(&$form, &$form_state, $form_id) {
-  // Include credit_card_delete callback method.
-  module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card');
+function commerce_iats_cardonfile_form_alter(&$form, &$form_state, $form_id) {
+  if (($form_id == 'commerce_cardonfile_card_form') || ($form_id == 'commerce_cardonfile_card_form')) {
+    // Include credit_card_update / credit_card_delete callback methods.
+    module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card');
+  }
 }
 
 /**
