@@ -68,31 +68,32 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
 
   $payment_data = $pane_values;
 
-  if ($pane_values['cardonfile'] === 'new') {
-    if ($pane_values['credit_card']['cardonfile_store']) {
-      // Create a new card on file record.
-      return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_create_and_charge');
+  if (isset($pane_values['cardonfile'])) {
+    if ($pane_values['cardonfile'] === 'new') {
+      if ($pane_values['credit_card']['cardonfile_store']) {
+        // Create a new card on file record.
+        return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_create_and_charge');
+      }
     }
     else {
-      // Customer has opted not to use card on file.
-      module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card');
-      return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_process_credit_card_payment');
+      // Get the card on file data.
+      $card_data = commerce_cardonfile_load($pane_values['cardonfile']);
+
+      // Fail now if it is no longer available or the card is inactive.
+      if (empty($card_data) || $card_data->status == 0) {
+        drupal_set_message(t('The requested card on file is no longer valid.'), 'error');
+        return FALSE;
+      }
+
+      $card_data->code = $pane_values['credit_card']['code'];
+
+      return commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
     }
   }
-  else {
-    // Get the card on file data.
-    $card_data = commerce_cardonfile_load($pane_values['cardonfile']);
 
-    // Fail now if it is no longer available or the card is inactive.
-    if (empty($card_data) || $card_data->status == 0) {
-      drupal_set_message(t('The requested card on file is no longer valid.'), 'error');
-      return FALSE;
-    }
-
-    $card_data->code = $pane_values['credit_card']['code'];
-
-    return commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
-  }
+  // Customer has opted not to use card on file or card on file is not available.
+  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card');
+  return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_process_credit_card_payment');
 }
 
 /**
