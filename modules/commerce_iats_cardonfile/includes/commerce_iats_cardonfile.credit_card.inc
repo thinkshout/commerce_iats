@@ -122,7 +122,7 @@ function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data
       '@prefix' => $payment_method['settings']['invoice_prefix'],
       '@number' => $order->order_number,
     )),
-    'cvv2' => $card_data->code,
+    'mop' => commerce_iats_credit_card_mop($card_data->card_type),
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
   );
