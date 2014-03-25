@@ -51,24 +51,6 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
 }
 
 /**
- * Helper method to get commerce_cardonfile entity from an iATS customer code.
- */
-function commerce_iats_cardonfile_customer_code_load($customer_code) {
-  $query = new EntityFieldQuery();
-  $result = $query
-    ->entityCondition('entity_type', 'commerce_cardonfile')
-    ->propertyCondition('remote_id', $customer_code)
-    ->execute();
-
-  if (isset($result['commerce_cardonfile'])) {
-    return commerce_cardonfile_load(reset(array_keys($result['commerce_cardonfile'])));
-  }
-  else {
-    return FALSE;
-  }
-}
-
-/**
  * Creates a new card on file record for the user making this transaction.
  *
  * @param object $order
