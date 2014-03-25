@@ -50,6 +50,11 @@ function commerce_iats_cardonfile_credit_card_submit_form($payment_method, $pane
  * Payment method callback: checkout form validation.
  */
 function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+  // Skip normal validation if the customer specified a card on file.
+  if (!empty($pane_values['cardonfile']) && ($pane_values['cardonfile'] !== 'new')) {
+    return;
+  }
+
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
   // Validate the credit card fields.
@@ -79,7 +84,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
       // Create a new card on file record.
       $payment_data = $pane_values;
 
-      commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_create_and_charge');
+      return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_create_and_charge');
     } else {
       // Get the card on file data.
       $card_data = commerce_cardonfile_load($pane_values['cardonfile']);
@@ -92,7 +97,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
 
       $card_data->code = $pane_values['credit_card']['code'];
 
-      commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
+      return commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
     }
   }
 }
