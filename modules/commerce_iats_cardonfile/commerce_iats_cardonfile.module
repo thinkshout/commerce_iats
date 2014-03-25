@@ -59,6 +59,14 @@ function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$for
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function commerce_iats_cardonfile_form_commerce_cardonfile_delete_form_alter(&$form, &$form_state, $form_id) {
+  // Include credit_card_delete callback method.
+  module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card');
+}
+
+/**
  * Creates a new card on file record for the user making this transaction.
  *
  * @param object $order
