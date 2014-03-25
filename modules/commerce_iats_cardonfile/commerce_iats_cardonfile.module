@@ -86,8 +86,8 @@ function commerce_iats_cardonfile_customer_code_load($customer_code) {
  *  The order processed during this transaction.
  * @param array $payment_method
  *  The payment method used during this transaction.
- * @param array $pane_values
- *  The values from the submitted form.
+ * @param array $card_data
+ *  Array of credit card data.
  * @param string $customer_code
  *  The iATS customer code returned by the iATS API following a transaction
  *  that created a new customer code.
@@ -97,31 +97,31 @@ function commerce_iats_cardonfile_customer_code_load($customer_code) {
  * @return bool
  *  TRUE or FALSE indicating success of saving card on file.
  */
-function commerce_iats_cardonfile_create_credit_card($order, array $payment_method, array $pane_values, $customer_code, $card_type) {
+function commerce_iats_cardonfile_create_credit_card($order, array $payment_method, array $card_data, $customer_code, $card_type) {
   // Build a payment details array for the credit card.
   $payment_details = array(
-    'cardNumber' => $pane_values['credit_card']['number'],
-    'expirationDate' => $pane_values['credit_card']['exp_year'] . '-' . $pane_values['credit_card']['exp_month'],
+    'cardNumber' => $card_data['number'],
+    'expirationDate' => $card_data['exp_year'] . '-' . $card_data['exp_month'],
   );
 
   if (isset($pane_values['credit_card']['code'])) {
     $payment_details['cardCode'] = $pane_values['credit_card']['code'];
   }
 
-  $card_data = commerce_cardonfile_new();
-  $card_data->uid = $order->uid;
-  $card_data->payment_method = $payment_method['method_id'];
-  $card_data->instance_id = $payment_method['instance_id'];
-  $card_data->remote_id = $customer_code;
-  $card_data->card_type = !empty($card_type) ? $card_type : 'card';
-  $card_data->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';
-  $card_data->card_number = substr($pane_values['credit_card']['number'], -4);
-  $card_data->card_exp_month = $pane_values['credit_card']['exp_month'];
-  $card_data->card_exp_year = $pane_values['credit_card']['exp_year'];
-  $card_data->status = 1;
+  $card_on_file = commerce_cardonfile_new();
+  $card_on_file->uid = $order->uid;
+  $card_on_file->payment_method = $payment_method['method_id'];
+  $card_on_file->instance_id = $payment_method['instance_id'];
+  $card_on_file->remote_id = $customer_code;
+  $card_on_file->card_type = !empty($card_type) ? $card_type : 'card';
+  $card_on_file->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';
+  $card_on_file->card_number = substr($card_data['number'], -4);
+  $card_on_file->card_exp_month = $card_data['exp_month'];
+  $card_on_file->card_exp_year = $card_data['exp_year'];
+  $card_on_file->status = 1;
 
   // Save and log the creation of the new card on file.
-  if (commerce_cardonfile_save($card_data)) {
+  if (commerce_cardonfile_save($card_on_file)) {
     watchdog('commerce_iats',
       'iATS Customer Code @customer_code created and saved to user @uid.',
       array(

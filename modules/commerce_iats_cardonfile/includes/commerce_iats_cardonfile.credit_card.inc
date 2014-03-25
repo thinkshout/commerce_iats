@@ -71,6 +71,9 @@ function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_meth
  * @return bool
  */
 function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+
+  // TODO: Option to process credit card without storing as card on file.
+
   if (!empty($pane_values['cardonfile'])) {
     if ($pane_values['cardonfile'] === 'new') {
       // Create a new card on file record.
@@ -89,7 +92,6 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
 
       $card_data->code = $pane_values['credit_card']['code'];
 
-      // TODO: Pass in store card option.
       commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
     }
   }
@@ -174,27 +176,44 @@ function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method,
     commerce_iats_log_request($payment_method, 'commerce_iats_cardonfile_credit_card_create_and_charge', $request);
   }
 
+  // Create new customer code and process the payment.
   $response = $iats->createCustomerCodeAndProcessCreditCard($request);
+
+  if ($response != NULL) {
+    if (isset($response['CUSTOMERCODE'])) {
+      $customer_code = trim($response['CUSTOMERCODE']);
+      // Create a new card on file record for the new customer code.
+      commerce_iats_cardonfile_create_credit_card($order, $payment_method,
+        $payment_data['credit_card'], $customer_code, $formatted_card_data['type']);
+    }
+    else {
+      drupal_set_message(t('Your credit card could not be stored for later use.'), 'error');
+    }
+  }
 
   return $response;
 }
 
 /**
+ * Updates credit card details stored with iATS Payments.
+ *
  * @param $form
  * @param $form_state
  * @param $payment_method
  * @param $card_data
  */
 function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payment_method, $card_data) {
-
+  // TODO: Populate method.
 }
 
 /**
+ * Deletes credit card details stored with iATS Payments.
+ *
  * @param $form
  * @param $form_state
  * @param $payment_method
  * @param $card_data
  */
 function commerce_iats_cardonfile_credit_card_delete($form, &$form_state, $payment_method, $card_data) {
-
+  // TODO: Populate method.
 }
