@@ -102,6 +102,15 @@ function commerce_iats_commerce_payment_method_info() {
     'file' => 'includes/commerce_iats.credit_card.inc',
   );
 
+  $payment_methods['iats_credit_card_customer_code'] = array(
+    'base' => 'commerce_iats_credit_card_customer_code',
+    'title' => t('iATS Webservice: Credit card customer code creation'),
+    'short_title' => t('iATS Web Service'),
+    'display_title' => t('Credit card customer code'),
+    'description' => t('Integrates the iATS CustomerLink webservice for the creation of credit card customer codes.'),
+    'file' => 'includes/commerce_iats.credit_card_customer_code.inc',
+  );
+
   return $payment_methods;
 }
 
