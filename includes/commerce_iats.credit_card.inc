@@ -12,14 +12,6 @@ function commerce_iats_credit_card_settings_form($settings = NULL) {
 
   $form = commerce_iats_credit_card_settings_form_base($settings);
 
-  $form['invoice_prefix'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Invoice Prefix'),
-    '#description' => t('Invoice numbers consist of this value followed by the order number. ie. INVOICE-1, INVOICE-2'),
-    '#default_value' => (isset($settings['invoice_prefix']))? $settings['invoice_prefix'] : 'INVOICE-',
-    '#required' => TRUE,
-  );
-
   return $form;
 }
 

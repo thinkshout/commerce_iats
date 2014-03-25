@@ -12,6 +12,9 @@ function commerce_iats_credit_card_customer_code_settings_form($settings = NULL)
 
   $form = commerce_iats_credit_card_settings_form_base($settings);
 
+  // No invoice when creating customer codes.
+  unset($form['invoice_prefix']);
+
   return $form;
 }
 
