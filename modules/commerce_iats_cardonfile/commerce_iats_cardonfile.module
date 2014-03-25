@@ -69,7 +69,7 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
  * @return bool
  *  TRUE or FALSE indicating success of saving card on file.
  */
-function commerce_iats_cardonfile_create_credit_card($order, array $payment_method, array $card_data, $customer_code, $card_type) {
+function commerce_iats_cardonfile_create_cardonfile($order, array $payment_method, array $card_data, $customer_code, $card_type) {
   // Build a payment details array for the credit card.
   $payment_details = array(
     'cardNumber' => $card_data['number'],

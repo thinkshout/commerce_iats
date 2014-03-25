@@ -99,7 +99,7 @@ function commerce_iats_cardonfile_create_customer_code($payment_method, $payment
     if (isset($response['CUSTOMERCODE'])) {
       $customer_code = trim($response['CUSTOMERCODE']);
       // Create a new card on file record for the new customer code.
-      commerce_iats_cardonfile_create_credit_card($order, $payment_method,
+      commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
         $payment_data['credit_card'], $customer_code, $formatted_card_data['orig_type']);
     }
     else {
