@@ -119,7 +119,7 @@ function commerce_iats_process_credit_card_payment($payment_method, $payment_dat
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
-    commerce_iats_log_request($payment_method, $request);
+    commerce_iats_log_request($payment_method, 'commerce_iats_process_credit_card_payment', $request);
   }
 
   // Process the credit card payment.

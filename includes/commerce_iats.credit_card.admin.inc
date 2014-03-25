@@ -115,7 +115,7 @@ function commerce_iats_process_credit_card_refund($payment_method, $payment_data
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
-    commerce_iats_log_request($payment_method, $request);
+    commerce_iats_log_request($payment_method, 'commerce_iats_process_credit_card_refund', $request);
   }
 
   // Process the credit card refund.

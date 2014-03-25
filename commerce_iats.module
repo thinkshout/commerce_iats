@@ -328,9 +328,8 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     }
 
     // Build a meaningful response message.
-    // TODO: Get the action payment type from $payment_callback.
     $message = array(
-      '<b>' . t('iATS Payments result') . '</b>',
+      '<b>' . t('iATS Payments result from ' . $payment_callback) . '</b>',
       '<b>' . t('@decision', array('@decision' => $auth_result)) . '</b>',
     );
 
@@ -357,7 +356,7 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
  * @param array $payment_method
  * @param array $request
  */
-function commerce_iats_log_request(array $payment_method, array $request) {
+function commerce_iats_log_request(array $payment_method, $payment_callback, array $request) {
   if (isset($request['ccNum'])) {
     $request['ccNum'] = commerce_iats_mask_credit_card_number($request['ccNum']);
   }
@@ -369,9 +368,10 @@ function commerce_iats_log_request(array $payment_method, array $request) {
     $request['cvv2'] = str_repeat('X', strlen($request['cvv2']));
   }
 
-  watchdog('commerce_iats', 'iATS API request to @method: @request',
+  watchdog('commerce_iats', 'iATS API request to @method: @callback: @request',
     array(
       '@method' => $payment_method['short_title'],
+      '@callback' => $payment_callback,
       '@request' => '<pre>' . check_plain(print_r($request, TRUE)) . '</pre>',
     ),
     WATCHDOG_DEBUG);
