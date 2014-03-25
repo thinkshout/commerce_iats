@@ -4,7 +4,7 @@ A module to implement the [iATS Payments](http://iatspayments.com/) payment proc
 
 ## Features
 * Provides payment methods that utilize the iATS PHP API Wrapper
-* Enables the use of iATS Customer Codes with the [Commerce Card on File](https://drupal.org/project/commerce_cardonfile) module
+* Sub-module Commerce iATS Card on File enables the use of iATS Customer Codes with the [Commerce Card on File](https://drupal.org/project/commerce_cardonfile) module
 
 ## Requirements
 
@@ -13,13 +13,15 @@ A module to implement the [iATS Payments](http://iatspayments.com/) payment proc
 
 ## Payment Methods
 
-This module provides two payment methods.
+### Commerce iATS
 
-### iATS Webservice: Credit card payment
+#### iATS Webservice: Credit card payment
 * Processes a credit card transaction
 * May optionally be used with [Commerce Card on File](https://drupal.org/project/commerce_cardonfile) to store a reference to credit card details
 
-### iATS Webservice: Credit card customer code creation
+### Commerce iATS Card on File
+
+#### iATS Webservice: Credit card customer code creation
 * Creates a Customer Code for a user, storing their credit card details through iATS
 * Creates a [Commerce Card on File](https://drupal.org/project/commerce_cardonfile) using the iATS Customer Code
 
