@@ -223,6 +223,7 @@ function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method,
  */
 function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payment_method, $card_data) {
   // TODO: Populate method.
+  return TRUE;
 }
 
 /**
@@ -235,4 +236,5 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
  */
 function commerce_iats_cardonfile_credit_card_delete($form, &$form_state, $payment_method, $card_data) {
   // TODO: Populate method.
+  return TRUE;
 }
