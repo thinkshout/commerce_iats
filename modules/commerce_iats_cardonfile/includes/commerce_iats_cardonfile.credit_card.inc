@@ -30,6 +30,8 @@ function commerce_iats_cardonfile_credit_card_settings_form($settings = NULL) {
 function commerce_iats_cardonfile_credit_card_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
+  xdebug_print_function_stack();
+
   // Prepare the fields to include on the credit card form.
   $fields = array(
     'code' => '',
