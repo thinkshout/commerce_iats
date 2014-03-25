@@ -106,20 +106,6 @@ function commerce_iats_commerce_payment_method_info() {
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
- */
-function commerce_iats_form_commerce_payment_order_transaction_add_form_alter(&$form, &$form_state, $form_id) {
-  // Hides "Amount" and "Currency Code" fields when creating a customer code.
-  if (isset($form_state['values']['payment_method'])) {
-    $parts = explode('|', $form_state['values']['payment_method']);
-    if ($parts[0] == 'iats_credit_card_customer_code') {
-      $form['payment_terminal']['amount']['#access'] = FALSE;
-      $form['payment_terminal']['currency_code']['#access'] = FALSE;
-    }
-  }
-}
-
-/**
  * Gets base fields settings form fields for credit card based payment methods.
  *
  * @param array $settings
