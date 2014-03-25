@@ -214,16 +214,60 @@ function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method,
 }
 
 /**
- * Updates credit card details stored with iATS Payments.
+ * Payment method callback: card update form.
  *
- * @param $form
- * @param $form_state
- * @param $payment_method
- * @param $card_data
+ * Updates credit card details stored with iATS Payments.
  */
 function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payment_method, $card_data) {
-  // TODO: Populate method.
-  return TRUE;
+  $card = array(
+    'number' => '',
+    'exp_month' => $card_data->card_exp_month,
+    'exp_year' => $card_data->card_exp_year,
+  );
+
+  $formatted_card_data = commerce_iats_format_credit_card_data($card);
+
+  $name_parts = explode(' ', $card_data->card_name);
+  $first_name = array_shift($name_parts);
+  $last_name = implode(' ', $name_parts);
+
+  // Create and populate the API request.
+  $request = array(
+    'customerIPAddress' => ip_address(),
+    'customerCode' => $card_data->remote_id,
+    'firstName' => $first_name,
+    'lastName' => $last_name,
+    'creditCardExpiry' => $formatted_card_data['expiry'],
+    'mop' => commerce_iats_credit_card_mop($card_data->card_type),
+    'updateCreditCardNum' => FALSE,
+    'recurring' => FALSE, // Only used for recurring payments.
+    'beginDate' => 0, // Only used for recurring payments.
+    'endDate' => 0, // Only used for recurring payments.
+  );
+
+  // Get the API service.
+  $iats = commerce_iats_get_service('CustomerLink', $payment_method);
+  if ($iats == NULL) {
+    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
+    return NULL;
+  }
+
+  // Log the request.
+  if ($payment_method['settings']['log']['request'] === 'request') {
+    commerce_iats_log_request($payment_method, 'commerce_iats_cardonfile_credit_card_update', $request);
+  }
+
+  // Process the credit card payment.
+  $response = $iats->updateCreditCardCustomerCode($request);
+
+  $auth_result = (isset($response['AUTHORIZATIONRESULT'])) ?
+    trim($response['AUTHORIZATIONRESULT']) : NULL;
+
+  if ($auth_result == NULL) {
+    $auth_result = $response;
+  }
+
+  return (substr($auth_result, 0, 2) == COMMERCE_IATS_TXN_OK);
 }
 
 /**
