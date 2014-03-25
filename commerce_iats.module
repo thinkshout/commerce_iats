@@ -189,107 +189,6 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
 }
 
 /**
- * Populate a request with address information for use in a iATS API request.
- *
- * @param array $request
- *   Request array
- * @param object $order
- *   The order object containing the address information via a referenced
- *   customer profile.
- * @param string $field_name
- *   The name of the customer profile reference field that links the order to
- *   the proper customer profile where the address data will be retrieved from.
- *
- * @return mixed
- *   Updates pass by reference.
- */
-function commerce_iats_address(array &$request, $order, $field_name) {
-  // Return if the specified profile field doesn't exist.
-  if (empty($order->{$field_name})) {
-    watchdog('commerce_iats', 'Missing address data for @field_name: @order',
-      array(
-        '@field_name' => $field_name,
-        '@order' => '<pre>' . print_r($order, TRUE) . '</pre>',
-      ),
-      WATCHDOG_DEBUG
-    );
-
-    return FALSE;
-  }
-
-  // Prepare the address data for use in the request address.
-  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
-  $address_data = $order_wrapper->{$field_name}->commerce_customer_address->value();
-
-  /**
-   * If the address is missing a first name, split the
-   * full name into two parts as a backup.
-   */
-  if (empty($address_data['first_name'])) {
-    $name_parts = explode(' ', $address_data['name_line']);
-    $address_data['first_name'] = array_shift($name_parts);
-    $address_data['last_name'] = implode(' ', $name_parts);
-  }
-
-  // Add the basic address information to the request.
-  $request['firstName'] = $address_data['first_name'];
-  $request['lastName'] = $address_data['last_name'];
-  $request['address'] = $address_data['thoroughfare'];
-  $request['city'] = $address_data['locality'];
-  $request['state'] = $address_data['administrative_area'];
-  $request['zipCode'] = $address_data['postal_code'];
-  $request['country'] = $address_data['country'];
-  if ($address_data['premise']) {
-    $request['address'] .= ', ' . $address_data['premise'];
-  }
-
-  return TRUE;
-}
-
-/**
- * Define credit card types accepted by iATS.
- *
- * Array keys must match keys in Commerce module file
- *  commerce_payment.credit_card.inc:commerce_payment_credit_card_types
- *
- * The method commerce_payment_credit_card_form uses array_intersect_key
- * to validate keys in this array, making any custom keys invalid.
- *
- * @return array
- *   Array of credit card types.
- */
-function commerce_iats_credit_card_types() {
-  return array(
-    'visa' => t('Visa'),
-    'mastercard' => t('MasterCard'),
-    'amex' => t('American Express'),
-    'discover' => t('Discover Card'),
-  );
-}
-
-/**
- * Converts a Commerce credit card type to an iATS-compatible credit card type.
- *
- * This conversion method is used to allow for custom credit card types.
- * See comment block of commerce_iats_credit_card_types for explanation.
- *
- * @param string $type
- *   The Commerce credit card type.
- *
- * @return string
- *   The iATS credit card type.
- */
-function commerce_iats_credit_card_mop($type) {
-  $mop = array(
-    'visa' => 'VISA',
-    'mastercard' => 'MC',
-    'amex' => 'AMX',
-    'discover' => 'DSC',
-  );
-  return $mop[$type];
-}
-
-/**
  * Processes a payment and creates a transaction record based on the
  * response from the iATS API.
  *
@@ -402,6 +301,49 @@ function commerce_iats_log_response(array $payment_method, $response) {
 }
 
 /**
+ * Define credit card types accepted by iATS.
+ *
+ * Array keys must match keys in Commerce module file
+ *  commerce_payment.credit_card.inc:commerce_payment_credit_card_types
+ *
+ * The method commerce_payment_credit_card_form uses array_intersect_key
+ * to validate keys in this array, making any custom keys invalid.
+ *
+ * @return array
+ *   Array of credit card types.
+ */
+function commerce_iats_credit_card_types() {
+  return array(
+    'visa' => t('Visa'),
+    'mastercard' => t('MasterCard'),
+    'amex' => t('American Express'),
+    'discover' => t('Discover Card'),
+  );
+}
+
+/**
+ * Converts a Commerce credit card type to an iATS-compatible credit card type.
+ *
+ * This conversion method is used to allow for custom credit card types.
+ * See comment block of commerce_iats_credit_card_types for explanation.
+ *
+ * @param string $type
+ *   The Commerce credit card type.
+ *
+ * @return string
+ *   The iATS credit card type.
+ */
+function commerce_iats_credit_card_mop($type) {
+  $mop = array(
+    'visa' => 'VISA',
+    'mastercard' => 'MC',
+    'amex' => 'AMX',
+    'discover' => 'DSC',
+  );
+  return $mop[$type];
+}
+
+/**
  * Masks all but the last four digits of a credit card number.
  *
  * @param string $credit_card_number
@@ -443,6 +385,62 @@ function commerce_iats_format_credit_card_data(array $card_data) {
   );
 
   return $formatted_card_data;
+}
+
+/**
+ * Populate a request with address information for use in a iATS API request.
+ *
+ * @param array $request
+ *   Request array
+ * @param object $order
+ *   The order object containing the address information via a referenced
+ *   customer profile.
+ * @param string $field_name
+ *   The name of the customer profile reference field that links the order to
+ *   the proper customer profile where the address data will be retrieved from.
+ *
+ * @return mixed
+ *   Updates pass by reference.
+ */
+function commerce_iats_address(array &$request, $order, $field_name) {
+  // Return if the specified profile field doesn't exist.
+  if (empty($order->{$field_name})) {
+    watchdog('commerce_iats', 'Missing address data for @field_name: @order',
+      array(
+        '@field_name' => $field_name,
+        '@order' => '<pre>' . print_r($order, TRUE) . '</pre>',
+      ),
+      WATCHDOG_DEBUG
+    );
+
+    return FALSE;
+  }
+
+  // Prepare the address data for use in the request address.
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $address_data = $order_wrapper->{$field_name}->commerce_customer_address->value();
+
+  // If the address is missing a first name, split the
+  // full name into two parts as a backup.
+  if (empty($address_data['first_name'])) {
+    $name_parts = explode(' ', $address_data['name_line']);
+    $address_data['first_name'] = array_shift($name_parts);
+    $address_data['last_name'] = implode(' ', $name_parts);
+  }
+
+  // Add the basic address information to the request.
+  $request['firstName'] = $address_data['first_name'];
+  $request['lastName'] = $address_data['last_name'];
+  $request['address'] = $address_data['thoroughfare'];
+  $request['city'] = $address_data['locality'];
+  $request['state'] = $address_data['administrative_area'];
+  $request['zipCode'] = $address_data['postal_code'];
+  $request['country'] = $address_data['country'];
+  if ($address_data['premise']) {
+    $request['address'] .= ', ' . $address_data['premise'];
+  }
+
+  return TRUE;
 }
 
 /**
