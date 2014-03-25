@@ -44,22 +44,8 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
       $form['payment_terminal']['amount']['#access'] = FALSE;
       $form['payment_terminal']['currency_code']['#access'] = FALSE;
     }
-
-    // Override form submit handler.
-    //$form['buttons']['continue']['#submit'][] = array('commerce_iats_cardonfile_credit_card_submit_form_submit');
   }
 }
-
-/**
- * Implements hook_form_FORM_ID_alter().
- */
-//function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
-  // Override form submit handler.
-
-  //var_dump($form['buttons']['continue']['#submit']);
-
-  //$form['buttons']['continue']['#submit'][] = array('commerce_iats_cardonfile_credit_card_submit_form_submit');
-//}
 
 /**
  * Helper method to get commerce_cardonfile entity from an iATS customer code.
