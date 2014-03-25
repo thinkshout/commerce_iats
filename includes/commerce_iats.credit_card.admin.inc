@@ -74,7 +74,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     'transaction' => $form_state['transaction'],
   );
 
-  $amount = number_format(($form_state['values']['amount'] * -1), 2, '.', '');
+  $amount = number_format($form_state['values']['amount'], 2, '.', '');
 
   $charge = array(
     // Charge must be negative for refunds.
@@ -97,7 +97,7 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
  * @param $charge
  * @return Mixed
  */
-function commerce_iats_process_credit_card_refund($payment_method, $payment_data, $order, $charge) {
+function commerce_iats_process_credit_card_refund($payment_method, $payment_data, $order, &$charge) {
   // Get the original transaction ID.
   $remote_id_parts = explode('|', $payment_data['transaction']->remote_id);
 
@@ -123,6 +123,11 @@ function commerce_iats_process_credit_card_refund($payment_method, $payment_data
 
   // Process the credit card refund.
   $response = $iats->processCreditCardRefundWithTransactionId($request);
+
+  // Currency not automatically converted to DB-friendly amount when
+  // processing refund. Do it here manually.
+  $charge['amount'] = commerce_currency_decimal_to_amount($charge['amount'],
+    $payment_data['transaction']->currency_code);
 
   return $response;
 }
