@@ -91,11 +91,18 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
 /**
  * Processes a credit card refund via the iATS Payments API.
  *
- * @param $payment_method
- * @param $payment_data
- * @param $order
- * @param $charge
+ * @param array $payment_method
+ *  The payment method used during this transaction.
+ * @param array $payment_data
+ *  Payment data retrieved from the submit form.
+ * @param object $order
+ *  The order processed during this transaction.
+ * @param array $charge
+ *  The transaction charge. Passed by reference here as refunds need to
+ *  modify the charge amount.
+ *
  * @return Mixed
+ *  API response array or error string.
  */
 function commerce_iats_process_credit_card_refund($payment_method, $payment_data, $order, &$charge) {
   // Get the original transaction ID.

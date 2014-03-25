@@ -268,7 +268,11 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
  * Logs an API request.
  *
  * @param array $payment_method
+ *  The payment method used during this transaction.
+ * @param string $payment_callback
+ *  The name of the payment callback method used for this request.
  * @param array $request
+ *  The API request to log.
  */
 function commerce_iats_log_request(array $payment_method, $payment_callback, array $request) {
   if (isset($request['ccNum'])) {
@@ -295,6 +299,7 @@ function commerce_iats_log_request(array $payment_method, $payment_callback, arr
  * Logs an API response.
  *
  * @param array $payment_method
+ *  The payment method used during this transaction.
  * @param mixed $response
  *   Response array or error string.
  */
@@ -355,8 +360,11 @@ function commerce_iats_credit_card_mop($type) {
  * Gets an array of enabled card types for a payment method.
  *
  * @param array $payment_method
- *  The payment method in use.
+ *  The payment method used during this transaction.
+ *
  * @return array
+ *  Array of enabled card type IDs
+ *  ie. visa, mc
  */
 function commerce_iats_enabled_credit_card_types(array $payment_method) {
   $card_types = NULL;
@@ -481,7 +489,7 @@ function commerce_iats_address(array &$request, $order, $field_name) {
  * @param string $service_name
  *   The iATS service to get. 'ProcessLink' or 'CustomerLink'
  * @param array $payment_method
- *   The payment method, used to popualte iATS API settings.
+ *   The payment method, used to populate iATS API settings.
  *
  * @return Mixed
  *   The instantiated iATS Payments API service.

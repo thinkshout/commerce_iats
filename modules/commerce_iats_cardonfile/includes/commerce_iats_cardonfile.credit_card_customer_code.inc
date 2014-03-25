@@ -48,10 +48,18 @@ function commerce_iats_cardonfile_credit_card_customer_code_submit_form_submit($
  * Creates a customer code and associated card on file record via the
  * iATS Payments API.
  *
- * @param $payment_method
- * @param $payment_data
- * @param $order
- * @param $charge
+ * @param array $payment_method
+ *  The payment method used during this transaction.
+ * @param array $payment_data
+ *  Payment data retrieved from the submit form.
+ * @param object $order
+ *  The order processed during this transaction.
+ * @param array $charge
+ *  The transaction charge. Unused in this method but required
+ *  as part of callback signature.
+ *
+ * @return Mixed
+ *  API response array or error string.
  */
 function commerce_iats_cardonfile_create_customer_code($payment_method, $payment_data, $order, $charge) {
   // Format credit card data.

@@ -100,11 +100,17 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
  * Processes a credit card payment using a stored card on file via the
  * iATS Payments API.
  *
- * @param $payment_method
- * @param $card_data
- * @param $order
- * @param null $charge
- * @return null
+ * @param array $payment_method
+ *  The payment method used during this transaction.
+ * @param array $card_data
+ *  Array of credit card data.
+ * @param object $order
+ *  The order processed during this transaction.
+ * @param array $charge
+ *  The transaction charge.
+ *
+ * @return Mixed
+ *  API response array or error string.
  */
 function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data, $order, $charge = NULL) {
   // Create and populate the API request.
@@ -139,11 +145,20 @@ function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data
 }
 
 /**
- * @param $payment_method
- * @param $payment_data
- * @param $order
- * @param null $charge
- * @return null
+ * Processes a credit card charge and creates a card on file record
+ * via the iATS Payments API.
+ *
+ * @param array $payment_method
+ *  The payment method used during this transaction.
+ * @param array $payment_data
+ *  Payment data retrieved from the submit form.
+ * @param object $order
+ *  The order processed during this transaction.
+ * @param array $charge
+ *  The transaction charge.
+ *
+ * @return Mixed
+ *  API response array or error string.
  */
 function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method, $payment_data, $order, $charge = NULL) {
   // Format credit card data.

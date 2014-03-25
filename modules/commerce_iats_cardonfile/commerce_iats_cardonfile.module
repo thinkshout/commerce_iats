@@ -82,6 +82,7 @@ function commerce_iats_cardonfile_customer_code_load($customer_code) {
  *  that created a new customer code.
  * @param string $card_type
  *  The credit card type used during this transaction.
+ *  ie. visa, mc
  *
  * @return bool
  *  TRUE or FALSE indicating success of saving card on file.
