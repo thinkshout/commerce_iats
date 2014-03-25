@@ -7,7 +7,7 @@
 /**
  * Payment method callback: settings form.
  */
-function commerce_iats_credit_card_customer_code_settings_form($settings = NULL) {
+function commerce_iats_cardonfile_credit_card_customer_code_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
   $form = commerce_iats_credit_card_settings_form_base($settings);
@@ -21,7 +21,7 @@ function commerce_iats_credit_card_customer_code_settings_form($settings = NULL)
 /**
  * Payment method callback: checkout form.
  */
-function commerce_iats_credit_card_customer_code_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+function commerce_iats_cardonfile_credit_card_customer_code_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
   // Prepare the fields to include on the credit card form.
@@ -37,11 +37,11 @@ function commerce_iats_credit_card_customer_code_submit_form($payment_method, $p
 /**
  * Payment method callback: checkout form submission.
  */
-function commerce_iats_credit_card_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
+function commerce_iats_cardonfile_credit_card_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
   $payment_data = $pane_values;
 
   return commerce_iats_process_payment($payment_method, $payment_data, $order,
-    NULL, 'commerce_iats_create_customer_code');
+    NULL, 'commerce_iats_cardonfile_create_customer_code');
 }
 
 /**
@@ -53,7 +53,7 @@ function commerce_iats_credit_card_customer_code_submit_form_submit($payment_met
  * @param $order
  * @param $charge
  */
-function commerce_iats_create_customer_code($payment_method, $payment_data, $order, $charge) {
+function commerce_iats_cardonfile_create_customer_code($payment_method, $payment_data, $order, $charge) {
   // Format credit card data.
   $formatted_card_data = commerce_iats_format_credit_card_data($payment_data['credit_card']);
 
@@ -82,7 +82,7 @@ function commerce_iats_create_customer_code($payment_method, $payment_data, $ord
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
-    commerce_iats_log_request($payment_method, 'commerce_iats_create_customer_code', $request);
+    commerce_iats_log_request($payment_method, 'commerce_iats_cardonfile_create_customer_code', $request);
   }
 
   $response = $iats->createCreditCardCustomerCode($request);

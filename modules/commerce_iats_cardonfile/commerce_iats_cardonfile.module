@@ -24,7 +24,7 @@ function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_m
 
   // Add customer code creation payment method.
   $payment_methods['iats_credit_card_customer_code'] = array(
-    'base' => 'commerce_iats_credit_card_customer_code',
+    'base' => 'commerce_iats_cardonfile_credit_card_customer_code',
     'title' => t('iATS Webservice: Credit card customer code creation'),
     'short_title' => t('iATS Web Service'),
     'display_title' => t('Credit card customer code'),
