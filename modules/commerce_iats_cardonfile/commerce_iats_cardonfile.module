@@ -4,6 +4,10 @@
  * Implements hook_commerce_payment_method_info_alter().
  */
 function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_methods) {
+  // Override include file.
+  $payment_methods['iats_credit_card']['file'] = 'includes/commerce_iats_cardonfile.credit_card.inc';
+
+  // Add Card on File callback methods.
   $payment_methods['iats_credit_card']['cardonfile'] = array(
     // Called when card is charged. Note: Only the Commerce Recurring module
     // calls this method automatically. When using just the Commerce module,
@@ -15,6 +19,7 @@ function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_m
     'delete callback' => 'commerce_iats_cardonfile_credit_card_delete',
   );
 
+  // Add customer code creation payment method.
   $payment_methods['iats_credit_card_customer_code'] = array(
     'base' => 'commerce_iats_credit_card_customer_code',
     'title' => t('iATS Webservice: Credit card customer code creation'),
@@ -39,155 +44,37 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
     }
 
     // Override form submit handler.
-    $form['#submit'] = array('commerce_iats_cardonfile_credit_card_submit_form_submit');
+    //$form['buttons']['continue']['#submit'][] = array('commerce_iats_cardonfile_credit_card_submit_form_submit');
   }
 }
 
 /**
  * Implements hook_form_FORM_ID_alter().
  */
-function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
+//function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
   // Override form submit handler.
-  $form['#submit'] = array('commerce_iats_cardonfile_credit_card_submit_form_submit');
-}
+
+  //var_dump($form['buttons']['continue']['#submit']);
+
+  //$form['buttons']['continue']['#submit'][] = array('commerce_iats_cardonfile_credit_card_submit_form_submit');
+//}
 
 /**
- * @param $payment_method
- * @param $pane_form
- * @param $pane_values
- * @param $order
- * @param $charge
- * @return bool
+ * Helper method to get commerce_cardonfile entity from an iATS customer code.
  */
-function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
-  // Determine if the customer is using an exsting card on file.
-  if ($payment_method['settings']['iats_customer_code']
-    && !empty($pane_values['cardonfile'])
-  ) {
-    if ($pane_values['cardonfile'] === 'new') {
-      // Create a new card on file record.
-      $payment_data = $pane_values;
+function commerce_iats_cardonfile_customer_code_load($customer_code) {
+  $query = new EntityFieldQuery();
+  $result = $query
+    ->entityCondition('entity_type', 'commerce_cardonfile')
+    ->propertyCondition('remote_id', $customer_code)
+    ->execute();
 
-      commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_create_and_charge');
-    } else {
-      // Get the card on file data.
-      $card_data = commerce_cardonfile_load($pane_values['cardonfile']);
-
-      // Fail now if it is no longer available or the card is inactive.
-      if (empty($card_data) || $card_data->status == 0) {
-        drupal_set_message(t('The requested card on file is no longer valid.'), 'error');
-        return FALSE;
-      }
-
-      $card_data->code = $pane_values['credit_card']['code'];
-
-      commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
-    }
+  if (isset($result['commerce_cardonfile'])) {
+    return commerce_cardonfile_load(reset(array_keys($result['commerce_cardonfile'])));
   }
-}
-
-/**
- * @param $payment_method
- * @param $card_data
- * @param $order
- * @param null $charge
- * @return null
- */
-function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data, $order, $charge = NULL) {
-  // Create and populate the request with standard properties.
-  $request = array(
-    'customerIPAddress' => ip_address(),
-    'customerCode' => $card_data->remote_id,
-    'invoiceNum' => t('@prefix@number', array(
-      '@prefix' => $payment_method['settings']['invoice_prefix'],
-      '@number' => $order->order_number,
-    )),
-    'cvv2' => $card_data->code,
-    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
-    'currency' => $charge['currency_code'],
-  );
-
-  // Get the API service.
-  $iats = commerce_iats_get_service('ProcessLink', $payment_method);
-  if ($iats == NULL) {
-    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
-    return NULL;
+  else {
+    return FALSE;
   }
-
-  // Log the request.
-  if ($payment_method['settings']['log']['request'] === 'request') {
-    commerce_iats_log_request($payment_method, 'commerce_iats_cardonfile_credit_card_charge', $request);
-  }
-
-  $response = $iats->processCreditCardWithCustomerCode($request);
-
-  return $response;
-}
-
-/**
- * @param $payment_method
- * @param $payment_data
- * @param $order
- * @param null $charge
- * @return null
- */
-function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method, $payment_data, $order, $charge = NULL) {
-  // Format credit card data.
-  $formatted_card_data = commerce_iats_format_credit_card_data($payment_data['credit_card']);
-
-  // Create and populate the API request.
-  $request = array(
-    'customerIPAddress' => ip_address(),
-    'invoiceNum' => t('@prefix@number', array(
-      '@prefix' => $payment_method['settings']['invoice_prefix'],
-      '@number' => $order->order_number,
-    )),
-    'creditCardNum' => $formatted_card_data['number'],
-    'creditCardExpiry' => $formatted_card_data['expiry'],
-    'cvv2' => $payment_data['credit_card']['code'],
-    'mop' => $formatted_card_data['type'],
-    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
-    'currency' => $charge['currency_code'],
-  );
-
-  // Add the billing information.
-  commerce_iats_address($request, $order, 'commerce_customer_billing');
-
-  // Get the API service.
-  $iats = commerce_iats_get_service('ProcessLink', $payment_method);
-  if ($iats == NULL) {
-    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
-    return NULL;
-  }
-
-  // Log the request.
-  if ($payment_method['settings']['log']['request'] === 'request') {
-    commerce_iats_log_request($payment_method, 'commerce_iats_cardonfile_credit_card_create_and_charge', $request);
-  }
-
-  $response = $iats->createCustomerCodeAndProcessCreditCard($request);
-
-  return $response;
-}
-
-/**
- * @param $form
- * @param $form_state
- * @param $payment_method
- * @param $card_data
- */
-function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payment_method, $card_data) {
-
-}
-
-/**
- * @param $form
- * @param $form_state
- * @param $payment_method
- * @param $card_data
- */
-function commerce_iats_cardonfile_credit_card_delete($form, &$form_state, $payment_method, $card_data) {
-
 }
 
 /**
@@ -252,24 +139,6 @@ function commerce_iats_cardonfile_create_credit_card($order, array $payment_meth
       ),
       WATCHDOG_ERROR);
 
-    return FALSE;
-  }
-}
-
-/**
- * Helper method to get commerce_cardonfile entity from an iATS customer code.
- */
-function commerce_iats_cardonfile_customer_code_load($customer_code) {
-  $query = new EntityFieldQuery();
-  $result = $query
-    ->entityCondition('entity_type', 'commerce_cardonfile')
-    ->propertyCondition('remote_id', $customer_code)
-    ->execute();
-
-  if (isset($result['commerce_cardonfile'])) {
-    return commerce_cardonfile_load(reset(array_keys($result['commerce_cardonfile'])));
-  }
-  else {
     return FALSE;
   }
 }
