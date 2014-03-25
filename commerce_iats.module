@@ -333,6 +333,28 @@ function commerce_iats_credit_card_mop($type) {
 }
 
 /**
+ * Gets an array of enabled card types for a payment method.
+ *
+ * @param array $payment_method
+ *  The payment method in use.
+ * @return array
+ */
+function commerce_iats_enabled_credit_card_types(array $payment_method) {
+  $card_types = NULL;
+
+  if (isset($payment_method['settings']['credit_card'])) {
+    $card_types = array_diff(
+      array_values($payment_method['settings']['credit_card']['card_types']), array(0));
+  }
+
+  if (($card_types == NULL) || (count($card_types) == 0)) {
+    $card_types = array_keys(commerce_iats_credit_card_types());
+  }
+
+  return $card_types;
+}
+
+/**
  * Masks all but the last four digits of a credit card number.
  *
  * @param string $credit_card_number
