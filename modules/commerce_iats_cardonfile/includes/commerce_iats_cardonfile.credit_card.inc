@@ -76,14 +76,12 @@ function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_meth
  * @return bool
  */
 function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+  $payment_data = $pane_values;
 
-  // TODO: Option to process credit card without storing as card on file.
-
-  if (!empty($pane_values['cardonfile'])) {
+  if ($pane_values['credit_card']['cardonfile_store'] === 1) {
+    // Customer has opted to use card on file.
     if ($pane_values['cardonfile'] === 'new') {
       // Create a new card on file record.
-      $payment_data = $pane_values;
-
       return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_create_and_charge');
     } else {
       // Get the card on file data.
@@ -99,6 +97,11 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
 
       return commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
     }
+  }
+  else {
+    // Customer has opted not to use card on file.
+    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card');
+    return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_process_credit_card_payment');
   }
 }
 
