@@ -42,6 +42,15 @@ function commerce_iats_cardonfile_credit_card_submit_form($payment_method, $pane
  * Payment method callback: checkout form validation.
  */
 function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+  // Validate credit card charge.
+  if (empty($charge['amount'])) {
+    watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
+      '@charge' => '<pre>' . check_plain(print_r($charge, TRUE)) . '</pre>',
+      '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>',
+    ), WATCHDOG_DEBUG);
+    return FALSE;
+  }
+
   // Skip normal validation if the customer specified a card on file.
   if (!empty($pane_values['cardonfile']) && ($pane_values['cardonfile'] !== 'new')) {
     return;

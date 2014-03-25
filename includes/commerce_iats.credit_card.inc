@@ -41,6 +41,15 @@ function commerce_iats_credit_card_submit_form($payment_method, $pane_values, $c
  * Payment method callback: checkout form validation.
  */
 function commerce_iats_credit_card_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+  // Validate credit card charge.
+  if (empty($charge['amount'])) {
+    watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
+      '@charge' => '<pre>' . check_plain(print_r($charge, TRUE)) . '</pre>',
+      '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>',
+    ), WATCHDOG_DEBUG);
+    return FALSE;
+  }
+
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
   // Validate the credit card fields.
@@ -57,14 +66,6 @@ function commerce_iats_credit_card_submit_form_validate($payment_method, $pane_f
  * Payment method callback: checkout form submission.
  */
 function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
-  // Validate credit card charge.
-  if (empty($charge['amount'])) {
-    watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
-      '@charge' => '<pre>' . check_plain(print_r($charge, TRUE)) . '</pre>',
-      '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>',
-    ), WATCHDOG_DEBUG);
-  }
-
   $payment_data = $pane_values;
 
   return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_process_credit_card_payment');
