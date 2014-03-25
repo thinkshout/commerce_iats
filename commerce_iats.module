@@ -130,25 +130,29 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
     '#type' => 'textfield',
     '#title' => t('Agent Code'),
     '#description' => t('This is the agent code used to authenticate with the iATS website.'),
-    '#default_value' => (isset($settings['agent_code']))? $settings['agent_code'] : '',
+    '#default_value' => (isset($settings['agent_code'])) ?
+      $settings['agent_code'] : '',
     '#required' => TRUE,
   );
   $form['agent_password'] = array(
     '#type' => 'textfield',
     '#title' => t('Password'),
     '#description' => t('Enter the corresponding password for this agent code.'),
-    '#default_value' => (isset($settings['agent_password']))? $settings['agent_password'] : '',
+    '#default_value' => (isset($settings['agent_password'])) ?
+      $settings['agent_password'] : '',
     '#required' => TRUE,
   );
   $form['server'] = array(
     '#type' => 'radios',
     '#title' => t('Transaction Server'),
-    '#description' => t('Select the transaction server to use for processing payments.'),
+    '#description' =>
+    t('Select the transaction server to use for processing payments.'),
     '#options' => array(
       COMMERCE_IATS_NA_SERVER_ID => t('NA'),
       COMMERCE_IATS_UK_SERVER_ID => t('UK'),
     ),
-    '#default_value' => (isset($settings['server']))? $settings['server'] : COMMERCE_IATS_NA_SERVER_ID,
+    '#default_value' => (isset($settings['server'])) ?
+      $settings['server'] : COMMERCE_IATS_NA_SERVER_ID,
   );
   $form['log'] = array(
     '#type' => 'checkboxes',
@@ -157,7 +161,7 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
       'request' => t('API request messages'),
       'response' => t('API response messages'),
     ),
-    '#default_value' => (isset($settings['log']))? $settings['log'] : array(),
+    '#default_value' => (isset($settings['log'])) ? $settings['log'] : array(),
   );
   $form['credit_card'] = array(
     '#type' => 'fieldset',
@@ -176,7 +180,8 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
     '#type' => 'textfield',
     '#title' => t('Invoice Prefix'),
     '#description' => t('Invoice numbers consist of this value followed by the order number. ie. INVOICE-1, INVOICE-2'),
-    '#default_value' => (isset($settings['invoice_prefix']))? $settings['invoice_prefix'] : 'INVOICE-',
+    '#default_value' => (isset($settings['invoice_prefix'])) ?
+    $settings['invoice_prefix'] : 'INVOICE-',
     '#required' => TRUE,
   );
 
@@ -206,12 +211,13 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
       commerce_iats_log_response($payment_method, $response);
     }
 
-    $auth_result = (isset($response['AUTHORIZATIONRESULT']))
-      ? trim($response['AUTHORIZATIONRESULT']) : NULL;
-    $transaction_id = (isset($response['TRANSACTIONID']))
-      ? trim($response['TRANSACTIONID']) : NULL;
-    $customer_code = (isset($response['CUSTOMERCODE']) && !empty($response['CUSTOMERCODE']))
-      ? trim($response['CUSTOMERCODE']) : NULL;
+    $auth_result = (isset($response['AUTHORIZATIONRESULT'])) ?
+      trim($response['AUTHORIZATIONRESULT']) : NULL;
+    $transaction_id = (isset($response['TRANSACTIONID'])) ?
+      trim($response['TRANSACTIONID']) : NULL;
+    $customer_code = (isset($response['CUSTOMERCODE']) &&
+      !empty($response['CUSTOMERCODE'])) ?
+      trim($response['CUSTOMERCODE']) : NULL;
 
     // If AUTHORIZATIONRESULT is not set, then the API returned an error string.
     // Assign it here for logging purposes.
@@ -219,7 +225,7 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
       $auth_result = $response;
     }
 
-    // Build the remote ID from the transaction ID  and customer code, if available.
+    // Build the remote ID from the transaction ID and customer code, if available.
     $remote_id = $transaction_id;
     if ($customer_code != NULL) {
       $remote_id .= '|' . $customer_code;
@@ -242,7 +248,8 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
 
     // Build a meaningful response message.
     $message = array(
-      '<b>' . t('iATS Payments result from ' . $payment_callback) . '</b>',
+      '<b>' . t('iATS Payments result from @payment_callback',
+        array('@payment_callback' => $payment_callback)) . '</b>',
       '<b>' . t('@decision', array('@decision' => $auth_result)) . '</b>',
     );
 
@@ -253,12 +260,19 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
 
     // If the payment failed, display an error and rebuild the form.
     if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
-      drupal_set_message(t('We received the following error while attempting to process your payment: @reason', array('@reason' => $auth_result)), 'error');
+      drupal_set_message(
+        t('We received the following error while attempting to process your payment: @reason',
+          array('@reason' => $auth_result)),
+        'error'
+      );
       return FALSE;
     }
   }
   else {
-    drupal_set_message(t('We encountered an error contacting our payment processor. Please try submitting your payment again.'), 'error');
+    drupal_set_message(
+      t('We encountered an error contacting our payment processor. Please try submitting your payment again.'),
+      'error'
+    );
     return FALSE;
   }
   return TRUE;
