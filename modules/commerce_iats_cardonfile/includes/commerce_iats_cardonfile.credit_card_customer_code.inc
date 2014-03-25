@@ -27,16 +27,8 @@ function commerce_iats_credit_card_customer_code_submit_form($payment_method, $p
   // Prepare the fields to include on the credit card form.
   $fields = array(
     'code' => '',
+    'type' => commerce_iats_enabled_credit_card_types($payment_method),
   );
-
-  // Limit credit card types, since iATS has a limited selection.
-  $card_types = array_diff(
-    array_values($payment_method['settings']['credit_card']['card_types']), array(0));
-  if (count($card_types) == 0) {
-    $card_types = array_keys(commerce_iats_credit_card_types());
-  }
-
-  $fields['type'] = $card_types;
 
   $form = commerce_payment_credit_card_form($fields);
   return $form;
