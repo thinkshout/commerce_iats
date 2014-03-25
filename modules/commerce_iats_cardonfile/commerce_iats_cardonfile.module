@@ -7,7 +7,8 @@ function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_m
   // Override base (used in callback method naming scheme.)
   $payment_methods['iats_credit_card']['base'] = 'commerce_iats_cardonfile_credit_card';
   // Override include file.
-  $payment_methods['iats_credit_card']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card.inc';
+  $payment_methods['iats_credit_card']['file'] =
+    'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card.inc';
 
   // Add Card on File callback methods.
   $payment_methods['iats_credit_card']['cardonfile'] = array(

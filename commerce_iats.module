@@ -183,6 +183,8 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
  * @param $order
  * @param $charge
  * @param $payment_callback
+ * @return bool
+ *  TRUE or FALSE indicating payment success.
  */
 function commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, $payment_callback) {
   // Process the payment using the defined callback method.
@@ -240,6 +242,7 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     drupal_set_message(t('We encountered an error contacting our payment processor. Please try submitting your payment again.'), 'error');
     return FALSE;
   }
+  return TRUE;
 }
 
 /**

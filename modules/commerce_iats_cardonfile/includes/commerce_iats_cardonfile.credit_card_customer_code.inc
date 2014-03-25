@@ -30,7 +30,8 @@ function commerce_iats_credit_card_customer_code_submit_form($payment_method, $p
   );
 
   // Limit credit card types, since iATS has a limited selection.
-  $card_types = array_diff(array_values($payment_method['settings']['credit_card']['card_types']), array(0));
+  $card_types = array_diff(
+    array_values($payment_method['settings']['credit_card']['card_types']), array(0));
   if (count($card_types) == 0) {
     $card_types = array_keys(commerce_iats_credit_card_types());
   }
@@ -47,7 +48,8 @@ function commerce_iats_credit_card_customer_code_submit_form($payment_method, $p
 function commerce_iats_credit_card_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
   $payment_data = $pane_values;
 
-  return commerce_iats_process_payment($payment_method, $payment_data, $order, NULL, 'commerce_iats_create_customer_code');
+  return commerce_iats_process_payment($payment_method, $payment_data, $order,
+    NULL, 'commerce_iats_create_customer_code');
 }
 
 /**

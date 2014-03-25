@@ -17,7 +17,9 @@ function commerce_iats_credit_card_refund_form($form, &$form_state, $order, $tra
   $payment_method = commerce_payment_method_instance_load($transaction->instance_id);
   $form_state['payment_method'] = $payment_method;
 
-  $default_amount = number_format(commerce_currency_amount_to_decimal($transaction->amount, $transaction->currency_code), 2, '.', '');
+  $default_amount = number_format(
+    commerce_currency_amount_to_decimal($transaction->amount,
+      $transaction->currency_code), 2, '.', '');
 
   $form['amount'] = array(
     '#type' => 'textfield',
@@ -80,7 +82,8 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
     'currency_code' => NULL,
   );
 
-  commerce_iats_process_payment($form_state['payment_method'], $payment_data, $form_state['order'], $charge, 'commerce_iats_process_credit_card_refund');
+  commerce_iats_process_payment($form_state['payment_method'], $payment_data,
+    $form_state['order'], $charge, 'commerce_iats_process_credit_card_refund');
 
   $form_state['redirect'] = 'admin/commerce/orders/' . $form_state['order']->order_id . '/payment';
 }

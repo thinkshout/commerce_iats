@@ -28,7 +28,8 @@ function commerce_iats_cardonfile_credit_card_submit_form($payment_method, $pane
   );
 
   // Limit credit card types, since iATS has a limited selection.
-  $card_types = array_diff(array_values($payment_method['settings']['credit_card']['card_types']), array(0));
+  $card_types = array_diff(
+    array_values($payment_method['settings']['credit_card']['card_types']), array(0));
   if (count($card_types) == 0) {
     $card_types = array_keys(commerce_iats_credit_card_types());
   }
@@ -44,7 +45,7 @@ function commerce_iats_cardonfile_credit_card_submit_form($payment_method, $pane
 function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
   // Skip normal validation if the customer specified a card on file.
   if (!empty($pane_values['cardonfile']) && ($pane_values['cardonfile'] !== 'new')) {
-    return;
+    return TRUE;
   }
 
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
@@ -57,6 +58,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_meth
   if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
     return FALSE;
   }
+  return TRUE;
 }
 
 /**
@@ -78,7 +80,8 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
     // Customer has opted to use card on file.
     if ($pane_values['cardonfile'] === 'new') {
       // Create a new card on file record.
-      return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_create_and_charge');
+      return commerce_iats_process_payment($payment_method, $payment_data, $order,
+        $charge, 'commerce_iats_cardonfile_credit_card_create_and_charge');
     } else {
       // Get the card on file data.
       $card_data = commerce_cardonfile_load($pane_values['cardonfile']);
@@ -91,13 +94,15 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
 
       $card_data->code = $pane_values['credit_card']['code'];
 
-      return commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
+      return commerce_iats_process_payment($payment_method, $card_data, $order,
+        $charge, 'commerce_iats_cardonfile_credit_card_charge');
     }
   }
   else {
     // Customer has opted not to use card on file.
     module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card');
-    return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_process_credit_card_payment');
+    return commerce_iats_process_payment($payment_method, $payment_data, $order,
+      $charge, 'commerce_iats_process_credit_card_payment');
   }
 }
 
@@ -134,7 +139,8 @@ function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
-    commerce_iats_log_request($payment_method, 'commerce_iats_cardonfile_credit_card_charge', $request);
+    commerce_iats_log_request($payment_method,
+      'commerce_iats_cardonfile_credit_card_charge', $request);
   }
 
   $response = $iats->processCreditCardWithCustomerCode($request);
@@ -180,7 +186,8 @@ function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method,
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
-    commerce_iats_log_request($payment_method, 'commerce_iats_cardonfile_credit_card_create_and_charge', $request);
+    commerce_iats_log_request($payment_method,
+      'commerce_iats_cardonfile_credit_card_create_and_charge', $request);
   }
 
   // Create new customer code and process the payment.
