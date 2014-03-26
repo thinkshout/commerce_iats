@@ -70,16 +70,16 @@ function commerce_iats_credit_card_submit_form_submit($payment_method, $pane_for
  * Processes a credit card payment via the iATS Payments API.
  *
  * @param array $payment_method
- *  The payment method used during this transaction.
+ *   The payment method used during this transaction.
  * @param array $payment_data
- *  Payment data retrieved from the submit form.
+ *   Payment data retrieved from the submit form.
  * @param object $order
- *  The order processed during this transaction.
+ *   The order processed during this transaction.
  * @param array $charge
- *  The transaction charge.
+ *   The transaction charge.
  *
  * @return Mixed
- *  API response array or error string.
+ *   API response array or error string.
  */
 function commerce_iats_process_credit_card_payment($payment_method, $payment_data, $order, $charge) {
   // Format credit card data.
