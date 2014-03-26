@@ -1,7 +1,8 @@
 <?php
 /**
  * @file
- * Implements iATS Payments credit card customer code services for use in Drupal Commerce.
+ * Implements iATS Payments credit card customer code services for use in Drupal
+ * Commerce.
  */
 
 /**
@@ -44,21 +45,20 @@ function commerce_iats_cardonfile_credit_card_customer_code_submit_form_submit($
 }
 
 /**
- * Creates a customer code and associated card on file record via the
- * iATS Payments API.
+ * Creates a customer code and associated card on file record.
  *
  * @param array $payment_method
- *  The payment method used during this transaction.
+ *   The payment method used during this transaction.
  * @param array $payment_data
- *  Payment data retrieved from the submit form.
+ *   Payment data retrieved from the submit form.
  * @param object $order
- *  The order processed during this transaction.
+ *   The order processed during this transaction.
  * @param array $charge
- *  The transaction charge. Unused in this method but required
- *  as part of callback signature.
+ *   The transaction charge. Unused in this method but required
+ *   as part of callback signature.
  *
  * @return Mixed
- *  API response array or error string.
+ *   API response array or error string.
  */
 function commerce_iats_cardonfile_create_customer_code($payment_method, $payment_data, $order, $charge) {
   // Format credit card data.
@@ -71,9 +71,12 @@ function commerce_iats_cardonfile_create_customer_code($payment_method, $payment
     'creditCardNum' => $formatted_card_data['number'],
     'creditCardExpiry' => $formatted_card_data['expiry'],
     'cvv2' => $payment_data['credit_card']['code'],
-    'recurring' => FALSE, // Only used for recurring payments.
-    'beginDate' => 0, // Only used for recurring payments.
-    'endDate' => 0, // Only used for recurring payments.
+    // Only used for recurring payments.
+    'recurring' => FALSE,
+    // Only used for recurring payments.
+    'beginDate' => 0,
+    // Only used for recurring payments.
+    'endDate' => 0,
     'currency' => 'USD',
   );
 
