@@ -24,17 +24,14 @@ function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_m
   // Override base (used in callback method naming scheme.)
   $payment_methods['iats_credit_card']['base'] = 'commerce_iats_cardonfile_credit_card';
   // Override include file.
-  $payment_methods['iats_credit_card']['file'] =
-    'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card.inc';
+  $payment_methods['iats_credit_card']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card.inc';
   // Add card on file callback methods.
   $payment_methods['iats_credit_card']['cardonfile'] = $card_on_file_callbacks;
 
   // Override base (used in callback method naming scheme.)
-  $payment_methods['iats_credit_card_customer_code']['base'] =
-    'commerce_iats_cardonfile_credit_card_customer_code';
+  $payment_methods['iats_credit_card_customer_code']['base'] = 'commerce_iats_cardonfile_credit_card_customer_code';
   // Override include file.
-  $payment_methods['iats_credit_card_customer_code']['file'] =
-    'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card_customer_code.inc';
+  $payment_methods['iats_credit_card_customer_code']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card_customer_code.inc';
   // Add card on file callback methods.
   $payment_methods['iats_credit_card_customer_code']['cardonfile'] = $card_on_file_callbacks;
 }
@@ -68,20 +65,20 @@ function commerce_iats_cardonfile_form_alter(&$form, &$form_state, $form_id) {
  * Creates a new card on file record for the user making this transaction.
  *
  * @param object $order
- *  The order processed during this transaction.
+ *   The order processed during this transaction.
  * @param array $payment_method
- *  The payment method used during this transaction.
+ *   The payment method used during this transaction.
  * @param array $card_data
- *  Array of credit card data.
+ *   Array of credit card data.
  * @param string $customer_code
- *  The iATS customer code returned by the iATS API following a transaction
- *  that created a new customer code.
+ *   The iATS customer code returned by the iATS API following a transaction
+ *   that created a new customer code.
  * @param string $card_type
- *  The credit card type used during this transaction.
- *  ie. visa, mc
+ *   The credit card type used during this transaction.
+ *   ie. visa, mc
  *
  * @return bool
- *  TRUE or FALSE indicating success of saving card on file.
+ *   TRUE or FALSE indicating success of saving card on file.
  */
 function commerce_iats_cardonfile_create_cardonfile($order, array $payment_method, array $card_data, $customer_code, $card_type) {
   // Build a payment details array for the credit card.
