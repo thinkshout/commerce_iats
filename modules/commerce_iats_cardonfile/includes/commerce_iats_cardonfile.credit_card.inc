@@ -11,9 +11,7 @@
 function commerce_iats_cardonfile_credit_card_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
-  $form = commerce_iats_credit_card_settings_form_base($settings);
-
-  return $form;
+  return commerce_iats_credit_card_settings_form_base($settings);
 }
 
 /**
@@ -47,10 +45,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_meth
     'form_parents' => array_merge($form_parents, array('credit_card')),
   );
 
-  if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
-    return FALSE;
-  }
-  return TRUE;
+  return commerce_payment_credit_card_validate($pane_values['credit_card'], $settings);
 }
 
 /**
