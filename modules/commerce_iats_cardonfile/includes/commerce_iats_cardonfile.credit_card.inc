@@ -122,10 +122,6 @@ function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data
 
   // Get the API service.
   $iats = commerce_iats_get_service('ProcessLink', $payment_method);
-  if ($iats == NULL) {
-    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
-    return NULL;
-  }
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
@@ -177,10 +173,6 @@ function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method,
 
   // Get the API service.
   $iats = commerce_iats_get_service('ProcessLink', $payment_method);
-  if ($iats == NULL) {
-    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
-    return NULL;
-  }
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
@@ -243,10 +235,6 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
 
   // Get the API service.
   $iats = commerce_iats_get_service('CustomerLink', $payment_method);
-  if ($iats == NULL) {
-    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
-    return FALSE;
-  }
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
@@ -293,10 +281,6 @@ function commerce_iats_cardonfile_credit_card_delete($form, &$form_state, $payme
 
   // Get the API service.
   $iats = commerce_iats_get_service('CustomerLink', $payment_method);
-  if ($iats == NULL) {
-    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
-    return FALSE;
-  }
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {

@@ -83,10 +83,6 @@ function commerce_iats_cardonfile_create_customer_code($payment_method, $payment
 
   // Get the API service.
   $iats = commerce_iats_get_service('CustomerLink', $payment_method);
-  if ($iats == NULL) {
-    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
-    return NULL;
-  }
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
