@@ -30,8 +30,7 @@ function commerce_iats_cardonfile_credit_card_customer_code_submit_form($payment
     'type' => commerce_iats_enabled_credit_card_types($payment_method),
   );
 
-  $form = commerce_payment_credit_card_form($fields);
-  return $form;
+  return commerce_payment_credit_card_form($fields);
 }
 
 /**
