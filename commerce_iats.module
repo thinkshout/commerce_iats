@@ -131,7 +131,7 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
     '#title' => t('Agent Code'),
     '#description' => t('This is the agent code used to authenticate with the iATS website.'),
     '#default_value' => (isset($settings['agent_code'])) ?
-      $settings['agent_code'] : '',
+    $settings['agent_code'] : '',
     '#required' => TRUE,
   );
   $form['agent_password'] = array(
@@ -139,7 +139,7 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
     '#title' => t('Password'),
     '#description' => t('Enter the corresponding password for this agent code.'),
     '#default_value' => (isset($settings['agent_password'])) ?
-      $settings['agent_password'] : '',
+    $settings['agent_password'] : '',
     '#required' => TRUE,
   );
   $form['server'] = array(
@@ -152,7 +152,7 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
       COMMERCE_IATS_UK_SERVER_ID => t('UK'),
     ),
     '#default_value' => (isset($settings['server'])) ?
-      $settings['server'] : COMMERCE_IATS_NA_SERVER_ID,
+    $settings['server'] : COMMERCE_IATS_NA_SERVER_ID,
   );
   $form['log'] = array(
     '#type' => 'checkboxes',
@@ -189,16 +189,23 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
 }
 
 /**
- * Processes a payment and creates a transaction record based on the
- * response from the iATS API.
+ * Processes a payment and creates a transaction record.
  *
- * @param $payment_method
- * @param $payment_data
- * @param $order
- * @param $charge
- * @param $payment_callback
+ * Based on the response from the iATS API.
+ *
+ * @param array $payment_method
+ *   Associative array with the payment method details.
+ * @param array $payment_data
+ *   Associative array with the payment data.
+ * @param object $order
+ *   Commerce order object.
+ * @param object $charge
+ *   Commerce charge object.
+ * @param string $payment_callback
+ *   Name of the payment callback.
+ *
  * @return bool
- *  TRUE or FALSE indicating payment success.
+ *   TRUE or FALSE indicating payment success.
  */
 function commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, $payment_callback) {
   // Process the payment using the defined callback method.
@@ -225,7 +232,7 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
       $auth_result = $response;
     }
 
-    // Build the remote ID from the transaction ID and customer code, if available.
+    // Build the remote ID from the transaction ID and customer code.
     $remote_id = $transaction_id;
     if ($customer_code != NULL) {
       $remote_id .= '|' . $customer_code;
@@ -282,11 +289,11 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
  * Logs an API request.
  *
  * @param array $payment_method
- *  The payment method used during this transaction.
+ *   The payment method used during this transaction.
  * @param string $payment_callback
- *  The name of the payment callback method used for this request.
+ *   The name of the payment callback method used for this request.
  * @param array $request
- *  The API request to log.
+ *   The API request to log.
  */
 function commerce_iats_log_request(array $payment_method, $payment_callback, array $request) {
   if (isset($request['ccNum'])) {
@@ -313,7 +320,7 @@ function commerce_iats_log_request(array $payment_method, $payment_callback, arr
  * Logs an API response.
  *
  * @param array $payment_method
- *  The payment method used during this transaction.
+ *   The payment method used during this transaction.
  * @param mixed $response
  *   Response array or error string.
  */
@@ -374,11 +381,10 @@ function commerce_iats_credit_card_mop($type) {
  * Gets an array of enabled card types for a payment method.
  *
  * @param array $payment_method
- *  The payment method used during this transaction.
+ *   The payment method used during this transaction.
  *
  * @return array
- *  Array of enabled card type IDs
- *  ie. visa, mc
+ *   Array of enabled card type IDs ie. visa, mc
  */
 function commerce_iats_enabled_credit_card_types(array $payment_method) {
   $card_types = NULL;
@@ -411,8 +417,11 @@ function commerce_iats_mask_credit_card_number($credit_card_number) {
 /**
  * Formats an array of credit card data in a way appropriate for iATS.
  *
- * @param array $card_data Unformatted credit card data from form.
- * @return array Formatted credit card data.
+ * @param array $card_data
+ *   Unformatted credit card data from form
+ *
+ * @return array
+ *   Formatted credit card data.
  */
 function commerce_iats_format_credit_card_data(array $card_data) {
   // Determine card type.
