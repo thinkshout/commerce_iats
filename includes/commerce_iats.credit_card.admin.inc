@@ -59,7 +59,8 @@ function commerce_iats_credit_card_refund_form_validate($form, &$form_state) {
     form_set_error('amount', t('You cannot refund more than you captured through iATS.'));
   }
 
-  // If the transaction is older than 120 days, display an error message and redirect.
+  // If the transaction is older than 120 days, display an error message and
+  // redirect.
   if (time() - $transaction->created > 86400 * 120) {
     drupal_set_message(t('This capture has passed its 120 day limit for issuing refunds.'), 'error');
     drupal_goto('admin/commerce/orders/' . $form_state['order']->order_id . '/payment');
@@ -92,17 +93,17 @@ function commerce_iats_credit_card_refund_form_submit($form, &$form_state) {
  * Processes a credit card refund via the iATS Payments API.
  *
  * @param array $payment_method
- *  The payment method used during this transaction.
+ *   The payment method used during this transaction.
  * @param array $payment_data
- *  Payment data retrieved from the submit form.
+ *   Payment data retrieved from the submit form.
  * @param object $order
- *  The order processed during this transaction.
+ *   The order processed during this transaction.
  * @param array $charge
- *  The transaction charge. Passed by reference here as refunds need to
- *  modify the charge amount.
+ *   The transaction charge. Passed by reference here as refunds need to
+ *   modify the charge amount.
  *
  * @return Mixed
- *  API response array or error string.
+ *   API response array or error string.
  */
 function commerce_iats_process_credit_card_refund($payment_method, $payment_data, $order, &$charge) {
   // Get the original transaction ID.
