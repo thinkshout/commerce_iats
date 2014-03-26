@@ -60,8 +60,8 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
   // Validate credit card charge.
   if (empty($charge['amount'])) {
     watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
-      '@charge' => '<pre>' . check_plain(print_r($charge, TRUE)) . '</pre>',
-      '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>',
+      '@charge' => '<pre>' . print_r($charge, TRUE) . '</pre>',
+      '@order' => '<pre>' . print_r($order, TRUE) . '</pre>',
     ), WATCHDOG_DEBUG);
     return FALSE;
   }
