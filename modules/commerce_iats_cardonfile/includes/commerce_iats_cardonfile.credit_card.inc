@@ -86,26 +86,25 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
     }
   }
 
-  // Customer has opted not to use card on file or card on file is not available.
+  // Customer has opted not to use card on file / card on file is not available.
   module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card');
   return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_process_credit_card_payment');
 }
 
 /**
- * Processes a credit card payment using a stored card on file via the
- * iATS Payments API.
+ * Processes a credit card payment using a stored card on file.
  *
  * @param array $payment_method
- *  The payment method used during this transaction.
+ *   The payment method used during this transaction.
  * @param array $card_data
- *  Array of credit card data.
+ *   Array of credit card data.
  * @param object $order
- *  The order processed during this transaction.
+ *   The order processed during this transaction.
  * @param array $charge
- *  The transaction charge.
+ *   The transaction charge.
  *
  * @return Mixed
- *  API response array or error string.
+ *   API response array or error string.
  */
 function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data, $order, $charge = NULL) {
   // Create and populate the API request.
@@ -140,20 +139,19 @@ function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data
 }
 
 /**
- * Processes a credit card charge and creates a card on file record
- * via the iATS Payments API.
+ * Processes a credit card charge and creates a card on file record.
  *
  * @param array $payment_method
- *  The payment method used during this transaction.
+ *   The payment method used during this transaction.
  * @param array $payment_data
- *  Payment data retrieved from the submit form.
+ *   Payment data retrieved from the submit form.
  * @param object $order
- *  The order processed during this transaction.
+ *   The order processed during this transaction.
  * @param array $charge
- *  The transaction charge.
+ *   The transaction charge.
  *
  * @return Mixed
- *  API response array or error string.
+ *   API response array or error string.
  */
 function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method, $payment_data, $order, $charge = NULL) {
   // Format credit card data.
@@ -235,9 +233,12 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
     'creditCardExpiry' => $formatted_card_data['expiry'],
     'mop' => commerce_iats_credit_card_mop($card_data->card_type),
     'updateCreditCardNum' => FALSE,
-    'recurring' => FALSE, // Only used for recurring payments.
-    'beginDate' => 0, // Only used for recurring payments.
-    'endDate' => 0, // Only used for recurring payments.
+    // Only used for recurring payments.
+    'recurring' => FALSE,
+    // Only used for recurring payments.
+    'beginDate' => 0,
+    // Only used for recurring payments.
+    'endDate' => 0,
   );
 
   // Get the API service.
