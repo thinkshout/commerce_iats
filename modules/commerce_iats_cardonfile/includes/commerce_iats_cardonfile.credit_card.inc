@@ -324,7 +324,7 @@ function commerce_iats_cardonfile_credit_card_delete($form, &$form_state, $payme
   // Account for iATS retaining customer codes once used in a transaction.
   elseif (strstr($auth_result, 'THE CUSTOMER CODE HAS BEEN USED')) {
     drupal_set_message(
-      t('Your card has been deleted, but could not be removed from iATS Payments as it was used in a transaction.'),
+      t('Card successfully removed. iATS Payments maintains a record of all cards used in payment transactions.'),
       'error');
     return TRUE;
   }
@@ -338,7 +338,7 @@ function commerce_iats_cardonfile_credit_card_delete($form, &$form_state, $payme
     );
 
     drupal_set_message(
-      t('An error occurred when trying to delete your card through the iATS API.'),
+      t('We were unable to remove your card at this time.'),
       'error');
   }
 
