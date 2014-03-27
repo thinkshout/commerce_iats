@@ -100,13 +100,6 @@ function commerce_iats_commerce_payment_method_info() {
     'display_title' => t('Credit card'),
     'description' => t('Integrates the iATS ProcessLink webservice for credit card payments.'),
     'file' => 'includes/commerce_iats.credit_card.inc',
-    // Define callback methods used by Commerce Card on File.
-    'cardonfile' => array(
-      // Called when card on file is updated.
-      'update callback' => 'commerce_iats_credit_card_cardonfile_update', // TODO: Write method.
-      // Called when card on file is deleted.
-      'delete callback' => 'commerce_iats_credit_card_cardonfile_delete', // TODO: Write method.
-    ),
   );
 
   $payment_methods['iats_credit_card_customer_code'] = array(
@@ -119,20 +112,6 @@ function commerce_iats_commerce_payment_method_info() {
   );
 
   return $payment_methods;
-}
-
-/**
- * Implements hook_form_FORM_ID_alter().
- */
-function commerce_iats_form_commerce_payment_order_transaction_add_form_alter(&$form, &$form_state, $form_id) {
-  // Hides "Amount" and "Currency Code" fields when creating a customer code.
-  if (isset($form_state['values']['payment_method'])) {
-    $parts = explode('|', $form_state['values']['payment_method']);
-    if ($parts[0] == 'iats_credit_card_customer_code') {
-      $form['payment_terminal']['amount']['#access'] = FALSE;
-      $form['payment_terminal']['currency_code']['#access'] = FALSE;
-    }
-  }
 }
 
 /**
@@ -151,25 +130,29 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
     '#type' => 'textfield',
     '#title' => t('Agent Code'),
     '#description' => t('This is the agent code used to authenticate with the iATS website.'),
-    '#default_value' => (isset($settings['agent_code']))? $settings['agent_code'] : '',
+    '#default_value' => (isset($settings['agent_code'])) ?
+    $settings['agent_code'] : '',
     '#required' => TRUE,
   );
   $form['agent_password'] = array(
     '#type' => 'textfield',
     '#title' => t('Password'),
     '#description' => t('Enter the corresponding password for this agent code.'),
-    '#default_value' => (isset($settings['agent_password']))? $settings['agent_password'] : '',
+    '#default_value' => (isset($settings['agent_password'])) ?
+    $settings['agent_password'] : '',
     '#required' => TRUE,
   );
   $form['server'] = array(
     '#type' => 'radios',
     '#title' => t('Transaction Server'),
-    '#description' => t('Select the transaction server to use for processing payments.'),
+    '#description' =>
+    t('Select the transaction server to use for processing payments.'),
     '#options' => array(
       COMMERCE_IATS_NA_SERVER_ID => t('NA'),
       COMMERCE_IATS_UK_SERVER_ID => t('UK'),
     ),
-    '#default_value' => (isset($settings['server']))? $settings['server'] : COMMERCE_IATS_NA_SERVER_ID,
+    '#default_value' => (isset($settings['server'])) ?
+    $settings['server'] : COMMERCE_IATS_NA_SERVER_ID,
   );
   $form['log'] = array(
     '#type' => 'checkboxes',
@@ -178,7 +161,7 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
       'request' => t('API request messages'),
       'response' => t('API response messages'),
     ),
-    '#default_value' => (isset($settings['log']))? $settings['log'] : NULL,
+    '#default_value' => (isset($settings['log'])) ? $settings['log'] : array(),
   );
   $form['credit_card'] = array(
     '#type' => 'fieldset',
@@ -193,84 +176,162 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
     '#options' => commerce_iats_credit_card_types(),
     '#default_value' => isset($settings['credit_card']['card_types']) ? $settings['credit_card']['card_types'] : array(),
   );
+  $form['invoice_prefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Invoice Prefix'),
+    '#description' => t('Invoice numbers consist of this value followed by the order number. ie. INVOICE-1, INVOICE-2'),
+    '#default_value' => (isset($settings['invoice_prefix'])) ?
+    $settings['invoice_prefix'] : 'INVOICE-',
+    '#required' => TRUE,
+  );
 
   return $form;
 }
 
 /**
- * Populate a request with address information for use in a iATS API request.
+ * Processes a payment and creates a transaction record.
  *
- * @param array $request
- *   Request array
+ * Based on the response from the iATS API.
+ *
+ * @param array $payment_method
+ *   Associative array with the payment method details.
+ * @param array $payment_data
+ *   Associative array with the payment data.
  * @param object $order
- *   The order object containing the address information via a referenced
- *   customer profile.
- * @param string $field_name
- *   The name of the customer profile reference field that links the order to
- *   the proper customer profile where the address data will be retrieved from.
+ *   Commerce order object.
+ * @param object $charge
+ *   Commerce charge object.
+ * @param string $payment_callback
+ *   Name of the payment callback.
  *
- * @return mixed
- *   Updates pass by reference.
+ * @return bool
+ *   TRUE or FALSE indicating payment success.
  */
-function commerce_iats_address(array &$request, $order, $field_name) {
-  // Return if the specified profile field doesn't exist.
-  if (empty($order->{$field_name})) {
-    watchdog('commerce_iats', 'Missing address data for @field_name: @order',
-      array(
-        '@field_name' => $field_name,
-        '@order' => '<pre>' . print_r($order, TRUE) . '</pre>',
-      ),
-      WATCHDOG_DEBUG
+function commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, $payment_callback) {
+  // Process the payment using the defined callback method.
+  $response = $payment_callback($payment_method, $payment_data, $order, $charge);
+
+  // Handle the payment response.
+  if ($response != NULL) {
+    // Log the payment response.
+    if ($payment_method['settings']['log']['response'] === 'response') {
+      commerce_iats_log_response($payment_method, $response);
+    }
+
+    $auth_result = (isset($response['AUTHORIZATIONRESULT'])) ?
+      trim($response['AUTHORIZATIONRESULT']) : NULL;
+    $transaction_id = (isset($response['TRANSACTIONID'])) ?
+      trim($response['TRANSACTIONID']) : NULL;
+    $customer_code = (isset($response['CUSTOMERCODE']) &&
+      !empty($response['CUSTOMERCODE'])) ?
+      trim($response['CUSTOMERCODE']) : NULL;
+
+    // If AUTHORIZATIONRESULT is not set, then the API returned an error string.
+    // Assign it here for logging purposes.
+    if ($auth_result == NULL) {
+      $auth_result = $response;
+    }
+
+    // Build the remote ID from the transaction ID and customer code.
+    $remote_id = $transaction_id;
+    if ($customer_code != NULL) {
+      $remote_id .= '|' . $customer_code;
+    }
+
+    // Prepare a transaction object to log the API response.
+    $transaction = commerce_payment_transaction_new('iats_credit_card', $order->order_id);
+    $transaction->instance_id = $payment_method['instance_id'];
+    $transaction->remote_id = $remote_id;
+    $transaction->amount = $charge['amount'];
+    $transaction->currency_code = $charge['currency_code'];
+
+    if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
+      // Create a failed transaction with the error message.
+      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+    }
+    else {
+      $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+    }
+
+    // Build a meaningful response message.
+    $message = array(
+      '<b>' . t('iATS Payments result from @payment_callback',
+        array('@payment_callback' => $payment_callback)) . '</b>',
+      '<b>' . t('@decision', array('@decision' => $auth_result)) . '</b>',
     );
 
+    $transaction->message = implode('<br />', $message);
+
+    // Save the transaction information.
+    commerce_payment_transaction_save($transaction);
+
+    // If the payment failed, display an error and rebuild the form.
+    if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
+      drupal_set_message(
+        t('We received the following error while attempting to process your payment: @reason',
+          array('@reason' => $auth_result)),
+        'error'
+      );
+      return FALSE;
+    }
+  }
+  else {
+    drupal_set_message(
+      t('We encountered an error contacting our payment processor. Please try submitting your payment again.'),
+      'error'
+    );
     return FALSE;
   }
-
-  // Prepare the address data for use in the request address.
-  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
-  $address_data = $order_wrapper->{$field_name}->commerce_customer_address->value();
-
-  /**
-   * If the address is missing a first name, split the
-   * full name into two parts as a backup.
-   */
-  if (empty($address_data['first_name'])) {
-    $name_parts = explode(' ', $address_data['name_line']);
-    $address_data['first_name'] = array_shift($name_parts);
-    $address_data['last_name'] = implode(' ', $name_parts);
-  }
-
-  // Add the basic address information to the request.
-  $request['firstName'] = $address_data['first_name'];
-  $request['lastName'] = $address_data['last_name'];
-  $request['address'] = $address_data['thoroughfare'];
-  $request['city'] = $address_data['locality'];
-  $request['state'] = $address_data['administrative_area'];
-  $request['zipCode'] = $address_data['postal_code'];
-  $request['country'] = $address_data['country'];
-  if ($address_data['premise']) {
-    $request['address'] .= ', ' . $address_data['premise'];
-  }
-
   return TRUE;
 }
 
 /**
- * Helper method to get commerce_cardonfile entity from an iATS customer code.
+ * Logs an API request.
+ *
+ * @param array $payment_method
+ *   The payment method used during this transaction.
+ * @param string $payment_callback
+ *   The name of the payment callback method used for this request.
+ * @param array $request
+ *   The API request to log.
  */
-function commerce_iats_cardonfile_customer_code_load($customer_code) {
-  $query = new EntityFieldQuery();
-  $result = $query
-    ->entityCondition('entity_type', 'commerce_cardonfile')
-    ->propertyCondition('remote_id', $customer_code)
-    ->execute();
+function commerce_iats_log_request(array $payment_method, $payment_callback, array $request) {
+  if (isset($request['ccNum'])) {
+    $request['ccNum'] = commerce_iats_mask_credit_card_number($request['ccNum']);
+  }
+  elseif (isset($request['creditCardNum'])) {
+    $request['creditCardNum'] = commerce_iats_mask_credit_card_number($request['creditCardNum']);
+  }
 
-  if (isset($result['commerce_cardonfile'])) {
-    return commerce_cardonfile_load(reset(array_keys($result['commerce_cardonfile'])));
+  if (isset($request['cvv2']) && !empty($request['cvv2'])) {
+    $request['cvv2'] = str_repeat('X', strlen($request['cvv2']));
   }
-  else {
-    return FALSE;
-  }
+
+  watchdog('commerce_iats', 'iATS API request to @method: @callback: @request',
+    array(
+      '@method' => $payment_method['short_title'],
+      '@callback' => $payment_callback,
+      '@request' => '<pre>' . check_plain(print_r($request, TRUE)) . '</pre>',
+    ),
+    WATCHDOG_DEBUG);
+}
+
+/**
+ * Logs an API response.
+ *
+ * @param array $payment_method
+ *   The payment method used during this transaction.
+ * @param mixed $response
+ *   Response array or error string.
+ */
+function commerce_iats_log_response(array $payment_method, $response) {
+  watchdog('commerce_iats',
+    'iATS API response from @method: @request',
+    array(
+      '@method' => $payment_method['short_title'],
+      '@request' => '<pre>' . check_plain(print_r($response, TRUE)) . '</pre>',
+    ),
+    WATCHDOG_DEBUG);
 }
 
 /**
@@ -317,112 +378,27 @@ function commerce_iats_credit_card_mop($type) {
 }
 
 /**
- * Creates a new card on file record for the user making this transaction.
- *
- * @param object $order
- *  The order processed during this transaction.
- * @param array $payment_method
- *  The payment method used during this transaction.
- * @param array $pane_values
- *  The values from the submitted form.
- * @param string $customer_code
- *  The iATS customer code returned by the iATS API following a transaction
- *  that created a new customer code.
- * @param string $card_type
- *  The credit card type used during this transaction.
- *
- * @return bool
- *  TRUE or FALSE indicating success of saving card on file.
- */
-function commerce_iats_credit_card_save_card_on_file($order, array $payment_method, array $pane_values, $customer_code, $card_type) {
-  // Build a payment details array for the credit card.
-  $payment_details = array(
-    'cardNumber' => $pane_values['credit_card']['number'],
-    'expirationDate' => $pane_values['credit_card']['exp_year'] . '-' . $pane_values['credit_card']['exp_month'],
-  );
-
-  if (isset($pane_values['credit_card']['code'])) {
-    $payment_details['cardCode'] = $pane_values['credit_card']['code'];
-  }
-
-  $card_data = commerce_cardonfile_new();
-  $card_data->uid = $order->uid;
-  $card_data->payment_method = $payment_method['method_id'];
-  $card_data->instance_id = $payment_method['instance_id'];
-  $card_data->remote_id = $customer_code;
-  $card_data->card_type = !empty($card_type) ? $card_type : 'card';
-  $card_data->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';
-  $card_data->card_number = substr($pane_values['credit_card']['number'], -4);
-  $card_data->card_exp_month = $pane_values['credit_card']['exp_month'];
-  $card_data->card_exp_year = $pane_values['credit_card']['exp_year'];
-  $card_data->status = 1;
-
-  // Save and log the creation of the new card on file.
-  if (commerce_cardonfile_save($card_data)) {
-    watchdog('commerce_iats',
-      'iATS Customer Code @customer_code created and saved to user @uid.',
-      array(
-        '@customer_code' => (string) $customer_code,
-        '@uid' => $order->uid,
-      )
-    );
-
-    return TRUE;
-  }
-  else {
-    watchdog('commerce_iats',
-      'iATS Customer Code @customer_code could not be saved to user @uid.',
-      array(
-        '@customer_code' => (string) $customer_code,
-        '@uid' => $order->uid,
-      ),
-      WATCHDOG_ERROR);
-
-    return FALSE;
-  }
-}
-
-/**
- * Logs an API request.
+ * Gets an array of enabled card types for a payment method.
  *
  * @param array $payment_method
- * @param array $request
- */
-function commerce_iats_log_request(array $payment_method, array $request) {
-  if (isset($request['ccNum'])) {
-    $request['ccNum'] = commerce_iats_mask_credit_card_number($request['ccNum']);
-  }
-  elseif (isset($request['creditCardNum'])) {
-    $request['creditCardNum'] = commerce_iats_mask_credit_card_number($request['creditCardNum']);
-  }
-
-  if (isset($request['cvv2']) && !empty($request['cvv2'])) {
-    $request['cvv2'] = str_repeat('X', strlen($request['cvv2']));
-  }
-
-  watchdog('commerce_iats', 'iATS API request to @method: @request',
-    array(
-      '@method' => $payment_method['short_title'],
-      '@request' => '<pre>' . check_plain(print_r($request, TRUE)) . '</pre>',
-    ),
-    WATCHDOG_DEBUG);
-}
-
-/**
- * Logs an API response.
+ *   The payment method used during this transaction.
  *
- * @param array $payment_method
- * @param mixed $response
- *   Response array or error string.
+ * @return array
+ *   Array of enabled card type IDs ie. visa, mc
  */
-function commerce_iats_log_response(array $payment_method, $response) {
-  watchdog('commerce_iats',
-    'iATS API response from @method: @request',
-    array(
-      '@method' => $payment_method['short_title'],
-      '@request' => '<pre>' . check_plain(print_r($response, TRUE)) . '</pre>',
-    ),
-    WATCHDOG_DEBUG);
+function commerce_iats_enabled_credit_card_types(array $payment_method) {
+  $card_types = NULL;
+
+  if (isset($payment_method['settings']['credit_card'])) {
+    $card_types = array_diff(
+      array_values($payment_method['settings']['credit_card']['card_types']), array(0));
+  }
+
+  if (($card_types == NULL) || (count($card_types) == 0)) {
+    $card_types = array_keys(commerce_iats_credit_card_types());
+  }
+
+  return $card_types;
 }
 
 /**
@@ -439,21 +415,117 @@ function commerce_iats_mask_credit_card_number($credit_card_number) {
 }
 
 /**
- * Gets an instance of the iATS Payments API ProcessLink service.
+ * Formats an array of credit card data in a way appropriate for iATS.
  *
- * @param array $payment_method
- * @return iATS\ProcessLink
+ * @param array $card_data
+ *   Unformatted credit card data from form
+ *
+ * @return array
+ *   Formatted credit card data.
  */
-function commerce_iats_get_processlink_service(array $payment_method) {
+function commerce_iats_format_credit_card_data(array $card_data) {
+  // Determine card type.
+  $orig_card_type = NULL;
+  $card_type = NULL;
+  if (!empty($card_data['number'])) {
+    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+    $orig_card_type = commerce_payment_validate_credit_card_type($card_data['number'], array_keys(commerce_iats_credit_card_types()));
+  }
+
+  if ($orig_card_type != NULL) {
+    $card_type = commerce_iats_credit_card_mop($orig_card_type);
+  }
+
+  // Format credit card data.
+  $card_number = str_replace(' ', '', $card_data['number']);
+  $expiry = sprintf('%02d/%02d', $card_data['exp_month'], ($card_data['exp_year'] % 100));
+
+  $formatted_card_data = array(
+    'orig_type' => $orig_card_type,
+    'type' => $card_type,
+    'number' => $card_number,
+    'expiry' => $expiry,
+  );
+
+  return $formatted_card_data;
+}
+
+/**
+ * Populate a request with address information for use in a iATS API request.
+ *
+ * @param array $request
+ *   Request array
+ * @param object $order
+ *   The order object containing the address information via a referenced
+ *   customer profile.
+ * @param string $field_name
+ *   The name of the customer profile reference field that links the order to
+ *   the proper customer profile where the address data will be retrieved from.
+ *
+ * @return mixed
+ *   Updates pass by reference.
+ */
+function commerce_iats_address(array &$request, $order, $field_name) {
+  // Return if the specified profile field doesn't exist.
+  if (empty($order->{$field_name})) {
+    watchdog('commerce_iats', 'Missing address data for @field_name: @order',
+      array(
+        '@field_name' => $field_name,
+        '@order' => '<pre>' . print_r($order, TRUE) . '</pre>',
+      ),
+      WATCHDOG_DEBUG
+    );
+
+    return FALSE;
+  }
+
+  // Prepare the address data for use in the request address.
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $address_data = $order_wrapper->{$field_name}->commerce_customer_address->value();
+
+  // If the address is missing a first name, split the
+  // full name into two parts as a backup.
+  if (empty($address_data['first_name'])) {
+    $name_parts = explode(' ', $address_data['name_line']);
+    $address_data['first_name'] = array_shift($name_parts);
+    $address_data['last_name'] = implode(' ', $name_parts);
+  }
+
+  // Add the basic address information to the request.
+  $request['firstName'] = $address_data['first_name'];
+  $request['lastName'] = $address_data['last_name'];
+  $request['address'] = $address_data['thoroughfare'];
+  $request['city'] = $address_data['locality'];
+  $request['state'] = $address_data['administrative_area'];
+  $request['zipCode'] = $address_data['postal_code'];
+  $request['country'] = $address_data['country'];
+  if ($address_data['premise']) {
+    $request['address'] .= ', ' . $address_data['premise'];
+  }
+
+  return TRUE;
+}
+
+/**
+ * Gets an instance of an iATS Payments API service.
+ *
+ * @param string $service_name
+ *   The iATS service to get. 'ProcessLink' or 'CustomerLink'
+ * @param array $payment_method
+ *   The payment method, used to populate iATS API settings.
+ *
+ * @return Mixed
+ *   The instantiated iATS Payments API service.
+ */
+function commerce_iats_get_service($service_name, array $payment_method) {
   if (libraries_load('iatspayments')) {
-    $service = new iATS\ProcessLink(
+    $service_name = 'iATS\\' . $service_name;
+    $service = new $service_name(
       $payment_method['settings']['agent_code'],
       $payment_method['settings']['agent_password'],
       $payment_method['settings']['server']
     );
-
     return $service;
   }
-
   return NULL;
 }

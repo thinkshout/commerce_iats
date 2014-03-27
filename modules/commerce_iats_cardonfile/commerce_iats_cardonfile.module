@@ -1,0 +1,129 @@
+<?php
+
+/**
+ * @file
+ * Implements iATS Payments API for use in Drupal Commerce Card on File.
+ */
+
+/**
+ * Implements hook_commerce_payment_method_info_alter().
+ */
+function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_methods) {
+  // Shared card on file callback methods.
+  $card_on_file_callbacks = array(
+    // Called when card is charged. Note: Only the Commerce Recurring module
+    // calls this method automatically. When using just the Commerce module,
+    // we call this method manually via a form submit handler.
+    'charge callback' => 'commerce_iats_cardonfile_credit_card_charge',
+    // Called when card on file is updated.
+    'update callback' => 'commerce_iats_cardonfile_credit_card_update',
+    // Called when card on file is deleted.
+    'delete callback' => 'commerce_iats_cardonfile_credit_card_delete',
+  );
+
+  // Override base (used in callback method naming scheme.)
+  $payment_methods['iats_credit_card']['base'] = 'commerce_iats_cardonfile_credit_card';
+  // Override include file.
+  $payment_methods['iats_credit_card']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card.inc';
+  // Add card on file callback methods.
+  $payment_methods['iats_credit_card']['cardonfile'] = $card_on_file_callbacks;
+
+  // Override base (used in callback method naming scheme.)
+  $payment_methods['iats_credit_card_customer_code']['base'] = 'commerce_iats_cardonfile_credit_card_customer_code';
+  // Override include file.
+  $payment_methods['iats_credit_card_customer_code']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card_customer_code.inc';
+  // Add card on file callback methods.
+  $payment_methods['iats_credit_card_customer_code']['cardonfile'] = $card_on_file_callbacks;
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form_state['values']['payment_method'])) {
+    $parts = explode('|', $form_state['values']['payment_method']);
+
+    if ($parts[0] == 'iats_credit_card_customer_code') {
+      // Hide "Amount" and "Currency Code" fields when creating a customer code.
+      $form['payment_terminal']['amount']['#access'] = FALSE;
+      $form['payment_terminal']['currency_code']['#access'] = FALSE;
+    }
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function commerce_iats_cardonfile_form_alter(&$form, &$form_state, $form_id) {
+  if (($form_id == 'commerce_cardonfile_card_form') || ($form_id == 'commerce_cardonfile_delete_form')) {
+    // Include credit_card_update / credit_card_delete callback methods.
+    module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card');
+  }
+}
+
+/**
+ * Creates a new card on file record for the user making this transaction.
+ *
+ * @param object $order
+ *   The order processed during this transaction.
+ * @param array $payment_method
+ *   The payment method used during this transaction.
+ * @param array $card_data
+ *   Array of credit card data.
+ * @param string $customer_code
+ *   The iATS customer code returned by the iATS API following a transaction
+ *   that created a new customer code.
+ * @param string $card_type
+ *   The credit card type used during this transaction.
+ *   ie. visa, mc
+ *
+ * @return bool
+ *   TRUE or FALSE indicating success of saving card on file.
+ */
+function commerce_iats_cardonfile_create_cardonfile($order, array $payment_method, array $card_data, $customer_code, $card_type) {
+  // Build a payment details array for the credit card.
+  $payment_details = array(
+    'cardNumber' => $card_data['number'],
+    'expirationDate' => $card_data['exp_year'] . '-' . $card_data['exp_month'],
+  );
+
+  if (isset($pane_values['credit_card']['code'])) {
+    $payment_details['cardCode'] = $pane_values['credit_card']['code'];
+  }
+
+  $card_on_file = commerce_cardonfile_new();
+  $card_on_file->uid = $order->uid;
+  $card_on_file->payment_method = $payment_method['method_id'];
+  $card_on_file->instance_id = $payment_method['instance_id'];
+  $card_on_file->remote_id = $customer_code;
+  $card_on_file->card_type = !empty($card_type) ? $card_type : 'card';
+  $card_on_file->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';
+  $card_on_file->card_number = substr($card_data['number'], -4);
+  $card_on_file->card_exp_month = $card_data['exp_month'];
+  $card_on_file->card_exp_year = $card_data['exp_year'];
+  $card_on_file->status = 1;
+
+  // Save and log the creation of the new card on file.
+  if (commerce_cardonfile_save($card_on_file)) {
+    watchdog('commerce_iats',
+      'iATS Customer Code @customer_code created and saved to user @uid.',
+      array(
+        '@customer_code' => (string) $customer_code,
+        '@uid' => $order->uid,
+      )
+    );
+
+    return TRUE;
+  }
+  else {
+    watchdog('commerce_iats',
+      'iATS Customer Code @customer_code could not be saved to user @uid.',
+      array(
+        '@customer_code' => (string) $customer_code,
+        '@uid' => $order->uid,
+      ),
+      WATCHDOG_ERROR);
+
+    return FALSE;
+  }
+}
