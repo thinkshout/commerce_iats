@@ -111,11 +111,20 @@ function commerce_iats_commerce_payment_method_info() {
     'file' => 'includes/commerce_iats.credit_card_customer_code.inc',
   );
 
+  $payment_methods['iats_ach_eft'] = array(
+    'base' => 'commerce_iats_ach_eft',
+    'title' => t('iATS Webservice: ACH/EFT payment'),
+    'short_title' => t('iATS ACH/EFT payment'),
+    'display_title' => t('ACH/EFT'),
+    'description' => t('Integrates the iATS ProcessLink webservice for ACH/EFT payments.'),
+    'file' => 'includes/commerce_iats.ach_eft.inc',
+  );
+
   return $payment_methods;
 }
 
 /**
- * Gets base fields settings form fields for credit card based payment methods.
+ * Gets base fields settings form fields for all payment methods.
  *
  * @param array $settings
  *   Form field default values array.
@@ -123,7 +132,7 @@ function commerce_iats_commerce_payment_method_info() {
  * @return array
  *   Base fields for settings form.
  */
-function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
+function commerce_iats_settings_form_base(array $settings = NULL) {
   $form = array();
 
   $form['agent_code'] = array(
@@ -163,6 +172,30 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
     ),
     '#default_value' => (isset($settings['log'])) ? $settings['log'] : array(),
   );
+  $form['invoice_prefix'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Invoice Prefix'),
+    '#description' => t('Invoice numbers consist of this value followed by the order number. ie. INVOICE-1, INVOICE-2'),
+    '#default_value' => (isset($settings['invoice_prefix'])) ?
+    $settings['invoice_prefix'] : 'INVOICE-',
+    '#required' => TRUE,
+  );
+
+  return $form;
+}
+
+/**
+ * Gets base fields settings form fields for credit card based payment methods.
+ *
+ * @param array $settings
+ *   Form field default values array.
+ *
+ * @return array
+ *   Base fields for settings form.
+ */
+function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
+  $form = commerce_iats_settings_form_base($settings);
+
   $form['credit_card'] = array(
     '#type' => 'fieldset',
     '#title' => t('Credit card service settings'),
@@ -175,14 +208,6 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
     '#description' => t('If none are checked, any credit card type will be accepted.'),
     '#options' => commerce_iats_credit_card_types(),
     '#default_value' => isset($settings['credit_card']['card_types']) ? $settings['credit_card']['card_types'] : array(),
-  );
-  $form['invoice_prefix'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Invoice Prefix'),
-    '#description' => t('Invoice numbers consist of this value followed by the order number. ie. INVOICE-1, INVOICE-2'),
-    '#default_value' => (isset($settings['invoice_prefix'])) ?
-    $settings['invoice_prefix'] : 'INVOICE-',
-    '#required' => TRUE,
   );
 
   return $form;
