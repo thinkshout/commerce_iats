@@ -55,8 +55,16 @@ function commerce_iats_ach_eft_payment_form($fields = array(), $default = array(
  * @see commerce_iats_ach_eft_payment_form()
  */
 function commerce_iats_ach_eft_payment_form_validate($details, $settings) {
-  // TODO Validation logic.
-  return TRUE;
+  $prefix = implode('][', $settings['form_parents']) . '][';
+  $valid = TRUE;
+
+  $account_types = commerce_iats_ach_eft_account_types();
+  if (!isset($account_types[$details['type']])) {
+    form_set_error($prefix . 'number', t('You have entered an invalid bank account type.'));
+    $valid = FALSE;
+  }
+
+  return $valid;
 }
 
 /**
