@@ -9,31 +9,30 @@
  * Implements hook_commerce_payment_method_info_alter().
  */
 function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_methods) {
-  // Shared card on file callback methods.
-  $card_on_file_callbacks = array(
-    // Called when card is charged. Note: Only the Commerce Recurring module
-    // calls this method automatically. When using just the Commerce module,
-    // we call this method manually via a form submit handler.
-    'charge callback' => 'commerce_iats_cardonfile_credit_card_charge',
-    // Called when card on file is updated.
-    'update callback' => 'commerce_iats_cardonfile_credit_card_update',
-    // Called when card on file is deleted.
-    'delete callback' => 'commerce_iats_cardonfile_credit_card_delete',
-  );
+  $credit_card_callbacks = commerce_iats_cardonfile_payment_method_callbacks('credit_card');
 
   // Override base (used in callback method naming scheme.)
   $payment_methods['iats_credit_card']['base'] = 'commerce_iats_cardonfile_credit_card';
   // Override include file.
   $payment_methods['iats_credit_card']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card.inc';
   // Add card on file callback methods.
-  $payment_methods['iats_credit_card']['cardonfile'] = $card_on_file_callbacks;
+  $payment_methods['iats_credit_card']['cardonfile'] = $credit_card_callbacks;
 
   // Override base (used in callback method naming scheme.)
   $payment_methods['iats_credit_card_customer_code']['base'] = 'commerce_iats_cardonfile_credit_card_customer_code';
   // Override include file.
   $payment_methods['iats_credit_card_customer_code']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card_customer_code.inc';
   // Add card on file callback methods.
-  $payment_methods['iats_credit_card_customer_code']['cardonfile'] = $card_on_file_callbacks;
+  $payment_methods['iats_credit_card_customer_code']['cardonfile'] = $credit_card_callbacks;
+
+  $ach_eft_callbacks = commerce_iats_cardonfile_payment_method_callbacks('ach_eft');
+
+  // Override base (used in callback method naming scheme.)
+  $payment_methods['iats_ach_eft']['base'] = 'commerce_iats_cardonfile_ach_eft';
+  // Override include file.
+  $payment_methods['iats_ach_eft']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.ach_eft.inc';
+  // Add card on file callback methods.
+  $payment_methods['iats_ach_eft']['cardonfile'] = $ach_eft_callbacks;
 }
 
 /**
@@ -48,6 +47,21 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
       $form['payment_terminal']['amount']['#access'] = FALSE;
       $form['payment_terminal']['currency_code']['#access'] = FALSE;
     }
+  }
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alters cardonfile store card option on form to account for bank account
+ * details being used in place of credit card details.
+ */
+function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['commerce_payment']['payment_details']['bank_account'])) {
+    $form['commerce_payment']['payment_details']['bank_account']['cardonfile_store']
+      = $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store'];
+
+    unset($form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']);
   }
 }
 
@@ -126,4 +140,29 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
 
     return FALSE;
   }
+}
+
+/**
+ * Returns an array of payment method callbacks, based in a payment method type.
+ *
+ * @param string $payment_method_type
+ *   The payment method type to use in callback method names.
+ *   Currently 'credit_card' or 'ach_eft'
+ *
+ * @return array
+ *   Array of payment method callbacks.
+ */
+function commerce_iats_cardonfile_payment_method_callbacks($payment_method_type) {
+  $card_on_file_callbacks = array(
+    // Called when card is charged. Note: Only the Commerce Recurring module
+    // calls this method automatically. When using just the Commerce module,
+    // we call this method manually via a form submit handler.
+    'charge callback' => 'commerce_iats_cardonfile_' . $payment_method_type . '_charge',
+    // Called when card on file is updated.
+    'update callback' => 'commerce_iats_cardonfile_' . $payment_method_type . '_update',
+    // Called when card on file is deleted.
+    'delete callback' => 'commerce_iats_cardonfile_' . $payment_method_type . '_delete',
+  );
+
+  return $card_on_file_callbacks;
 }
