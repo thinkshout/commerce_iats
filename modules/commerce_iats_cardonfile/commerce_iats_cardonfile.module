@@ -63,14 +63,19 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
 
     unset($form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']);
 
-    $form['commerce_payment']['payment_details']['cardonfile']['#title'] = 'Select a stored bank account';
-    $form['commerce_payment']['payment_details']['cardonfile']['#options']['new'] = 'Use a different bank account.';
+    $form['commerce_payment']['payment_details']['cardonfile']['#title'] = t('Select a stored bank account.');
+    $form['commerce_payment']['payment_details']['cardonfile']['#options']['new'] = t('Use a different bank account.');
+    $form['commerce_payment']['payment_details']['cardonfile_instance_default']['#title']
+      = t('Set as your default bank account.');
+    $form['commerce_payment']['payment_details']['bank_account']['cardonfile_store']['#title']
+      = t('Store this bank account on file for future use.');
 
-    // If the the card on file selection element set to use an existing bank account,
-    // then hide the bank account form elements.
+    // If the the card on file selection element set to use an
+    // existing bank account, then hide the bank account form elements.
     if (isset($form['commerce_payment']['payment_details']['cardonfile'])) {
-      if (!empty($form_state['values']['commerce_payment']['payment_details']['cardonfile'])
-        && $form_state['values']['commerce_payment']['payment_details']['cardonfile'] !== 'new') {
+      if (empty($form_state['values'])
+        || (!empty($form_state['values']['commerce_payment']['payment_details']['cardonfile'])
+        && $form_state['values']['commerce_payment']['payment_details']['cardonfile'] !== 'new')) {
         $form['commerce_payment']['payment_details']['bank_account']['#access'] = FALSE;
       }
     }
