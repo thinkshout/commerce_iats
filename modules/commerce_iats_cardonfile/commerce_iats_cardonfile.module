@@ -53,7 +53,7 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
 /**
  * Implements hook_form_FORM_ID_alter().
  *
- * Alters cardonfile store card option on form to account for bank account
+ * Alters card on file options on form to account for bank account
  * details being used in place of credit card details.
  */
 function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
@@ -62,6 +62,18 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
       = $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store'];
 
     unset($form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']);
+
+    $form['commerce_payment']['payment_details']['cardonfile']['#title'] = 'Select a stored bank account';
+    $form['commerce_payment']['payment_details']['cardonfile']['#options']['new'] = 'Use a different bank account.';
+
+    // If the the card on file selection element set to use an existing bank account,
+    // then hide the bank account form elements.
+    if (isset($form['commerce_payment']['payment_details']['cardonfile'])) {
+      if (!empty($form_state['values']['commerce_payment']['payment_details']['cardonfile'])
+        && $form_state['values']['commerce_payment']['payment_details']['cardonfile'] !== 'new') {
+        $form['commerce_payment']['payment_details']['bank_account']['#access'] = FALSE;
+      }
+    }
   }
 }
 
