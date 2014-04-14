@@ -105,7 +105,7 @@ function commerce_iats_commerce_payment_method_info() {
   $payment_methods['iats_credit_card_customer_code'] = array(
     'base' => 'commerce_iats_credit_card_customer_code',
     'title' => t('iATS Webservice: Credit card customer code creation'),
-    'short_title' => t('iATS Web Service'),
+    'short_title' => t('iATS Credit card customer code creation'),
     'display_title' => t('Credit card customer code'),
     'description' => t('Integrates the iATS CustomerLink webservice for the creation of credit card customer codes.'),
     'file' => 'includes/commerce_iats.credit_card_customer_code.inc',
@@ -118,6 +118,15 @@ function commerce_iats_commerce_payment_method_info() {
     'display_title' => t('ACH/EFT'),
     'description' => t('Integrates the iATS ProcessLink webservice for ACH/EFT payments.'),
     'file' => 'includes/commerce_iats.ach_eft.inc',
+  );
+
+  $payment_methods['iats_ach_eft_customer_code'] = array(
+    'base' => 'commerce_iats_ach_eft_customer_code',
+    'title' => t('iATS Webservice: ACH/EFT customer code creation'),
+    'short_title' => t('iATS ACH/EFT customer code creation'),
+    'display_title' => t('ACH/EFT customer code'),
+    'description' => t('Integrates the iATS CustomerLink webservice for the creation of ACH/EFT customer codes.'),
+    'file' => 'includes/commerce_iats.ach_eft_customer_code.inc',
   );
 
   return $payment_methods;
