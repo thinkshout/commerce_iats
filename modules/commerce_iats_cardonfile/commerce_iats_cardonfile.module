@@ -33,6 +33,13 @@ function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_m
   $payment_methods['iats_ach_eft']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.ach_eft.inc';
   // Add card on file callback methods.
   $payment_methods['iats_ach_eft']['cardonfile'] = $ach_eft_callbacks;
+
+  // Override base (used in callback method naming scheme.)
+  $payment_methods['iats_ach_eft_customer_code']['base'] = 'commerce_iats_cardonfile_ach_eft_customer_code';
+  // Override include file.
+  $payment_methods['iats_ach_eft_customer_code']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.ach_eft_customer_code.inc';
+  // Add card on file callback methods.
+  $payment_methods['iats_ach_eft_customer_code']['cardonfile'] = $ach_eft_callbacks;
 }
 
 /**
@@ -70,14 +77,9 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
     $form['commerce_payment']['payment_details']['bank_account']['cardonfile_store']['#title']
       = t('Store this bank account on file for future use.');
 
-    // If the the card on file selection element set to use an
-    // existing bank account, then hide the bank account form elements.
-    if (isset($form['commerce_payment']['payment_details']['cardonfile'])) {
-      if (empty($form_state['values'])
-        || (!empty($form_state['values']['commerce_payment']['payment_details']['cardonfile'])
-        && $form_state['values']['commerce_payment']['payment_details']['cardonfile'] !== 'new')) {
-        $form['commerce_payment']['payment_details']['bank_account']['#access'] = FALSE;
-      }
+    if (isset($form['commerce_payment']['payment_details']['credit_card']['#access'])) {
+      $form['commerce_payment']['payment_details']['bank_account']['#access']
+        = $form['commerce_payment']['payment_details']['credit_card']['#access'];
     }
   }
 }
