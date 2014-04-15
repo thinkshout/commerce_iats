@@ -24,7 +24,7 @@ function commerce_iats_ach_eft_payment_form($fields = array(), $default = array(
     $form['bank_account']['owner'] = array(
       '#type' => 'textfield',
       '#title' => t('Account owner'),
-      '#default_value' => $default['owner'],
+      '#default_value' => isset($default['owner']) ? $default['owner'] : NULL,
       '#attributes' => array('autocomplete' => 'off'),
       '#required' => TRUE,
       '#maxlength' => 64,
@@ -48,7 +48,7 @@ function commerce_iats_ach_eft_payment_form($fields = array(), $default = array(
       '#type' => 'select',
       '#title' => t('Account Type'),
       '#options' => commerce_iats_ach_eft_account_types(),
-      '#default_value' => $default['type'],
+      '#default_value' => isset($default['type']) ? $default['type'] : NULL,
       '#required' => TRUE,
     );
   }

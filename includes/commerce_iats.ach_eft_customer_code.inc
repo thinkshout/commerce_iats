@@ -23,7 +23,12 @@ function commerce_iats_ach_eft_customer_code_settings_form($settings = NULL) {
 function commerce_iats_ach_eft_customer_code_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
 
-  $form = commerce_iats_ach_eft_payment_form();
+  $fields = array(
+    'type' => '',
+    'number' => '',
+  );
+
+  $form = commerce_iats_ach_eft_payment_form($fields);
   return $form;
 }
 
