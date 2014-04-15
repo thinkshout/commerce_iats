@@ -197,11 +197,6 @@ function commerce_iats_cardonfile_ach_eft_create_and_charge($payment_method, $pa
  * Updates bank account details stored with iATS Payments.
  */
 function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_method, $card_data) {
-  // TODO: Handle account number / type update.
-  $card = array(
-    'number' => '',
-  );
-
   $name_parts = explode(' ', $card_data->card_name);
   $first_name = array_shift($name_parts);
   $last_name = implode(' ', $name_parts);
@@ -212,6 +207,8 @@ function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_m
     'customerCode' => $card_data->remote_id,
     'firstName' => $first_name,
     'lastName' => $last_name,
+    'accountCustomerName' => $card_data->card_name,
+    'accountType' => $card_data->type,
     'updateAccountNum' => FALSE,
     // Only used for recurring payments.
     'recurring' => FALSE,
