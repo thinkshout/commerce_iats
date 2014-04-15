@@ -108,7 +108,7 @@ function commerce_iats_cardonfile_delete_form($form, &$form_state, $card_data) {
  * @see commerce_cardonfile_delete_form_submit()
  */
 function commerce_iats_cardonfile_delete_form_submit($form, &$form_state) {
-  if ($form_state['card_data']->payment_method == 'iats_ach_eft') {
+  if (isset($form_state['card_data']) && ($form_state['card_data']->payment_method == 'iats_ach_eft')) {
     module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.ach_eft.pages');
     return commerce_iats_cardonfile_ach_eft_delete_form_submit($form, $form_state);
   }

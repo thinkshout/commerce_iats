@@ -90,12 +90,18 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
  * Includes payment method update / delete callback methods.
  */
 function commerce_iats_cardonfile_form_alter(&$form, &$form_state, $form_id) {
-  if (($form_id == 'commerce_iats_cardonfile_card_form') || ($form_id == 'commerce_iats_cardonfile_delete_form')) {
-    if ($form_state['card_data']->payment_method == 'iats_credit_card') {
-      module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card');
+  if ((substr($form_id, -20) == 'cardonfile_card_form')
+    || (substr($form_id, -22) == 'cardonfile_delete_form')) {
+    $default_payment_method = TRUE;
+    if (isset($form_state['card_data'])) {
+      if (substr($form_state['card_data']->payment_method, 0, 12) == 'iats_ach_eft') {
+        module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.ach_eft');
+        $default_payment_method = FALSE;
+      }
     }
-    elseif ($form_state['card_data']->payment_method == 'iats_ach_eft') {
-      module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.ach_eft');
+
+    if ($default_payment_method) {
+      module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card');
     }
   }
 }
