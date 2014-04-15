@@ -19,21 +19,39 @@ function commerce_iats_ach_eft_payment_form($fields = array(), $default = array(
     ),
   );
 
-  $form['bank_account']['number'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Account Number'),
-    '#attributes' => array('autocomplete' => 'off'),
-    '#required' => TRUE,
-    '#maxlength' => 64,
-    '#size' => 32,
-  );
+  // Add a field for the credit card owner if specified.
+  if (isset($fields['owner'])) {
+    $form['bank_account']['owner'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Account owner'),
+      '#default_value' => $default['owner'],
+      '#attributes' => array('autocomplete' => 'off'),
+      '#required' => TRUE,
+      '#maxlength' => 64,
+      '#size' => 32,
+    );
+  }
 
-  $form['bank_account']['type'] = array(
-    '#type' => 'select',
-    '#title' => t('Account Type'),
-    '#options' => commerce_iats_ach_eft_account_types(),
-    '#required' => TRUE,
-  );
+  if (isset($fields['number'])) {
+    $form['bank_account']['number'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Account Number'),
+      '#attributes' => array('autocomplete' => 'off'),
+      '#required' => TRUE,
+      '#maxlength' => 64,
+      '#size' => 32,
+    );
+  }
+
+  if (isset($fields['type'])) {
+    $form['bank_account']['type'] = array(
+      '#type' => 'select',
+      '#title' => t('Account Type'),
+      '#options' => commerce_iats_ach_eft_account_types(),
+      '#default_value' => $default['type'],
+      '#required' => TRUE,
+    );
+  }
 
   return $form;
 }

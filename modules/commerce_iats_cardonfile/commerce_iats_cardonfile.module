@@ -86,12 +86,39 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
 
 /**
  * Implements hook_form_alter().
+ *
+ * Includes payment method update / delete callback methods.
  */
 function commerce_iats_cardonfile_form_alter(&$form, &$form_state, $form_id) {
-  if (($form_id == 'commerce_cardonfile_card_form') || ($form_id == 'commerce_cardonfile_delete_form')) {
-    // Include credit_card_update / credit_card_delete callback methods.
-    module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card');
+  if (($form_id == 'commerce_iats_cardonfile_card_form') || ($form_id == 'commerce_iats_cardonfile_delete_form')) {
+    if ($form_state['card_data']->payment_method == 'iats_credit_card') {
+      module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card');
+    }
+    elseif ($form_state['card_data']->payment_method == 'iats_ach_eft') {
+      module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.ach_eft');
+    }
   }
+}
+
+/**
+ * Implements hook_menu_alter().
+ */
+function commerce_iats_cardonfile_menu_alter(&$items) {
+  $items['user/%user/cards/%commerce_cardonfile']['title callback'] = 'commerce_iats_cardonfile_card_title';
+  $items['user/%user/cards/%commerce_cardonfile']['page callback'] = 'commerce_iats_cardonfile_card_view';
+  $items['user/%user/cards/%commerce_cardonfile']['file'] = 'includes/commerce_iats_cardonfile.pages.inc';
+  $items['user/%user/cards/%commerce_cardonfile']['module'] = 'commerce_iats_cardonfile';
+
+  $items['user/%user/cards/%commerce_cardonfile/view']['module'] = 'commerce_iats_cardonfile';
+  $items['user/%user/cards/%commerce_cardonfile/view']['access callback'] = 'commerce_iats_cardonfile_view_access';
+
+  $items['user/%user/cards/%commerce_cardonfile/edit']['page callback'] = 'commerce_iats_cardonfile_card_form_page';
+  $items['user/%user/cards/%commerce_cardonfile/edit']['file'] = 'includes/commerce_iats_cardonfile.pages.inc';
+  $items['user/%user/cards/%commerce_cardonfile/edit']['module'] = 'commerce_iats_cardonfile';
+
+  $items['user/%user/cards/%commerce_cardonfile/delete']['page arguments'][0] = 'commerce_iats_cardonfile_delete_form';
+  $items['user/%user/cards/%commerce_cardonfile/delete']['file'] = 'includes/commerce_iats_cardonfile.pages.inc';
+  $items['user/%user/cards/%commerce_cardonfile/delete']['module'] = 'commerce_iats_cardonfile';
 }
 
 /**
