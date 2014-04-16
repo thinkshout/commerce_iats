@@ -5,6 +5,8 @@
  * Implements iATS Payments API for use in Drupal Commerce Card on File.
  */
 
+define('COMMERCE_IATS_CARDONFILE_CRON', 'commerce_iats_cardonfile_cron');
+
 /**
  * Implements hook_commerce_payment_method_info_alter().
  */
@@ -176,6 +178,43 @@ function commerce_iats_cardonfile_menu_alter(&$items) {
   $items['user/%user/cards/%commerce_cardonfile/delete']['page arguments'][0] = 'commerce_iats_cardonfile_delete_form';
   $items['user/%user/cards/%commerce_cardonfile/delete']['file'] = 'includes/commerce_iats_cardonfile.pages.inc';
   $items['user/%user/cards/%commerce_cardonfile/delete']['module'] = 'commerce_iats_cardonfile';
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * Retrieves daily transaction reports from iATS.
+ * Updates recurring payment transactions.
+ */
+function commerce_iats_cardonfile_cron() {
+  $queue = DrupalQueue::get(COMMERCE_IATS_CARDONFILE_CRON);
+  $queue->createQueue();
+
+  // TODO: Account for unknown rule name.
+  $payment_method = commerce_payment_method_instance_load('iats_credit_card|commerce_payment_iats_credit_card');
+
+  // Get the API service.
+  $iats = commerce_iats_get_service('ReportLink', $payment_method);
+
+  $request = array(
+    'date' => mktime(0, 0, 0, date('n'), date('j'), date('Y')),
+  );
+
+  $response = $iats->getCreditCardJournal($request);
+
+  if (is_array($response)) {
+    foreach ($response as $transaction) {
+      $queue->createItem(
+        array(
+          'customer_code' => $transaction['CST']['CSTC'],
+          'transaction_id' => $transaction['TNID'],
+          'invoice_number' => $transaction['INV'],
+          'amount' => $transaction['AMT'],
+          'result_code' => $transaction['RST'],
+        )
+      );
+    }
+  }
 }
 
 /**
