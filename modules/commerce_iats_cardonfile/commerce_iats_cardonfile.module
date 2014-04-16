@@ -60,11 +60,62 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
 /**
  * Implements hook_form_FORM_ID_alter().
  *
+ * Alters checkout form to allow for recurring payments, when enabled.
+ *
  * Alters card on file options on form to account for bank account
  * details being used in place of credit card details.
  */
 function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
-  if (isset($form['commerce_payment']['payment_details']['bank_account'])) {
+  if (isset($form_state['values']['commerce_payment']['payment_method'])) {
+    $payment_method_id = $form_state['values']['commerce_payment']['payment_method'];
+  }
+  else {
+    $payment_method_id = $form['commerce_payment']['payment_method']['#default_value'];
+  }
+
+  $payment_method = $form_state['order']->payment_methods[$payment_method_id];
+  if (isset($payment_method['settings']['allow_recurring'])
+    && $payment_method['settings']['allow_recurring'] == 1) {
+    // Add recurring payment form fields.
+    $form['commerce_payment']['payment_details']['recurring'] = array(
+      '#tree' => TRUE,
+    );
+
+    $schedule_type = '';
+    if (isset($form_state['values']['commerce_payment']['payment_details']['recurring']['schedule_type'])) {
+      $schedule_type = $form_state['values']['commerce_payment']['payment_details']['recurring']['schedule_type'];
+    }
+
+    $form['commerce_payment']['payment_details']['recurring']['amount'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Amount'),
+    );
+
+    $form['commerce_payment']['payment_details']['recurring']['schedule_type'] = array(
+      '#type' => 'select',
+      '#title' => t('Payment schedule type'),
+      '#options' => commerce_iats_cardonfile_recurring_schedule_types(),
+      '#default_value' => '',
+      '#ajax' => array(
+        'callback' => 'commerce_iats_cardonfile_recurring_schedule_type_callback',
+        'method' => 'replace',
+        'wrapper' => 'payment-date-wrapper',
+      ),
+    );
+
+    $payment_dates = commerce_iats_cardonfile_recurring_schedule_dates($schedule_type);
+
+    $form['commerce_payment']['payment_details']['recurring']['schedule_date'] = array(
+      '#type' => 'select',
+      '#title' => t('Payment date'),
+      '#options' => $payment_dates,
+      '#default_value' => 1,
+      '#prefix' => '<div id="payment-date-wrapper">',
+      '#suffix' => '</div>',
+    );
+  }
+
+  if (substr($payment_method_id, 0, 12) == 'iats_ach_eft') {
     $form['commerce_payment']['payment_details']['bank_account']['cardonfile_store']
       = $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store'];
 
@@ -125,6 +176,28 @@ function commerce_iats_cardonfile_menu_alter(&$items) {
   $items['user/%user/cards/%commerce_cardonfile/delete']['page arguments'][0] = 'commerce_iats_cardonfile_delete_form';
   $items['user/%user/cards/%commerce_cardonfile/delete']['file'] = 'includes/commerce_iats_cardonfile.pages.inc';
   $items['user/%user/cards/%commerce_cardonfile/delete']['module'] = 'commerce_iats_cardonfile';
+}
+
+/**
+ * Gets base fields settings form fields for credit card based payment methods.
+ *
+ * @param array $settings
+ *   Form field default values array.
+ *
+ * @return array
+ *   Base fields for settings form.
+ */
+function commerce_iats_cardonfile_customer_code_settings_form_base(array $settings = NULL) {
+  $form = commerce_iats_credit_card_settings_form_base($settings);
+
+  $form['allow_recurring'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Allow recurring payments through iATS Payments'),
+    '#default_value' => (isset($settings['allow_recurring'])) ?
+    $settings['allow_recurring'] : '',
+  );
+
+  return $form;
 }
 
 /**
@@ -217,4 +290,67 @@ function commerce_iats_cardonfile_payment_method_callbacks($payment_method_type)
   );
 
   return $card_on_file_callbacks;
+}
+
+/**
+ * Form callback when selecting a schedule type.
+ */
+function commerce_iats_cardonfile_recurring_schedule_type_callback($form, $form_state) {
+  return $form['commerce_payment']['payment_details']['recurring']['schedule_date'];
+}
+
+/**
+ * Returns an associative array of valid payment schedule types.
+ *
+ * @return array
+ *   Array of recurring schedule types.
+ */
+function commerce_iats_cardonfile_recurring_schedule_types() {
+  $types = array(
+    '' => 'None',
+    'Weekly' => 'Weekly',
+    'Monthly' => 'Monthly',
+    'Quarterly' => 'Quarterly',
+    'Annually' => 'Annually',
+  );
+  return $types;
+}
+
+/**
+ * Returns an associative array of valid payment schedule dates.
+ *
+ * @param string $payment_type
+ *   The schedule type to return schedule dates for.
+ *
+ * @return array
+ *   Array of schedule dates.
+ */
+function commerce_iats_cardonfile_recurring_schedule_dates($payment_type) {
+  switch ($payment_type) {
+    case 'Weekly':
+      $payment_dates = array(
+        1 => 'Monday',
+        2 => 'Tuesday',
+        3 => 'Wednesday',
+        4 => 'Thursday',
+        5 => 'Friday',
+        6 => 'Saturday',
+        7 => 'Sunday',
+      );
+      break;
+
+    case 'Monthly':
+      $payment_dates = array();
+      for ($i = 1; $i <= 31; $i++) {
+        $payment_dates[$i] = $i;
+      }
+      break;
+
+    default:
+      // Payment types that do not require schedule dates.
+      $payment_dates = array(
+        '' => $payment_type,
+      );
+  }
+  return $payment_dates;
 }

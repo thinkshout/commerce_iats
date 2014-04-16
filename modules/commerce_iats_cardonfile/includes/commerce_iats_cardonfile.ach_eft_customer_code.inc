@@ -9,7 +9,7 @@
  * Payment method callback: settings form.
  */
 function commerce_iats_cardonfile_ach_eft_customer_code_settings_form($settings = NULL) {
-  $form = commerce_iats_settings_form_base($settings);
+  $form = commerce_iats_cardonfile_customer_code_settings_form_base($settings);
 
   // No invoice when creating customer codes.
   unset($form['invoice_prefix']);
@@ -55,7 +55,7 @@ function commerce_iats_cardonfile_ach_eft_customer_code_submit_form_submit($paym
   $payment_data = $pane_values;
 
   return commerce_iats_process_payment($payment_method, $payment_data, $order,
-    NULL, 'commerce_iats_cardonfile_create_customer_code');
+    NULL, 'commerce_iats_cardonfile_ach_eft_create_customer_code');
 }
 
 /**
@@ -74,7 +74,9 @@ function commerce_iats_cardonfile_ach_eft_customer_code_submit_form_submit($paym
  * @return Mixed
  *   API response array or error string.
  */
-function commerce_iats_cardonfile_create_customer_code($payment_method, $payment_data, $order, $charge) {
+function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, $payment_data, $order, $charge) {
+
+  // TODO: Recurring payment fields.
   $request = array(
     'customerIPAddress' => ip_address(),
     'accountNum' => $payment_data['bank_account']['number'],
@@ -95,7 +97,7 @@ function commerce_iats_cardonfile_create_customer_code($payment_method, $payment
 
   // Log the request.
   if ($payment_method['settings']['log']['request'] === 'request') {
-    commerce_iats_log_request($payment_method, 'commerce_iats_cardonfile_create_customer_code', $request);
+    commerce_iats_log_request($payment_method, 'commerce_iats_cardonfile_ach_eft_create_customer_code', $request);
   }
 
   $response = $iats->createACHEFTCustomerCode($request);
