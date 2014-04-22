@@ -9,38 +9,28 @@ define('COMMERCE_IATS_CARDONFILE_CRON', 'commerce_iats_cardonfile_cron');
 
 /**
  * Implements hook_commerce_payment_method_info_alter().
+ *
+ * Overrides payment methods for use with Card on File.
  */
 function commerce_iats_cardonfile_commerce_payment_method_info_alter(&$payment_methods) {
   $credit_card_callbacks = commerce_iats_cardonfile_payment_method_callbacks('credit_card');
 
-  // Override base (used in callback method naming scheme.)
   $payment_methods['iats_credit_card']['base'] = 'commerce_iats_cardonfile_credit_card';
-  // Override include file.
   $payment_methods['iats_credit_card']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card.inc';
-  // Add card on file callback methods.
   $payment_methods['iats_credit_card']['cardonfile'] = $credit_card_callbacks;
 
-  // Override base (used in callback method naming scheme.)
   $payment_methods['iats_credit_card_customer_code']['base'] = 'commerce_iats_cardonfile_credit_card_customer_code';
-  // Override include file.
   $payment_methods['iats_credit_card_customer_code']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.credit_card_customer_code.inc';
-  // Add card on file callback methods.
   $payment_methods['iats_credit_card_customer_code']['cardonfile'] = $credit_card_callbacks;
 
   $ach_eft_callbacks = commerce_iats_cardonfile_payment_method_callbacks('ach_eft');
 
-  // Override base (used in callback method naming scheme.)
   $payment_methods['iats_ach_eft']['base'] = 'commerce_iats_cardonfile_ach_eft';
-  // Override include file.
   $payment_methods['iats_ach_eft']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.ach_eft.inc';
-  // Add card on file callback methods.
   $payment_methods['iats_ach_eft']['cardonfile'] = $ach_eft_callbacks;
 
-  // Override base (used in callback method naming scheme.)
   $payment_methods['iats_ach_eft_customer_code']['base'] = 'commerce_iats_cardonfile_ach_eft_customer_code';
-  // Override include file.
   $payment_methods['iats_ach_eft_customer_code']['file'] = 'modules/commerce_iats_cardonfile/includes/commerce_iats_cardonfile.ach_eft_customer_code.inc';
-  // Add card on file callback methods.
   $payment_methods['iats_ach_eft_customer_code']['cardonfile'] = $ach_eft_callbacks;
 }
 
@@ -71,8 +61,13 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
   if (isset($form_state['values']['commerce_payment']['payment_method'])) {
     $payment_method_id = $form_state['values']['commerce_payment']['payment_method'];
   }
-  else {
+  elseif (isset($form['commerce_payment']['payment_method'])) {
     $payment_method_id = $form['commerce_payment']['payment_method']['#default_value'];
+  }
+
+  if (!isset($payment_method_id)) {
+    // Unable to alter the form without a valid payment method ID.
+    return;
   }
 
   $payment_method = $form_state['order']->payment_methods[$payment_method_id];
@@ -295,7 +290,7 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
 }
 
 /**
- * Gets base fields settings form fields for credit card based payment methods.
+ * Gets base fields settings form fields for customer code based payment methods.
  *
  * @param array $settings
  *   Form field default values array.
