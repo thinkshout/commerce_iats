@@ -4,4 +4,6 @@ package = Commerce iATS Card on File (contrib)
 dependencies[] = commerce_iats
 dependencies[] = commerce_cardonfile
 
+files[] = tests/commerce_iats_cardonfile.test
+
 core = 7.x

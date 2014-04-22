@@ -1,0 +1,246 @@
+<?php
+/**
+ * @file
+ * Test cases for Commerce iATS Card on File.
+ */
+
+class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
+  const TEST_AGENT_CODE = 'TEST88';
+  const TEST_AGENT_PASSWORD = 'TEST88';
+
+  protected $adminUser;
+
+  /**
+   * Returns info displayed in the test interface.
+   *
+   * @return array
+   *   Formatted as specified by simpletest.
+   */
+  public static function getInfo() {
+    // Note: getInfo() strings are not translated with t().
+    return array(
+      'name' => 'Commerce iATS Card on File',
+      'description' => 'Tests Card on File logic in Commerce iATS.',
+      'group' => 'Commerce iATS',
+    );
+  }
+
+  /**
+   * Pre-test setup function.
+   *
+   * Enables dependencies.
+   * Sets the mailchimp_api_key to the test-mode key.
+   */
+  public function setUp() {
+    // Use a profile that contains required modules:
+    $prof = drupal_get_profile();
+    $this->profile = $prof;
+    // Enable modules required for the test.
+    $enabled_modules = array(
+      'libraries',
+      'entity',
+      'entity_token',
+      'rules',
+      'commerce',
+      'commerce_product',
+      'commerce_price',
+      'commerce_customer',
+      'commerce_line_item',
+      'commerce_order',
+      'commerce_product_reference',
+      'commerce_payment',
+      'commerce_tax',
+      'commerce_product_pricing',
+      'commerce_iats',
+      'commerce_iats_cardonfile',
+    );
+    parent::setUp($enabled_modules);
+
+    // Create admin user.
+    $perms = array(
+      'access administration pages',
+      'administer checkout',
+      'access checkout',
+      'configure store',
+      'administer commerce_customer_profile entities',
+      'administer customer profile types',
+      'administer line items',
+      'administer line item types',
+      'administer commerce_order entities',
+      'configure order settings',
+      'view any commerce_order entity',
+      'create commerce_order entities',
+      'edit any commerce_order entity',
+      'administer commerce_product entities',
+      'administer product types',
+      'administer product pricing',
+      'administer payment methods',
+      'administer payments',
+      'administer rules',
+    );
+
+    $this->adminUser = $this->drupalCreateUser($perms);
+
+    $this->drupalLogin($this->adminUser);
+
+    $payment_method_edit_url
+      = 'admin/commerce/config/payment-methods/manage/commerce_payment_iats_credit_card_customer_code/edit/3';
+
+    $edit = array();
+    $edit['parameter[payment_method][settings][payment_method][settings][agent_code]']
+      = self::TEST_AGENT_CODE;
+    $edit['parameter[payment_method][settings][payment_method][settings][agent_password]']
+      = self::TEST_AGENT_PASSWORD;
+
+    $this->drupalPost($payment_method_edit_url, $edit, t('Save'));
+    $this->assertText(t('Your changes have been saved.'));
+
+    // Create a Commerce customer.
+    $customer = new stdClass();
+    $customer->type = 'billing';
+    $customer->uid = $this->adminUser->uid;
+    commerce_customer_profile_save($customer);
+  }
+
+  /**
+   * Post-test function.
+   */
+  public function tearDown() {
+    parent::tearDown();
+  }
+
+  /**
+   * Tests creating orders then processing a queue of transactions.
+   *
+   * This tests functionality used when retrieving credit card
+   * transaction reports from the iATS Payments API. These reports
+   * are used to create Commerce transactions for payments that
+   * occur outside of the iATS Commerce module, such as iATS-processed
+   * recurring payments.
+   */
+  public function testProcessCreditCardTransactionQueue() {
+    // Create initial order.
+    $initial_order_number = 1;
+
+    $order = new stdClass();
+    $order->order_number = $initial_order_number;
+    $order->type = 'commerce_order';
+    $order->uid = $this->adminUser->uid;
+    $order->mail = 'admin@example.org';
+    $order->status = 'pending';
+
+    $order_save_result = commerce_order_save($order);
+
+    $this->assertIdentical($order_save_result, SAVED_NEW,
+      'commerce_order_save() successfully saved a new order.');
+
+    $order = commerce_order_load_by_number($initial_order_number);
+
+    // Create initial recurring payment transaction.
+    $transaction = new stdClass();
+    $transaction->uid = $this->adminUser->uid;
+    $transaction->order_id = $order->order_id;
+    $transaction->payment_method = 'iats_credit_card_customer_code';
+    $transaction->instance_id = 'iats_credit_card_customer_code|commerce_payment_iats_credit_card_customer_code';
+    $transaction->remote_id = COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|A10000001';
+    $transaction->message = 'OK';
+    $transaction->message_variables = array();
+    $transaction->amount = 0;
+    $transaction->currency_code = '';
+    $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+    $transaction->remote_status = '';
+    $transaction->payload = array();
+
+    $transaction_save_result = commerce_payment_transaction_save($transaction);
+
+    $this->assertIdentical($transaction_save_result, SAVED_NEW,
+      'commerce_payment_transaction_save() successfully saved a new transaction.');
+
+    // Simulate processing transactions from iATS Payments.
+    $credit_card_transactions_data = $this->getTestCreditCardTransactionData();
+
+    foreach ($credit_card_transactions_data as $data) {
+      $queue_result = commerce_iats_cardonfile_process_queued_transaction($data);
+      $this->assertTrue($queue_result, 'Queued transaction successfully saved.');
+    }
+  }
+
+  /**
+   * Gets an array of credit card success transaction data for use in tests.
+   *
+   * @return array
+   *   Test transaction data.
+   *   array(
+   *     $order_id => array(
+   *       $customer_code_creation_transaction_id => array(
+   *         'success' => array(),
+   *         'failure' => array(),
+   *       ),
+   *     )
+   *   )
+   */
+  protected function getTestCreditCardTransactionData() {
+    $data = array(
+      1 => array(
+        1 => array(
+          'success' => array(
+            array(
+              'TNTYP' => 'CreditCard',
+              'TNID' => 'ABCDEF100',
+              'AGT' => 'TEST88',
+              'CST' => array(
+                'CSTC' => 'A10000001',
+                'FN' => 'Test',
+                'LN' => 'User',
+                'ADD' => '123 Any St.',
+                'CTY' => 'Anytown',
+                'ST' => 'AK',
+                'CNT' => 'US',
+                'ZC' => '11111',
+              ),
+              'CC' => array(
+                'CCN' => '************2220',
+                'MP' => 'VISA',
+                'EXP' => '12/15',
+              ),
+              'AMT' => '10.00',
+              'RST' => 'OK:678594:',
+            ),
+          ),
+          'failure' => array(),
+        ),
+      ),
+    );
+
+    return $this->convertTestTransactionDataToReportFormat($data);
+  }
+
+  /**
+   * Converts transaction test data to match the format returned by iATS API.
+   *
+   * @param array $data
+   *   Transaction test data to convert.
+   *
+   * @see getTestCreditCardSuccessTransactionData()
+   * @see getTestCreditCardRejectTransactionData()
+   *
+   * @return array
+   *   Array of transactions.
+   */
+  protected function convertTestTransactionDataToReportFormat($data) {
+    $report_data = array();
+
+    foreach ($data as $order_data) {
+      foreach ($order_data as $transactions_data) {
+        foreach ($transactions_data['success'] as $success_transaction) {
+          $report_data[] = $success_transaction;
+        }
+        foreach ($transactions_data['failure'] as $failure_transaction) {
+          $report_data[] = $failure_transaction;
+        }
+      }
+    }
+
+    return $report_data;
+  }
+}
