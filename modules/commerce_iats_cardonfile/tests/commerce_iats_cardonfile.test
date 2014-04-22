@@ -142,8 +142,8 @@ class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
     $transaction->order_id = $order->order_id;
     $transaction->payment_method = 'iats_credit_card_customer_code';
     $transaction->instance_id = 'iats_credit_card_customer_code|commerce_payment_iats_credit_card_customer_code';
-    $transaction->remote_id = COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|A10000001';
-    $transaction->message = 'OK';
+    $transaction->remote_id = COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|CCC000001';
+    $transaction->message = 'OK:678594:';
     $transaction->message_variables = array();
     $transaction->amount = 0;
     $transaction->currency_code = '';
@@ -156,7 +156,7 @@ class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
     $this->assertIdentical($transaction_save_result, SAVED_NEW,
       'commerce_payment_transaction_save() successfully saved a new transaction.');
 
-    // Simulate processing transactions from iATS Payments.
+    // Simulate processing credit card transactions from iATS Payments.
     $credit_card_transactions_data = $this->getTestCreditCardTransactionData();
 
     foreach ($credit_card_transactions_data as $data) {
@@ -166,13 +166,69 @@ class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Gets an array of credit card success transaction data for use in tests.
+   * Tests creating orders then processing a queue of transactions.
+   *
+   * This tests functionality used when retrieving ACH/EFT
+   * transaction reports from the iATS Payments API. These reports
+   * are used to create Commerce transactions for payments that
+   * occur outside of the iATS Commerce module, such as iATS-processed
+   * recurring payments.
+   */
+  public function testProcessACHEFTTransactionQueue() {
+    // Create initial order.
+    $initial_order_number = 2;
+
+    $order = new stdClass();
+    $order->order_number = $initial_order_number;
+    $order->type = 'commerce_order';
+    $order->uid = $this->adminUser->uid;
+    $order->mail = 'admin@example.org';
+    $order->status = 'pending';
+
+    $order_save_result = commerce_order_save($order);
+
+    $this->assertIdentical($order_save_result, SAVED_NEW,
+      'commerce_order_save() successfully saved a new order.');
+
+    $order = commerce_order_load_by_number($initial_order_number);
+
+    // Create initial recurring payment transaction.
+    $transaction = new stdClass();
+    $transaction->uid = $this->adminUser->uid;
+    $transaction->order_id = $order->order_id;
+    $transaction->payment_method = 'iats_ach_eft_customer_code';
+    $transaction->instance_id = 'iats_ach_eft_customer_code|commerce_payment_iats_ach_eft_customer_code';
+    $transaction->remote_id = COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|ACHC00001';
+    $transaction->message = 'OK:678594:';
+    $transaction->message_variables = array();
+    $transaction->amount = 0;
+    $transaction->currency_code = '';
+    $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+    $transaction->remote_status = '';
+    $transaction->payload = array();
+
+    $transaction_save_result = commerce_payment_transaction_save($transaction);
+
+    $this->assertIdentical($transaction_save_result, SAVED_NEW,
+      'commerce_payment_transaction_save() successfully saved a new transaction.');
+
+    // Simulate processing ACH/EFT transactions from iATS Payments.
+    $acheft_transactions_data = $this->getTestACHEFTTransactionData();
+
+    foreach ($acheft_transactions_data as $data) {
+      $queue_result = commerce_iats_cardonfile_process_queued_transaction($data);
+      $this->assertTrue($queue_result, 'Queued transaction successfully saved.');
+    }
+  }
+
+  /**
+   * Gets an array of credit card transaction data for use in tests.
    *
    * @return array
    *   Test transaction data.
    *   array(
    *     $order_id => array(
-   *       $customer_code_creation_transaction_id => array(
+   *       $customer_code_creation_remote_id => array(
    *         'success' => array(),
    *         'failure' => array(),
    *       ),
@@ -182,14 +238,36 @@ class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
   protected function getTestCreditCardTransactionData() {
     $data = array(
       1 => array(
-        1 => array(
+        COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|CCC000001' => array(
           'success' => array(
             array(
               'TNTYP' => 'CreditCard',
-              'TNID' => 'ABCDEF100',
+              'TNID' => 'CCT000001',
               'AGT' => 'TEST88',
               'CST' => array(
-                'CSTC' => 'A10000001',
+                'CSTC' => 'CCC000001',
+                'FN' => 'Test',
+                'LN' => 'User',
+                'ADD' => '123 Any St.',
+                'CTY' => 'Anytown',
+                'ST' => 'AK',
+                'CNT' => 'US',
+                'ZC' => '11111',
+              ),
+              'CC' => array(
+                'CCN' => '************2220',
+                'MP' => 'VISA',
+                'EXP' => '12/15',
+              ),
+              'AMT' => '10.00',
+              'RST' => 'OK:678594:',
+            ),
+            array(
+              'TNTYP' => 'CreditCard',
+              'TNID' => 'CCT000002',
+              'AGT' => 'TEST88',
+              'CST' => array(
+                'CSTC' => 'CCC000001',
                 'FN' => 'Test',
                 'LN' => 'User',
                 'ADD' => '123 Any St.',
@@ -207,7 +285,122 @@ class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
               'RST' => 'OK:678594:',
             ),
           ),
-          'failure' => array(),
+          'failure' => array(
+            array(
+              'TNTYP' => 'CreditCard',
+              'TNID' => 'CCT000003',
+              'AGT' => 'TEST88',
+              'CST' => array(
+                'CSTC' => 'CCC000001',
+                'FN' => 'Test',
+                'LN' => 'User',
+                'ADD' => '123 Any St.',
+                'CTY' => 'Anytown',
+                'ST' => 'AK',
+                'CNT' => 'US',
+                'ZC' => '11111',
+              ),
+              'CC' => array(
+                'CCN' => '************2220',
+                'MP' => 'VISA',
+                'EXP' => '12/15',
+              ),
+              'AMT' => '10.00',
+              'RST' => 'Error',
+            ),
+          ),
+        ),
+      ),
+    );
+
+    return $this->convertTestTransactionDataToReportFormat($data);
+  }
+
+  /**
+   * Gets an array of ACH/EFT transaction data for use in tests.
+   *
+   * @return array
+   *   Test transaction data.
+   *   array(
+   *     $order_id => array(
+   *       $customer_code_creation_remote_id => array(
+   *         'success' => array(),
+   *         'failure' => array(),
+   *       ),
+   *     )
+   *   )
+   */
+  protected function getTestACHEFTTransactionData() {
+    $data = array(
+      2 => array(
+        COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|ACHC00001' => array(
+          'success' => array(
+            array(
+              'TNTYP' => 'ACHEFT',
+              'TNID' => 'ACHT00001',
+              'AGT' => 'TEST88',
+              'CST' => array(
+                'CSTC' => 'ACHC00001',
+                'FN' => 'Test',
+                'LN' => 'User',
+                'ADD' => '123 Any St.',
+                'CTY' => 'Anytown',
+                'ST' => 'AK',
+                'CNT' => 'US',
+                'ZC' => '11111',
+              ),
+              'ACH' => array(
+                'ACN' => '************2220',
+                'ACTYP' => 'Checking',
+              ),
+              'AMT' => '10.00',
+              'RST' => 'OK:678594:',
+            ),
+            array(
+              'TNTYP' => 'ACHEFT',
+              'TNID' => 'ACHT00002',
+              'AGT' => 'TEST88',
+              'CST' => array(
+                'CSTC' => 'ACHC00001',
+                'FN' => 'Test',
+                'LN' => 'User',
+                'ADD' => '123 Any St.',
+                'CTY' => 'Anytown',
+                'ST' => 'AK',
+                'CNT' => 'US',
+                'ZC' => '11111',
+              ),
+              'ACH' => array(
+                'ACN' => '************2220',
+                'ACTYP' => 'Checking',
+              ),
+              'AMT' => '10.00',
+              'RST' => 'OK:678594:',
+            ),
+          ),
+          'failure' => array(
+            array(
+              'TNTYP' => 'ACHEFT',
+              'TNID' => 'ACHT00003',
+              'AGT' => 'TEST88',
+              'CST' => array(
+                'CSTC' => 'ACHC00001',
+                'FN' => 'Test',
+                'LN' => 'User',
+                'ADD' => '123 Any St.',
+                'CTY' => 'Anytown',
+                'ST' => 'AK',
+                'CNT' => 'US',
+                'ZC' => '11111',
+              ),
+              'ACH' => array(
+                'ACN' => '************2220',
+                'ACTYP' => 'Checking',
+              ),
+              'AMT' => '10.00',
+              'RST' => 'Error',
+            ),
+          ),
         ),
       ),
     );

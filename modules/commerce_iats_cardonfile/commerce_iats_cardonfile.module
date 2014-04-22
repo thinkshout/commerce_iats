@@ -240,10 +240,28 @@ function commerce_iats_cardonfile_cron() {
  *   TRUE if a new transaction was created.
  */
 function commerce_iats_cardonfile_process_queued_transaction($data) {
+  $transaction_type = $data['TNTYP'];
   $customer_code = $data['CST']['CSTC'];
   $transaction_id = $data['TNID'];
   $amount = $data['AMT'];
   $result_code = $data['RST'];
+
+  $transaction_status = (substr($result_code, 0, 2) == 'OK') ?
+    COMMERCE_PAYMENT_STATUS_SUCCESS : COMMERCE_PAYMENT_STATUS_FAILURE;
+
+  if ($transaction_type == 'CreditCard') {
+    $payment_method = 'iats_credit_card';
+    $instance_id = 'iats_credit_card|commerce_payment_iats_credit_card';
+  }
+  elseif ($transaction_type == 'ACHEFT') {
+    $payment_method = 'iats_ach_eft';
+    $instance_id = 'iats_ach_eft|commerce_payment_iats_ach_eft';
+  }
+  else {
+    // Unknown transaction type.
+    // TODO: Log error message.
+    return;
+  }
 
   $transactions_table = $GLOBALS['db_prefix'] . 'commerce_payment_transaction';
   $remote_id = COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|' . $customer_code;
@@ -258,22 +276,14 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
     $transaction = new stdClass();
     $transaction->uid = $initial_transaction['uid'];
     $transaction->order_id = $initial_transaction['order_id'];
-    // TODO: Account for recurring payments using methods other than credit card.
-    $transaction->payment_method = 'iats_credit_card';
-    $transaction->instance_id = 'iats_credit_card_customer_code|commerce_payment_iats_credit_card_customer_code';
-    $transaction->remote_id = $customer_code . '|' . $transaction_id;
+    $transaction->payment_method = $payment_method;
+    $transaction->instance_id = $instance_id;
+    $transaction->remote_id = $transaction_id . '|' . $customer_code;
     $transaction->message = $result_code;
     $transaction->message_variables = array();
     $transaction->amount = $amount;
     $transaction->currency_code = '';
-
-    if (substr($result_code, 0, 2) == 'OK') {
-      $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
-    }
-    else {
-      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
-    }
-
+    $transaction->status = $transaction_status;
     $transaction->remote_status = '';
     $transaction->payload = array();
 
