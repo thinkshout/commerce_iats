@@ -556,7 +556,7 @@ function commerce_iats_address(array &$request, $order, $field_name) {
  * Gets an instance of an iATS Payments API service.
  *
  * @param string $service_name
- *   The iATS service to get. 'ProcessLink' or 'CustomerLink'
+ *   The iATS service to get. 'ProcessLink', 'CustomerLink', 'ReportLink'
  * @param array $payment_method
  *   The payment method, used to populate iATS API settings.
  *
@@ -565,7 +565,7 @@ function commerce_iats_address(array &$request, $order, $field_name) {
  */
 function commerce_iats_get_service($service_name, array $payment_method) {
   if (libraries_load('iatspayments')) {
-    $service_name = 'iATS\\' . $service_name;
+    $service_name = 'iATS\\' . $service_name . variable_get('commerce_iats_service_name_suffix', '');
     $service = new $service_name(
       $payment_method['settings']['agent_code'],
       $payment_method['settings']['agent_password'],
