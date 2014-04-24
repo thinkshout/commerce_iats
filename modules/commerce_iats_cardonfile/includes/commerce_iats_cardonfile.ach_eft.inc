@@ -177,6 +177,9 @@ function commerce_iats_cardonfile_ach_eft_create_and_charge($payment_method, $pa
     if (isset($response['CUSTOMERCODE'])) {
       $customer_code = trim($response['CUSTOMERCODE']);
 
+      $payment_data['bank_account']['default'] = (isset($payment_data['cardonfile_instance_default'])) ?
+        $payment_data['cardonfile_instance_default'] : FALSE;
+
       // Add fake expiration date to force card on file to accept
       // this as a valid card. This is a hack because bank accounts
       // do not have expiration dates.
@@ -186,7 +189,7 @@ function commerce_iats_cardonfile_ach_eft_create_and_charge($payment_method, $pa
 
       // Create a new card on file record for the new customer code.
       commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
-        $payment_data['bank_account'], NULL, $customer_code,
+        $payment_data['bank_account'], array(), $customer_code,
         $payment_data['bank_account']['type']);
     }
     else {

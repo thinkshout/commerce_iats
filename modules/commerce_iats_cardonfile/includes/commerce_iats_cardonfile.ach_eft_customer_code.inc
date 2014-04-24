@@ -105,8 +105,13 @@ function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, 
   if ($response != NULL) {
     if (isset($response['CUSTOMERCODE'])) {
       $customer_code = trim($response['CUSTOMERCODE']);
+
       $recurring_data = (isset($payment_data['recurring'])) ?
         $payment_data['recurring'] : NULL;
+
+      $payment_data['bank_account']['default'] = (isset($payment_data['cardonfile_instance_default'])) ?
+        $payment_data['cardonfile_instance_default'] : FALSE;
+
       // Create a new card on file record for the new customer code.
       commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
         $payment_data['bank_account'], $recurring_data, $customer_code,

@@ -423,9 +423,12 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
   $card_on_file->card_exp_month = $card_data['exp_month'];
   $card_on_file->card_exp_year = $card_data['exp_year'];
   $card_on_file->status = 1;
+  $card_on_file->instance_default = $card_data['default'];
 
   if (!empty($recurring_data) && !empty($recurring_data['amount'])) {
     $card_on_file->recurring = true;
+    // A recurring payment card cannot be used as the user's default card.
+    $card_on_file->instance_default = false;
   }
 
   // Save and log the creation of the new card on file.

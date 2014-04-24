@@ -186,9 +186,13 @@ function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method,
   if ($response != NULL) {
     if (isset($response['CUSTOMERCODE'])) {
       $customer_code = trim($response['CUSTOMERCODE']);
+
+      $payment_data['credit_card']['default'] = (isset($payment_data['cardonfile_instance_default'])) ?
+        $payment_data['cardonfile_instance_default'] : FALSE;
+
       // Create a new card on file record for the new customer code.
       commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
-        $payment_data['credit_card'], NULL, $customer_code,
+        $payment_data['credit_card'], array(), $customer_code,
         $formatted_card_data['orig_type']);
     }
     else {
