@@ -8,6 +8,39 @@
 define('COMMERCE_IATS_CARDONFILE_TRANSACTIONS_CRON', 'commerce_iats_cardonfile_transactions_cron');
 
 /**
+ * Implements hook_entity_info().
+ */
+function commerce_iats_cardonfile_entity_info() {
+  $data = array();
+
+  $data['commerce_iats_cardonfile_recurring'] = array(
+    'label' => t('Commerce iATS Card on File Recurring'),
+    'entity class' => 'Entity',
+    'controller class' => 'EntityAPIController',
+    'base table' => 'commerce_iats_cardonfile_recurring',
+    'fieldable' => TRUE,
+    'entity keys' => array(
+      'id' => 'card_id',
+    ),
+  );
+
+  return $data;
+}
+
+/**
+ * Implements hook_entity_property_info_alter().
+ */
+function commerce_iats_cardonfile_entity_property_info_alter(&$info) {
+  $info['commerce_cardonfile']['properties']['recurring'] = array(
+    'label' => t('Recurring'),
+    'description' => t('Boolean indicating an iATS recurring payment card.'),
+    'type' => 'boolean',
+    'setter callback' => 'entity_property_verbatim_set',
+    'schema field' => 'recurring',
+  );
+}
+
+/**
  * Implements hook_commerce_payment_method_info_alter().
  *
  * Overrides payment methods for use with Card on File.
@@ -356,6 +389,8 @@ function commerce_iats_cardonfile_customer_code_settings_form_base(array $settin
  *   The payment method used during this transaction.
  * @param array $card_data
  *   Array of credit card data.
+ * @param array $recurring_data
+ *   Array of recurring payment data.
  * @param string $customer_code
  *   The iATS customer code returned by the iATS API following a transaction
  *   that created a new customer code.
@@ -366,7 +401,7 @@ function commerce_iats_cardonfile_customer_code_settings_form_base(array $settin
  * @return bool
  *   TRUE or FALSE indicating success of saving card on file.
  */
-function commerce_iats_cardonfile_create_cardonfile($order, array $payment_method, array $card_data, $customer_code, $card_type) {
+function commerce_iats_cardonfile_create_cardonfile($order, array $payment_method, array $card_data, array $recurring_data, $customer_code, $card_type) {
   // Build a payment details array for the credit card.
   $payment_details = array(
     'cardNumber' => $card_data['number'],
@@ -389,6 +424,10 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
   $card_on_file->card_exp_year = $card_data['exp_year'];
   $card_on_file->status = 1;
 
+  if (!empty($recurring_data) && !empty($recurring_data['amount'])) {
+    $card_on_file->recurring = true;
+  }
+
   // Save and log the creation of the new card on file.
   if (commerce_cardonfile_save($card_on_file)) {
     watchdog('commerce_iats',
@@ -398,6 +437,15 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
         '@uid' => $order->uid,
       )
     );
+
+    if ($card_on_file->recurring) {
+      $card_on_file_recurring = commerce_iats_cardonfile_recurring_new();
+      $card_on_file_recurring->card_id = $card_on_file->card_id;
+      $card_on_file_recurring->amount = $recurring_data['amount'];
+      $card_on_file_recurring->schedule_type = $recurring_data['schedule_type'];
+      $card_on_file_recurring->schedule_date = $recurring_data['schedule_date'];
+      commerce_iats_cardonfile_recurring_save($card_on_file_recurring);
+    }
 
     return TRUE;
   }
@@ -500,4 +548,37 @@ function commerce_iats_cardonfile_recurring_schedule_dates($payment_type) {
       );
   }
   return $payment_dates;
+}
+
+/**
+ * Returns an initialized Commerce iATS Card on File Recurring entity.
+ *
+ * @param array $values
+ *   Custom entity values to use, in addition to standard values.
+ *
+ * @return Mixed
+ *   Instance of the entity or FALSE on failure.
+ */
+function commerce_iats_cardonfile_recurring_new(array $values = array()) {
+  $values += array(
+    'card_id' => NULL,
+    'amount' => 0,
+    'schedule_type' => '',
+    'schedule_date' => '',
+  );
+
+  return entity_create('commerce_iats_cardonfile_recurring', $values);
+}
+
+/**
+ * Saves a Commerce iATS Card on File Recurring entity.
+ *
+ * @param object $recurring_data
+ *   A Commerce iATS Card on File Recurring entity instance.
+ *
+ * @return mixed
+ *   Constants SAVED_NEW, SAVED_UPDATED or boolean FALSE on failure.
+ */
+function commerce_iats_cardonfile_recurring_save($recurring_data) {
+  return entity_save('commerce_iats_cardonfile_recurring', $recurring_data);
 }

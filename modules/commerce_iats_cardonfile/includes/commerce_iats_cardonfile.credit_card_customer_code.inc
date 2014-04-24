@@ -127,9 +127,12 @@ function commerce_iats_cardonfile_credit_card_create_customer_code($payment_meth
   if ($response != NULL) {
     if (isset($response['CUSTOMERCODE'])) {
       $customer_code = trim($response['CUSTOMERCODE']);
+      $recurring_data = (isset($payment_data['recurring'])) ?
+        $payment_data['recurring'] : NULL;
       // Create a new card on file record for the new customer code.
       commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
-        $payment_data['credit_card'], $customer_code, $formatted_card_data['orig_type']);
+        $payment_data['credit_card'], $recurring_data, $customer_code,
+        $formatted_card_data['orig_type']);
     }
     else {
       drupal_set_message(t('Your credit card could not be stored for later use.'), 'error');
