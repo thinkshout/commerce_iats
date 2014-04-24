@@ -119,11 +119,13 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
     $form['commerce_payment']['payment_details']['recurring']['amount'] = array(
       '#type' => 'textfield',
       '#title' => t('Amount'),
+      '#required' => TRUE,
     );
 
     $form['commerce_payment']['payment_details']['recurring']['schedule_type'] = array(
       '#type' => 'select',
       '#title' => t('Payment schedule type'),
+      '#required' => TRUE,
       '#options' => commerce_iats_cardonfile_recurring_schedule_types(),
       '#default_value' => '',
       '#ajax' => array(
@@ -133,16 +135,26 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
       ),
     );
 
-    $payment_dates = commerce_iats_cardonfile_recurring_schedule_dates($schedule_type);
+    if (!empty($schedule_type)) {
+      $payment_dates = commerce_iats_cardonfile_recurring_schedule_dates($schedule_type);
 
-    $form['commerce_payment']['payment_details']['recurring']['schedule_date'] = array(
-      '#type' => 'select',
-      '#title' => t('Payment date'),
-      '#options' => $payment_dates,
-      '#default_value' => 1,
-      '#prefix' => '<div id="payment-date-wrapper">',
-      '#suffix' => '</div>',
-    );
+      $form['commerce_payment']['payment_details']['recurring']['schedule_date'] = array(
+        '#type' => 'select',
+        '#title' => t('Payment date'),
+        '#options' => $payment_dates,
+        '#default_value' => 1,
+      );
+    }
+    else {
+      $form['commerce_payment']['payment_details']['recurring']['schedule_date'] = array();
+    }
+
+    $form['commerce_payment']['payment_details']['recurring']['schedule_date']['#prefix'] = '<div id="payment-date-wrapper">';
+    $form['commerce_payment']['payment_details']['recurring']['schedule_date']['#suffix'] = '</div>';
+
+    // Disable Card on File options. If recurring is enabled, card is stored.
+    $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#access'] = FALSE;
+    $form['commerce_payment']['payment_details']['cardonfile_instance_default']['#access'] = FALSE;
   }
 
   if (substr($payment_method_id, 0, 12) == 'iats_ach_eft') {
