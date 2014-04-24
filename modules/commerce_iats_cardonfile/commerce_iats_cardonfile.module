@@ -275,15 +275,31 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
   else {
     // Unknown transaction type.
     // TODO: Log error message.
-    return;
+    return FALSE;
   }
 
   $transactions_table = $GLOBALS['db_prefix'] . 'commerce_payment_transaction';
-  $remote_id = COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|' . $customer_code;
 
-  $initial_transaction = db_select($transactions_table, 't')
+  $remote_id = $transaction_id . '|' . $customer_code;
+  $existing_transaction = db_select($transactions_table, 't')
     ->fields('t')
     ->condition('remote_id', $remote_id, '=')
+    ->execute()
+    ->fetchAssoc();
+
+  if (!empty($existing_transaction)) {
+    watchdog('commerce_iats', 'Already processed transaction @remote_id',
+      array(
+        '@remote_id' => $remote_id,
+      ),
+      WATCHDOG_NOTICE);
+    return FALSE;
+  }
+
+  $initial_remote_id = COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|' . $customer_code;
+  $initial_transaction = db_select($transactions_table, 't')
+    ->fields('t')
+    ->condition('remote_id', $initial_remote_id, '=')
     ->execute()
     ->fetchAssoc();
 
@@ -293,7 +309,7 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
     $transaction->order_id = $initial_transaction['order_id'];
     $transaction->payment_method = $payment_method;
     $transaction->instance_id = $instance_id;
-    $transaction->remote_id = $transaction_id . '|' . $customer_code;
+    $transaction->remote_id = $remote_id;
     $transaction->message = $result_code;
     $transaction->message_variables = array();
     $transaction->amount = $amount;
