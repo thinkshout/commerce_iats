@@ -191,16 +191,6 @@ function commerce_iats_commerce_checkout_pane_info() {
     'fieldset' => FALSE,
   );
 
-  $checkout_panes['checkout_direct_debit_summary'] = array(
-    'title' => t('Summary'),
-    'name' => t('Direct Debit Summary'),
-    'file' => 'includes/commerce_iats.direct_debit.checkout_pane.inc',
-    'base' => 'commerce_iats_direct_debit_summary_pane',
-    'page' => 'direct_debit_summary',
-    'weight' => 3,
-    'fieldset' => FALSE,
-  );
-
   $checkout_panes['checkout_direct_debit_complete'] = array(
     'title' => t('Completed'),
     'name' => t('Direct Debit Set Up Complete'),
