@@ -187,6 +187,70 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_state['card_data']->recurring) {
+    $form['credit_card']['cardonfile_instance_default']['#access'] = FALSE;
+
+    if ($form_state['op'] == 'update') {
+      $recurring = commerce_iats_cardonfile_recurring_load($form_state['card_data']->card_id);
+      $form_state['recurring'] = $recurring;
+
+      $form['credit_card']['recurring'] = array();
+      $form['credit_card']['recurring']['amount'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Recurring payment amount'),
+        '#size' => 6,
+        '#required' => TRUE,
+        '#default_value' => $recurring->amount,
+      );
+
+      $form['credit_card']['recurring']['schedule_type'] = array(
+        '#type' => 'select',
+        '#title' => t('Recurring payment schedule type'),
+        '#required' => TRUE,
+        '#options' => commerce_iats_cardonfile_recurring_schedule_types(),
+        '#default_value' => $recurring->schedule_type,
+      );
+
+      if (isset($form_state['values']['credit_card']['recurring']['schedule_type'])) {
+        $schedule_type = $form_state['values']['credit_card']['recurring']['schedule_type'];
+      }
+      else {
+        $schedule_type = $recurring->schedule_type;
+      }
+
+      $payment_dates = commerce_iats_cardonfile_recurring_schedule_dates($schedule_type);
+
+      $form['credit_card']['recurring']['schedule_date'] = array(
+        '#type' => 'select',
+        '#title' => t('Recurring payment date'),
+        '#options' => $payment_dates,
+        '#default_value' => $recurring->schedule_date,
+      );
+
+      $form['#submit'][] = 'commerce_iats_cardonfile_recurring_form_submit';
+    }
+  }
+}
+
+/**
+ * Submit handler for updating Card on File used for recurring payments.
+ *
+ * TODO: Form validation.
+ */
+function commerce_iats_cardonfile_recurring_form_submit($form, &$form_state) {
+  $recurring = $form_state['recurring'];
+
+  $recurring->amount = $form_state['credit_card']['recurring']['amount'];
+  $recurring->schedule_type = $form_state['credit_card']['recurring']['schedule_type'];
+  $recurring->schedule_date = $form_state['credit_card']['recurring']['schedule_date'];
+
+  commerce_iats_cardonfile_recurring_save($recurring);
+}
+
+/**
  * Implements hook_form_alter().
  *
  * Includes payment method update / delete callback methods.
@@ -572,6 +636,19 @@ function commerce_iats_cardonfile_recurring_schedule_dates($payment_type) {
       );
   }
   return $payment_dates;
+}
+
+/**
+ * Loads a Commerce iATS Card on File Recurring entity by ID.
+ *
+ * @param int $card_id
+ *   The ID of the Card on File entity.
+ *
+ * @return Mixed
+ *   Array containing the specified entity data or FALSE if not found.
+ */
+function commerce_iats_cardonfile_recurring_load($card_id) {
+  return entity_load_single('commerce_iats_cardonfile_recurring', $card_id);
 }
 
 /**
