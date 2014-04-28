@@ -1,0 +1,633 @@
+<?php
+/**
+ * @file
+ * Checkout pane callback functions for direct debit payments.
+ */
+
+/**
+ * Checkout pane callback: Direct debit declaration page settings form.
+ */
+function commerce_iats_direct_debit_declaration_pane_settings_form($checkout_pane) {
+  $form = array();
+
+  $form['commerce_iats_direct_debit_declaration_pane_paper_url'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Paper Direct Debit Instruction URL'),
+    '#description' => t('The URL a user will be given to print a paper Direct Debit Instruction, if needed.'),
+    '#size' => 64,
+    '#default_value' => variable_get('commerce_iats_direct_debit_declaration_pane_paper_url', ''),
+  );
+
+  $form['commerce_iats_direct_debit_declaration_pane_phone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Contact Phone Number'),
+    '#size' => 32,
+    '#default_value' => variable_get('commerce_iats_direct_debit_declaration_pane_phone', ''),
+  );
+
+  $form['commerce_iats_direct_debit_declaration_pane_email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Contact Email Address'),
+    '#size' => 32,
+    '#default_value' => variable_get('commerce_iats_direct_debit_declaration_pane_email', ''),
+  );
+
+  return $form;
+}
+
+/**
+ * Checkout pane callback: Displays the direct debit declaration page.
+ */
+function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  $pane_form = array();
+
+  $paper_url = variable_get('commerce_iats_direct_debit_declaration_pane_paper_url', '');
+
+  $info = '<p><b>Note:</b> If you are not the account holder or your account'
+    . ' requires more than one signature a paper Direct Debit Instruction will'
+    . ' be required to be completed and posted to us.'
+    . ' <a href="'. $paper_url . '">Click here</a> to print off a paper'
+    . ' Direct Debit Instruction.</p>'
+    . '<p>OR</p><p>Continue with the details below:</p>';
+
+  $terms = '<p><b>Note:</b> All the normal Direct Debit safeguards and'
+    . ' guarantees apply. No changes in the amount, date, frequency to be'
+    . ' debited can be made witout notifying you at least five (5) working'
+    . ' days in advance of your account being debited. In the event of any'
+    . ' error, you are entitled to an immediate refund from your Bank or'
+    . ' Building Society. You have the right to cancel a Direct Debit'
+    . ' Instruction at any time simply by writing to your Bank or Building'
+    . ' Society, with a copy to us.</p>';
+
+  $pane_form['info'] = array(
+    '#type' => 'item',
+    '#markup' => $info,
+  );
+
+  $pane_form['declaration'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Declaration',
+  );
+
+  $pane_form['declaration']['confirmation'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('I wish to start a Direct Debit'),
+    '#required' => TRUE,
+  );
+
+  $pane_form['terms'] = array(
+    '#type' => 'fieldset'
+  );
+
+  $pane_form['terms']['text'] = array(
+    '#type' => 'item',
+    '#markup' => $terms,
+  );
+
+  $pane_form['terms']['phone'] = array(
+    '#type' => 'item',
+    '#markup' => t('Call us: @phone', array(
+      '@phone' => variable_get('commerce_iats_direct_debit_declaration_pane_phone', ''),
+    )),
+  );
+
+  $pane_form['terms']['email'] = array(
+    '#type' => 'item',
+    '#markup' => t('Email us: @email', array(
+      '@email' => variable_get('commerce_iats_direct_debit_declaration_pane_email', ''),
+    )),
+  );
+
+  return $pane_form;
+}
+
+/**
+ * Checkout pane callback: Saves the direct debit declaration status.
+ */
+function commerce_iats_direct_debit_declaration_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
+  $order->data['declaration'] = $form_state['values'];
+}
+
+/**
+ * Checkout pane callback: Direct debit account / payer settings form.
+ */
+function commerce_iats_direct_debit_account_payer_pane_settings_form($checkout_pane) {
+  $form = array();
+
+  $form['commerce_iats_direct_debit_account_payer_pane_phone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Contact Phone Number'),
+    '#size' => 32,
+    '#default_value' => variable_get('commerce_iats_direct_debit_account_payer_pane_phone', ''),
+  );
+
+  $form['commerce_iats_direct_debit_account_payer_pane_email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Contact Email Address'),
+    '#size' => 32,
+    '#default_value' => variable_get('commerce_iats_direct_debit_account_payer_pane_email', ''),
+  );
+
+  return $form;
+}
+
+/**
+ * Checkout pane callback: Displays the direct debit account / payer page.
+ */
+function commerce_iats_direct_debit_account_payer_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  $pane_form = array();
+
+  $pane_form['account'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Account Details'),
+  );
+
+  $pane_form['account']['account_holder'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Account Holder Name'),
+    '#default_value' => '',
+    '#attributes' => array('autocomplete' => 'off'),
+    '#required' => TRUE,
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['account']['number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Account Number'),
+    '#attributes' => array('autocomplete' => 'off'),
+    '#required' => TRUE,
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['account']['sort_code'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Sort Code'),
+    '#attributes' => array('autocomplete' => 'off'),
+    '#required' => TRUE,
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['account']['frequency_type'] = array(
+    '#type' => 'item',
+    '#title' => 'Frequency Type',
+    // TODO: Add frequency type.
+    '#markup' => '',
+  );
+
+  $pane_form['account']['amount'] = array(
+    '#type' => 'item',
+    '#title' => 'Amount',
+    // TODO: Add amount.
+    '#markup' => '',
+  );
+
+  $pane_form['account']['first_collection_date'] = array(
+    '#type' => 'select',
+    '#title' => 'Date Of First Collection',
+    // TODO: Add collection date options.
+    '#options' => array(),
+  );
+
+  $pane_form['payer'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Payer Details',
+  );
+
+  $pane_form['payer']['company_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Company Name'),
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['payer']['first_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First Name(s)'),
+    '#required' => TRUE,
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['payer']['last_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Last Name'),
+    '#required' => TRUE,
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['payer']['address_1'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address 1'),
+    '#required' => TRUE,
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['payer']['address_2'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address 2'),
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['payer']['address_3'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address 3'),
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['payer']['town'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Town'),
+    '#required' => TRUE,
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['payer']['county'] = array(
+    '#type' => 'textfield',
+    '#title' => t('County'),
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['payer']['postcode'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Postcode'),
+    '#required' => TRUE,
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['payer']['email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Email Address'),
+    '#required' => TRUE,
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['payer']['confirm_email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Retype Email Address'),
+    '#required' => TRUE,
+    '#maxlength' => 64,
+    '#size' => 32,
+  );
+
+  $pane_form['contact'] = array(
+    '#type' => 'fieldset'
+  );
+
+  $pane_form['contact']['phone'] = array(
+    '#type' => 'item',
+    '#markup' => t('Call us: @phone', array(
+      '@phone' => variable_get('commerce_iats_direct_debit_account_payer_pane_phone', ''),
+    )),
+  );
+
+  $pane_form['contact']['email'] = array(
+    '#type' => 'item',
+    '#markup' => t('Email us: @email', array(
+      '@email' => variable_get('commerce_iats_direct_debit_account_payer_pane_email', ''),
+    )),
+  );
+
+  return $pane_form;
+}
+
+/**
+ * Checkout pane callback: Validates the account / payer details.
+ */
+function commerce_iats_direct_debit_account_payer_pane_checkout_form_validate($form, &$form_state, $checkout_pane, &$order) {
+  if ($form_state['values']['payer']['email'] != $form_state['values']['payer']['confirm_email']) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
+ * Checkout pane callback: Saves the account / payer details.
+ */
+function commerce_iats_direct_debit_account_payer_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
+  $order->data['account_payer'] = $form_state['values'];
+}
+
+/**
+ * Checkout pane callback: Direct debit validation settings form.
+ */
+function commerce_iats_direct_debit_validation_pane_settings_form($checkout_pane) {
+  $form = array();
+
+  $form['commerce_iats_direct_debit_validation_pane_company_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Company Name'),
+    '#size' => 32,
+    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_company_name', ''),
+  );
+
+  $form['company_address'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Company Address'),
+  );
+
+  $form['company_address']['commerce_iats_direct_debit_validation_pane_address'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address'),
+    '#size' => 32,
+    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_address', ''),
+  );
+
+  $form['company_address']['commerce_iats_direct_debit_validation_pane_city'] = array(
+    '#type' => 'textfield',
+    '#title' => t('City'),
+    '#size' => 32,
+    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_city', ''),
+  );
+
+  $form['company_address']['commerce_iats_direct_debit_validation_pane_state'] = array(
+    '#type' => 'textfield',
+    '#title' => t('State'),
+    '#size' => 32,
+    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_state', ''),
+  );
+
+  $form['company_address']['commerce_iats_direct_debit_validation_pane_country'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Country'),
+    '#size' => 32,
+    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_country', ''),
+  );
+
+  $form['company_address']['commerce_iats_direct_debit_validation_pane_postcode'] = array(
+    '#type' => 'textfield',
+    '#title' => t('ZIP / Post Code'),
+    '#size' => 32,
+    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_postcode', ''),
+  );
+
+  return $form;
+}
+
+/**
+ * Checkout pane callback: Displays the direct debit validation details page.
+ */
+function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  $pane_form = array();
+
+  $confirmation = '<p>These are the details that you have entered to set up'
+    . ' Direct Debit Instruction.</p><p><b>Important:</b> In order to complete'
+    . ' the Direct Debit set-up, please check the following details and click'
+    . ' the "Continue" button lower down this page.</p>';
+
+  $pane_form['confirmation'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Confirmation'),
+  );
+
+  $pane_form['confirmation']['text'] = array(
+    '#type' => 'item',
+    '#markup' => $confirmation,
+  );
+
+  $pane_form['title'] = array(
+    '#type' => 'item',
+    '#markup' => t('Instruction to your Bank or Building Society to pay by Direct Debit'),
+  );
+
+  $pane_form['company'] = array(
+    '#type' => 'fieldset',
+  );
+
+  $pane_form['company']['name'] = array(
+    '#type' => 'item',
+    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_company_name', ''),
+  );
+
+  $pane_form['company']['address'] = array(
+    '#type' => 'item',
+    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_address', ''),
+  );
+
+  $pane_form['company']['city'] = array(
+    '#type' => 'item',
+    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_city', ''),
+  );
+
+  $pane_form['company']['state'] = array(
+    '#type' => 'item',
+    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_state', ''),
+  );
+
+  $pane_form['company']['country'] = array(
+    '#type' => 'item',
+    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_country', ''),
+  );
+
+  $pane_form['company']['postcode'] = array(
+    '#type' => 'item',
+    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_postcode', ''),
+  );
+
+  $pane_form['details'] = array(
+    '#type' => 'fieldset',
+  );
+
+  $pane_form['details']['account_holder'] = array(
+    '#type' => 'item',
+    '#title' => 'Name of Account Holder',
+    // TODO: Get name of account holder.
+    '#markup' => '',
+  );
+
+  // TODO: Rest of form.
+
+  return $pane_form;
+}
+
+/**
+ * Checkout pane callback: Saves the account / payer details.
+ */
+function commerce_iats_direct_debit_validation_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
+  $order->data['validation'] = $form_state['values'];
+}
+
+/**
+ * Checkout pane callback: Displays the direct debit summary page.
+ */
+function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  $pane_form = array();
+
+  $info = '<p>A summary of the details of your submission are listed below.</p>'
+    . '<p>Confirmation of the Direct Debit set up will be sent by email'
+    . ' within 3 working days or no later than 10 working days before'
+    . ' first collection.</p>';
+
+  $pane_form['summary'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Summary Details Entered'),
+  );
+
+  $pane_form['summary']['text'] = array(
+    '#type' => 'item',
+    '#markup' => $info,
+  );
+
+  $pane_form['service_user'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Service User',
+  );
+
+  $pane_form['service_user']['name'] = array(
+    '#type' => 'item',
+    '#title' => 'Name',
+    // TODO: Get user name.
+    '#markup' => '',
+  );
+
+  $pane_form['service_user']['address'] = array(
+    '#type' => 'item',
+    '#title' => 'Address',
+    // TODO: Get user address.
+    '#markup' => '',
+  );
+
+  $pane_form['service_user']['reference_number'] = array(
+    '#type' => 'item',
+    '#title' => 'Reference Number',
+    // TODO: Get user reference number.
+    '#markup' => '',
+  );
+
+  $pane_form['service_user']['company_info'] = array(
+    '#type' => 'item',
+    '#markup' => t('The company name that will appear on your bank statement against the Direct Debit will be "@company_name"',
+      array(
+        // TODO: Get company name.
+        '@company_name' => '',
+      )),
+  );
+
+  $pane_form['amount_details'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Amount Details',
+  );
+
+  $pane_form['amount_details']['amount'] = array(
+    '#type' => 'item',
+    '#title' => 'Amount',
+    // TODO: Get amount.
+    '#markup' => '',
+  );
+
+  $pane_form['amount_details']['frequency'] = array(
+    '#type' => 'item',
+    '#title' => 'Frequency',
+    // TODO: Get frequency.
+    '#markup' => '',
+  );
+
+  $pane_form['amount_details']['first_collection_date'] = array(
+    '#type' => 'item',
+    '#title' => 'Date of first collection',
+    // TODO: Get first collection date.
+    '#markup' => '',
+  );
+
+  $pane_form['payer_details'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Payer Details',
+  );
+
+  $pane_form['payer_details']['first_name'] = array(
+    '#type' => 'item',
+    '#title' => 'First Name',
+    // TODO: Get first name.
+    '#markup' => '',
+  );
+
+  $pane_form['payer_details']['last_name'] = array(
+    '#type' => 'item',
+    '#title' => 'Last Name',
+    // TODO: Get last name.
+    '#markup' => '',
+  );
+
+  $pane_form['payer_details']['address'] = array(
+    '#type' => 'item',
+    '#title' => 'Address',
+    // TODO: Get address.
+    '#markup' => '',
+  );
+
+  $pane_form['payer_details']['email_address'] = array(
+    '#type' => 'item',
+    '#title' => 'Email Address',
+    // TODO: Get email address.
+    '#markup' => '',
+  );
+
+  $pane_form['account_details'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Account Details',
+  );
+
+  $pane_form['account_details']['name'] = array(
+    '#type' => 'item',
+    '#title' => 'Account Name',
+    // TODO: Get account name.
+    '#markup' => '',
+  );
+
+  $pane_form['account_details']['number'] = array(
+    '#type' => 'item',
+    '#title' => 'Account Number',
+    // TODO: Get account number.
+    '#markup' => '',
+  );
+
+  $pane_form['account_details']['sort_code'] = array(
+    '#type' => 'item',
+    '#title' => 'Account Sort Code',
+    // TODO: Get account sort code.
+    '#markup' => '',
+  );
+
+  return $pane_form;
+}
+
+/**
+ * Checkout pane callback: Saves the account / payer details.
+ */
+function commerce_iats_direct_debit_summary_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
+  $order->data['summary'] = $form_state['values'];
+}
+
+/**
+ * Checkout pane callback: Displays the direct debit set up complete page.
+ */
+function commerce_iats_direct_debit_complete_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  $pane_form = array();
+
+  $pane_form['complete'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Completed'),
+  );
+
+  $pane_form['summary']['text'] = array(
+    '#type' => 'item',
+    '#markup' => t('Your Direct Debit Reference Number is @reference_number',
+      array(
+        // TODO: Get reference number.
+        '@reference_number' => '',
+      ))
+  );
+
+  return $pane_form;
+}

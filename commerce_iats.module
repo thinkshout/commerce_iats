@@ -133,7 +133,85 @@ function commerce_iats_commerce_payment_method_info() {
     'file' => 'includes/commerce_iats.ach_eft_customer_code.inc',
   );
 
+  $payment_methods['direct_debit_validation'] = array(
+    'base' => 'commerce_iats_direct_debit_validation',
+    'title' => t('iATS Webservice: Direct debit payment validation'),
+    'short_title' => t('iATS Direct debit payment validation'),
+    'display_title' => t('Direct debit payment validation'),
+    'description' => t('Integrates the iATS CustomerLink webservice for the validation of direct debit payments.'),
+    'file' => 'includes/commerce_iats.direct_debit_validation.inc',
+  );
+
   return $payment_methods;
+}
+
+/**
+ * Implements hook_commerce_checkout_pane_info().
+ */
+function commerce_iats_commerce_checkout_pane_info() {
+  $checkout_panes = array();
+
+  $checkout_panes['checkout_direct_debit_declaration'] = array(
+    'title' => t('Declaration'),
+    'name' => t('Direct Debit Declaration'),
+    'file' => 'includes/commerce_iats.direct_debit.checkout_pane.inc',
+    'base' => 'commerce_iats_direct_debit_declaration_pane',
+    'page' => 'direct_debit_declaration',
+    'weight' => 0,
+    'fieldset' => FALSE,
+  );
+
+  $checkout_panes['checkout_direct_debit_account_payer'] = array(
+    'title' => t('Account / Payer Details'),
+    'name' => t('Direct Debit Account / Payer Details'),
+    'file' => 'includes/commerce_iats.direct_debit.checkout_pane.inc',
+    'base' => 'commerce_iats_direct_debit_account_payer_pane',
+    'page' => 'direct_debit_account_payer',
+    'weight' => 1,
+    'fieldset' => FALSE,
+  );
+
+  $checkout_panes['checkout_direct_debit_validation'] = array(
+    'title' => t('Validation'),
+    'name' => t('Direct Debit Validation'),
+    'file' => 'includes/commerce_iats.direct_debit.checkout_pane.inc',
+    'base' => 'commerce_iats_direct_debit_validation_pane',
+    'page' => 'direct_debit_validation',
+    'weight' => 2,
+    'fieldset' => FALSE,
+  );
+
+  $checkout_panes['checkout_direct_debit_summary'] = array(
+    'title' => t('Summary'),
+    'name' => t('Direct Debit Summary'),
+    'file' => 'includes/commerce_iats.direct_debit.checkout_pane.inc',
+    'base' => 'commerce_iats_direct_debit_summary_pane',
+    'page' => 'direct_debit_summary',
+    'weight' => 3,
+    'fieldset' => FALSE,
+  );
+
+  $checkout_panes['checkout_direct_debit_summary'] = array(
+    'title' => t('Summary'),
+    'name' => t('Direct Debit Summary'),
+    'file' => 'includes/commerce_iats.direct_debit.checkout_pane.inc',
+    'base' => 'commerce_iats_direct_debit_summary_pane',
+    'page' => 'direct_debit_summary',
+    'weight' => 3,
+    'fieldset' => FALSE,
+  );
+
+  $checkout_panes['checkout_direct_debit_complete'] = array(
+    'title' => t('Completed'),
+    'name' => t('Direct Debit Set Up Complete'),
+    'file' => 'includes/commerce_iats.direct_debit.checkout_pane.inc',
+    'base' => 'commerce_iats_direct_debit_complete_pane',
+    'page' => 'direct_debit_complete',
+    'weight' => 4,
+    'fieldset' => FALSE,
+  );
+
+  return $checkout_panes;
 }
 
 /**
