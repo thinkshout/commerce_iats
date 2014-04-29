@@ -18,16 +18,22 @@ function commerce_iats_recurring_pane_settings_form($checkout_pane) {
  */
 function commerce_iats_recurring_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
   $pane_form = array();
+  $default_values = isset($order->data['recurring']) ?
+    $order->data['recurring'] : array();
 
   $schedule_type = '';
   if (isset($form_state['values']['checkout_recurring']['schedule_type'])) {
     $schedule_type = $form_state['values']['checkout_recurring']['schedule_type'];
+  }
+  elseif (isset($default_values['schedule_type'])) {
+    $schedule_type = $default_values['schedule_type'];
   }
 
   $pane_form['amount'] = array(
     '#type' => 'textfield',
     '#title' => t('Amount'),
     '#required' => TRUE,
+    '#default_value' => isset($default_values['amount']) ? $default_values['amount'] : '',
   );
 
   $pane_form['schedule_type'] = array(
@@ -35,7 +41,7 @@ function commerce_iats_recurring_pane_checkout_form($form, &$form_state, $checko
     '#title' => t('Payment schedule type'),
     '#required' => TRUE,
     '#options' => commerce_iats_recurring_pane_schedule_types(),
-    '#default_value' => '',
+    '#default_value' => $schedule_type,
     '#ajax' => array(
       'callback' => 'commerce_iats_recurring_pane_schedule_type_callback',
       'method' => 'replace',
@@ -50,7 +56,8 @@ function commerce_iats_recurring_pane_checkout_form($form, &$form_state, $checko
       '#type' => 'select',
       '#title' => t('Payment date'),
       '#options' => $payment_dates,
-      '#default_value' => 1,
+      '#default_value' => isset($default_values['schedule_date']) ?
+      $default_values['schedule_date'] : 1,
     );
   }
   else {
