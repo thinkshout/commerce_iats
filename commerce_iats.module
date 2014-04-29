@@ -151,6 +151,16 @@ function commerce_iats_commerce_payment_method_info() {
 function commerce_iats_commerce_checkout_pane_info() {
   $checkout_panes = array();
 
+  $checkout_panes['checkout_recurring'] = array(
+    'title' => t('Recurring Payment'),
+    'name' => t('Recurring Payment'),
+    'file' => 'includes/commerce_iats.recurring.checkout_pane.inc',
+    'base' => 'commerce_iats_recurring_pane',
+    'page' => 'recurring',
+    'weight' => 0,
+    'fieldset' => FALSE,
+  );
+
   $checkout_panes['checkout_direct_debit_declaration'] = array(
     'title' => t('Declaration'),
     'name' => t('Direct Debit Declaration'),
