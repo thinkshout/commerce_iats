@@ -128,6 +128,14 @@ function commerce_iats_direct_debit_account_payer_pane_settings_form($checkout_p
     '#default_value' => variable_get('commerce_iats_direct_debit_account_payer_pane_email', ''),
   );
 
+  $form['commerce_iats_direct_debit_account_payer_first_collection_option_count'] = array(
+    '#type' => 'textfield',
+    '#title' => t('First Collection Option Count'),
+    '#description' => t('The number of first collection date options to offer the user.'),
+    '#size' => 4,
+    '#default_value' => variable_get('commerce_iats_direct_debit_account_payer_first_collection_option_count', '5'),
+  );
+
   return $form;
 }
 
@@ -187,8 +195,9 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form($form, &$fo
   $pane_form['account']['first_collection_date'] = array(
     '#type' => 'select',
     '#title' => t('Date Of First Collection'),
-    // TODO: Add collection date options.
-    '#options' => array(),
+    '#options' => commerce_iats_direct_debit_get_first_collection_options(
+      $order->data['recurring']['schedule_type'],
+      $order->data['recurring']['schedule_date']),
   );
 
   $pane_form['payer'] = array(
@@ -340,6 +349,30 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form_validate($f
  */
 function commerce_iats_direct_debit_account_payer_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
   $order->data['account_payer'] = $form_state['values']['checkout_direct_debit_account_payer'];
+
+  // TODO: Process Direct Debit Validate payment method.
+
+  // TODO: Account for custom rule name.
+  $payment_method_name = 'direct_debit_validation|commerce_payment_direct_debit_validation';
+
+  // Only process if there were payment methods available.
+  $order->data['payment_method'] = $payment_method_name;
+
+  // Delegate submit to the payment method callback.
+  $payment_method = commerce_payment_method_instance_load($payment_method_name);
+
+  if ($callback = commerce_payment_method_callback($payment_method, 'submit_form_submit')) {
+    $payment_data = $form_state['values']['checkout_direct_debit_account_payer'];
+    // No balance required for direct debit validation.
+    $balance = 0;
+    if ($callback($payment_method, $form, $payment_data, $order, $balance) === FALSE) {
+      // If payment fails, rebuild the checkout form without progressing.
+      $form_state['rebuild'] = TRUE;
+    }
+  }
+
+  // TODO: Get bank details.
+
 }
 
 /**
@@ -713,4 +746,117 @@ function commerce_iats_direct_debit_complete_pane_checkout_form($form, &$form_st
   );
 
   return $pane_form;
+}
+
+/**
+ * Gets an array of first collection date options, indexed by UNIX timestamp.
+ *
+ * @param string $schedule_type
+ *   The iATS Schedule Type.
+ * @param string $schedule_date
+ *   The iATS Schedule Date.
+ *
+ * @see commerce_iats_recurring_pane_schedule_types
+ * @see commerce_iats_recurring_pane_schedule_dates
+ *
+ * @return array
+ *   Array of first collection date options.
+ */
+function commerce_iats_direct_debit_get_first_collection_options($schedule_type, $schedule_date) {
+  $option_count = (int) variable_get('commerce_iats_direct_debit_account_payer_first_collection_option_count', 5);
+  $schedule_date = (int) $schedule_date;
+
+  $dates = array();
+  switch ($schedule_type) {
+    case 'Weekly':
+      // Start date options on next chosen day of week after lead time,
+      // repeat weekly.
+      $current_week_day = (int) date('N', mktime(0, 0, 0, date('n'), date('j'), date('y')));
+
+      $day_offset = ($current_week_day != $schedule_date) ?
+        ($schedule_date - $current_week_day) : 0;
+      // Find the next weekday that matches the chosen day of week.
+      $initial_time = mktime(0, 0, 0, date('n'), date('j') + $day_offset, date('y'));
+
+      for ($i = 0; $i < $option_count; $i++) {
+        $time = mktime(0, 0, 0, date('n', $initial_time),
+          date('j', $initial_time) + ($i * 7), date('y', $initial_time));
+        if (!commerce_iats_direct_debit_validate_lead_time($time)) {
+          $option_count++;
+          continue;
+        }
+        $dates[$time] = commerce_iats_direct_debit_get_formatted_date($time);
+      }
+      break;
+
+    case 'Monthly':
+      // Start date options on next chosen day of month after lead time,
+      // repeat monthly.
+      for ($i = 0; $i < $option_count; $i++) {
+        $time = mktime(0, 0, 0, date('n') + $i, $schedule_date, date('y'));
+        if (!commerce_iats_direct_debit_validate_lead_time($time)) {
+          $option_count++;
+          continue;
+        }
+        $dates[$time] = commerce_iats_direct_debit_get_formatted_date($time);
+      }
+      break;
+
+    case 'Quarterly':
+      // Start date options on next quarter after lead time, repeat quarterly.
+      for ($i = 0; $i < $option_count; $i++) {
+        $time = mktime(0, 0, 0, date('n') + ($i * 4),
+          date('j') + COMMERCE_IATS_DIRECT_DEBIT_LEAD_DAYS, date('y'));
+        if (!commerce_iats_direct_debit_validate_lead_time($time)) {
+          $option_count++;
+          continue;
+        }
+        $dates[$time] = commerce_iats_direct_debit_get_formatted_date($time);
+      }
+      break;
+
+    case 'Annually':
+      // Start date options after lead time, repeat annually.
+      for ($i = 0; $i < $option_count; $i++) {
+        $time = mktime(0, 0, 0, date('n'),
+          date('j') + COMMERCE_IATS_DIRECT_DEBIT_LEAD_DAYS, date('y') + $i);
+        if (!commerce_iats_direct_debit_validate_lead_time($time)) {
+          $option_count++;
+          continue;
+        }
+        $dates[$time] = commerce_iats_direct_debit_get_formatted_date($time);
+      }
+      break;
+  }
+
+  return $dates;
+}
+
+/**
+ * Determines if a UNIX timestamp provides valid lead time for direct debit.
+ *
+ * @param int $time
+ *   UNIX timestamp to test.
+ *
+ * @return bool
+ *   TRUE if timestamp provides valid lead time.
+ */
+function commerce_iats_direct_debit_validate_lead_time($time) {
+  $seconds_in_day = (60 * 60 * 24);
+  $time_today = mktime(0, 0, 0, date('n'), date('j'), date('y'));
+
+  return ($time >= ($time_today + ($seconds_in_day * COMMERCE_IATS_DIRECT_DEBIT_LEAD_DAYS)));
+}
+
+/**
+ * Gets a formatted date string for a given UNIX timestamp.
+ *
+ * @param int $time
+ *   The UNIX timestamp to convert to a date string.
+ *
+ * @return string
+ *   The formatted date string.
+ */
+function commerce_iats_direct_debit_get_formatted_date($time) {
+  return date('l, F jS, Y', $time);
 }

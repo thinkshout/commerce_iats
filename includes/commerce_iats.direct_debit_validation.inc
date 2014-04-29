@@ -70,15 +70,30 @@ function commerce_iats_direct_debit_validation_submit_form_submit($payment_metho
  *   API response array or error string.
  */
 function commerce_iats_validate_direct_debit_payment($payment_method, $payment_data, $order, $charge) {
+  $combined_address = $payment_data['payer']['address_1'] . "\n"
+    . $payment_data['payer']['address_2'] . "\n"
+    . $payment_data['payer']['address_3'];
+
   // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
-    'accountNum' => $payment_data['bank_account']['number'],
-    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
+    'ACHEFTReferenceNum' => '',
+    'beginDate' => $payment_data['account']['first_collection_date'],
+    // TODO: Review this: End a year after start date.
+    'endDate' => ($payment_data['account']['first_collection_date'] + (86400 * 365)),
+    'accountCustomerName' => $payment_data['account']['account_holder'],
+    'accountNum' => $payment_data['account']['number'],
+    'companyName' => $payment_data['payer']['company_name'],
+    'firstName' => $payment_data['payer']['first_name'],
+    'lastName' => $payment_data['payer']['last_name'],
+    'address' => $combined_address,
+    'city' => $payment_data['payer']['town'],
+    'state' => $payment_data['payer']['county'],
+    // TODO: Implement country select, default to UK for now.
+    'country' => 'UK',
+    'email' => $payment_data['payer']['email'],
+    'zipCode' => $payment_data['payer']['postcode'],
   );
-
-  // Add the billing information.
-  commerce_iats_address($request, $order, 'commerce_customer_billing');
 
   // Get the API service.
   $iats = commerce_iats_get_service('CustomerLink', $payment_method);
