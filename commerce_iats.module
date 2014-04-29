@@ -16,6 +16,9 @@ define('COMMERCE_IATS_UK_SERVER_ID', 'UK');
 // for recurring payments.
 define('COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID', 'REC');
 
+// Number of days before an initial direct debit charge can be made.
+define('COMMERCE_IATS_DIRECT_DEBIT_LEAD_DAYS', 12);
+
 /**
  * Implements hook_libraries_info().
  */
@@ -334,16 +337,24 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
       commerce_iats_log_response($payment_method, $response);
     }
 
-    $auth_result = (isset($response['AUTHORIZATIONRESULT'])) ?
-      trim($response['AUTHORIZATIONRESULT']) : NULL;
+    $auth_result = NULL;
+    if (isset($response['AUTHRESULT'])) {
+      // Account for direct debit validation transaction.
+      $auth_result = $response['AUTHRESULT']['AUTHSTATUS'];
+    }
+    elseif (isset($response['AUTHORIZATIONRESULT'])) {
+      // Account for regular transaction.
+      $auth_result = $response['AUTHORIZATIONRESULT'];
+    }
+
     $transaction_id = (isset($response['TRANSACTIONID'])) ?
       trim($response['TRANSACTIONID']) : NULL;
     $customer_code = (isset($response['CUSTOMERCODE']) &&
       !empty($response['CUSTOMERCODE'])) ?
       trim($response['CUSTOMERCODE']) : NULL;
 
-    // If AUTHORIZATIONRESULT is not set, then the API returned an error string.
-    // Assign it here for logging purposes.
+    // If AUTHORIZATIONRESULT or AUTHRESULT are not set, then the API returned
+    // an error string. Assign it here for logging purposes.
     if ($auth_result == NULL) {
       $auth_result = $response;
     }
@@ -391,9 +402,14 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
 
     // If the payment failed, display an error and rebuild the form.
     if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
+      $error_reason = $auth_result;
+      if (isset($response['AUTHRESULT']['BANKERROR'])) {
+        $error_reason .= ': ' . $response['AUTHRESULT']['BANKERROR'];
+      }
+
       drupal_set_message(
         t('We received the following error while attempting to process your payment: @reason',
-          array('@reason' => $auth_result)),
+          array('@reason' => $error_reason)),
         'error'
       );
       return FALSE;
