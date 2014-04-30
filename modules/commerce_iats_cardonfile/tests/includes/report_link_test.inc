@@ -117,8 +117,7 @@ class ReportLinkTest {
                 'EXP' => '12/15',
               ),
               'AMT' => '10.00',
-              // TODO: Generate error from iATS.
-              'RST' => 'Error',
+              'RST' => 'TIMEOUT:Timeout',
             ),
           ),
         ),
