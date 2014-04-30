@@ -16,7 +16,6 @@ function commerce_iats_direct_debit_validation_settings_form($settings = NULL) {
     '#title' => 'Direct Debit',
   );
 
-  // TODO: Expand on this information.
   $info = t('Your company must be registered as a Direct Debit service user
     with a Bank or Building Society before you can process
     Direct Debit payments.');
@@ -24,6 +23,11 @@ function commerce_iats_direct_debit_validation_settings_form($settings = NULL) {
   $form['direct_debit']['info'] = array(
     '#type' => 'item',
     '#markup' => $info,
+  );
+
+  $form['direct_debit']['registration_link'] = array(
+    '#type' => 'item',
+    '#markup' => l(t('iATS recommends SmartDebit'), 'http://www.smartdebit.co.uk/'),
   );
 
   $form['direct_debit']['service_user_number'] = array(
