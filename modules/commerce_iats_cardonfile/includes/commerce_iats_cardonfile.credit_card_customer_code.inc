@@ -51,8 +51,6 @@ function commerce_iats_cardonfile_credit_card_customer_code_submit_form_validate
   );
 
   return commerce_payment_credit_card_validate($pane_values['credit_card'], $settings);
-
-  // TODO: Validate recurring payment fields.
 }
 
 /**

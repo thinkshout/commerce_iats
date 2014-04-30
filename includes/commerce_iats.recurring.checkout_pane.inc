@@ -71,6 +71,13 @@ function commerce_iats_recurring_pane_checkout_form($form, &$form_state, $checko
 }
 
 /**
+ * Checkout pane callback: Validates the recurring payment options.
+ */
+function commerce_iats_recurring_pane_checkout_form_validate($form, &$form_state) {
+  $var = 1;
+}
+
+/**
  * Checkout pane callback: Saves the recurring payment state.
  */
 function commerce_iats_recurring_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {

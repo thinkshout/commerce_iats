@@ -317,6 +317,34 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
 }
 
 /**
+ * Validates recurring payment data.
+ *
+ * @param array $recurring_data
+ *   Array of recurring payment data.
+ *
+ * @see commerce_iats_recurring_pane_checkout_form
+ *
+ * @return bool
+ *   TRUE if recurring payment data is valid.
+ */
+function commerce_iats_validate_recurring_payment(array $recurring_data) {
+  if (empty($recurring_data['amount'])) {
+    return FALSE;
+  }
+  if ($recurring_data['amount'] <= 0) {
+    return FALSE;
+  }
+  if (empty($recurring_data['schedule_type'])) {
+    return FALSE;
+  }
+  if (empty($recurring_data['schedule_date'])) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
  * Processes a payment and creates a transaction record.
  *
  * Based on the response from the iATS API.

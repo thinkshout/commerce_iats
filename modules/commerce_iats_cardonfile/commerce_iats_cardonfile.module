@@ -171,25 +171,8 @@ function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$for
         '#title' => t('Recurring payment date'),
         '#default_value' => $recurring->schedule_date,
       );
-
-      $form['#submit'][] = 'commerce_iats_cardonfile_recurring_form_submit';
     }
   }
-}
-
-/**
- * Submit handler for updating Card on File used for recurring payments.
- *
- * TODO: Form validation.
- */
-function commerce_iats_cardonfile_recurring_form_submit($form, &$form_state) {
-  $recurring = $form_state['recurring'];
-
-  $recurring->amount = $form_state['credit_card']['recurring']['amount'];
-  $recurring->schedule_type = $form_state['credit_card']['recurring']['schedule_type'];
-  $recurring->schedule_date = $form_state['credit_card']['recurring']['schedule_date'];
-
-  commerce_iats_cardonfile_recurring_save($recurring);
 }
 
 /**
@@ -334,7 +317,11 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
   }
   else {
     // Unknown transaction type.
-    // TODO: Log error message.
+    watchdog('commerce_iats', 'Attempting to process unknown queued transaction type: @type',
+      array(
+        '@type' => $transaction_type,
+      ),
+      WATCHDOG_ERROR);
     return FALSE;
   }
 
