@@ -323,8 +323,8 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
  * @param string $payment_callback
  *   Name of the payment callback.
  *
- * @return bool
- *   TRUE or FALSE indicating payment success.
+ * @return Mixed
+ *   API response array or bool FALSE on failure.
  */
 function commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, $payment_callback) {
   // Process the payment using the defined callback method.
@@ -422,7 +422,7 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     );
     return FALSE;
   }
-  return TRUE;
+  return $response;
 }
 
 /**

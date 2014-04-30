@@ -18,20 +18,6 @@ function commerce_iats_direct_debit_declaration_pane_settings_form($checkout_pan
     '#default_value' => variable_get('commerce_iats_direct_debit_declaration_pane_paper_url', ''),
   );
 
-  $form['commerce_iats_direct_debit_declaration_pane_phone'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Contact Phone Number'),
-    '#size' => 32,
-    '#default_value' => variable_get('commerce_iats_direct_debit_declaration_pane_phone', ''),
-  );
-
-  $form['commerce_iats_direct_debit_declaration_pane_email'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Contact Email Address'),
-    '#size' => 32,
-    '#default_value' => variable_get('commerce_iats_direct_debit_declaration_pane_email', ''),
-  );
-
   return $form;
 }
 
@@ -39,29 +25,39 @@ function commerce_iats_direct_debit_declaration_pane_settings_form($checkout_pan
  * Checkout pane callback: Displays the direct debit declaration page.
  */
 function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  // Set up payment method immediately so we have access to its settings.
+  // TODO: Account for custom payment method rule name.
+  $payment_method_name = 'direct_debit_validation|commerce_payment_direct_debit_validation';
+
+  $order->data['payment_method'] = $payment_method_name;
+  $order->data['payment_method_instance'] = commerce_payment_method_instance_load($payment_method_name);
+
+  $settings = $order->data['payment_method_instance']['settings'];
   $pane_form = array();
 
-  $paper_url = variable_get('commerce_iats_direct_debit_declaration_pane_paper_url', '');
+  $info = t('Note: If you are not the account holder or your account requires
+    more than one signature a paper Direct Debit Instruction will be required
+    to be completed and posted to us.');
 
-  $info = '<p><b>Note:</b> If you are not the account holder or your account'
-    . ' requires more than one signature a paper Direct Debit Instruction will'
-    . ' be required to be completed and posted to us.'
-    . ' <a href="'. $paper_url . '">Click here</a> to print off a paper'
-    . ' Direct Debit Instruction.</p>'
-    . '<p>OR</p><p>Continue with the details below:</p>';
-
-  $terms = '<p><b>Note:</b> All the normal Direct Debit safeguards and'
-    . ' guarantees apply. No changes in the amount, date, frequency to be'
-    . ' debited can be made witout notifying you at least five (5) working'
-    . ' days in advance of your account being debited. In the event of any'
-    . ' error, you are entitled to an immediate refund from your Bank or'
-    . ' Building Society. You have the right to cancel a Direct Debit'
-    . ' Instruction at any time simply by writing to your Bank or Building'
-    . ' Society, with a copy to us.</p>';
+  $terms = t('Note: All the normal Direct Debit safeguards and guarantees apply.
+   No changes in the amount, date, frequency to be debited can be made without
+   notifying you at least five (5) working days in advance of your account
+   being debited. In the event of any error, you are entitled to an immediate
+   refund from your Bank or Building Society. You have the right to cancel a
+   Direct Debit Instruction at any time simply by writing to your Bank or
+   Building Society, with a copy to us.');
 
   $pane_form['info'] = array(
     '#type' => 'item',
     '#markup' => $info,
+  );
+
+  $paper_url = variable_get('commerce_iats_direct_debit_declaration_pane_paper_url', '');
+
+  $pane_form['paper_link'] = array(
+    '#type' => 'item',
+    '#markup' => l(t('Click here to print off a paper Direct Debit Instruction'),
+      $paper_url),
   );
 
   $pane_form['declaration'] = array(
@@ -87,14 +83,14 @@ function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form
   $pane_form['terms']['phone'] = array(
     '#type' => 'item',
     '#markup' => t('Call us: @phone', array(
-      '@phone' => variable_get('commerce_iats_direct_debit_declaration_pane_phone', ''),
+      '@phone' => $settings['direct_debit']['company_phone'],
     )),
   );
 
   $pane_form['terms']['email'] = array(
     '#type' => 'item',
     '#markup' => t('Email us: @email', array(
-      '@email' => variable_get('commerce_iats_direct_debit_declaration_pane_email', ''),
+      '@email' => $settings['direct_debit']['company_email'],
     )),
   );
 
@@ -113,20 +109,6 @@ function commerce_iats_direct_debit_declaration_pane_checkout_form_submit($form,
  */
 function commerce_iats_direct_debit_account_payer_pane_settings_form($checkout_pane) {
   $form = array();
-
-  $form['commerce_iats_direct_debit_account_payer_pane_phone'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Contact Phone Number'),
-    '#size' => 32,
-    '#default_value' => variable_get('commerce_iats_direct_debit_account_payer_pane_phone', ''),
-  );
-
-  $form['commerce_iats_direct_debit_account_payer_pane_email'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Contact Email Address'),
-    '#size' => 32,
-    '#default_value' => variable_get('commerce_iats_direct_debit_account_payer_pane_email', ''),
-  );
 
   $form['commerce_iats_direct_debit_account_payer_first_collection_option_count'] = array(
     '#type' => 'textfield',
@@ -318,14 +300,14 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form($form, &$fo
   $pane_form['contact']['phone'] = array(
     '#type' => 'item',
     '#markup' => t('Call us: @phone', array(
-      '@phone' => variable_get('commerce_iats_direct_debit_account_payer_pane_phone', ''),
+      '@phone' => $order->data['payment_method_instance']['settings']['direct_debit']['company_phone'],
     )),
   );
 
   $pane_form['contact']['email'] = array(
     '#type' => 'item',
     '#markup' => t('Email us: @email', array(
-      '@email' => variable_get('commerce_iats_direct_debit_account_payer_pane_email', ''),
+      '@email' => $order->data['payment_method_instance']['settings']['direct_debit']['company_email'],
     )),
   );
 
@@ -350,8 +332,6 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form_validate($f
 function commerce_iats_direct_debit_account_payer_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
   $order->data['account_payer'] = $form_state['values']['checkout_direct_debit_account_payer'];
 
-  // TODO: Process Direct Debit Validate payment method.
-
   // TODO: Account for custom rule name.
   $payment_method_name = 'direct_debit_validation|commerce_payment_direct_debit_validation';
 
@@ -362,85 +342,46 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form_submit($for
   $payment_method = commerce_payment_method_instance_load($payment_method_name);
 
   if ($callback = commerce_payment_method_callback($payment_method, 'submit_form_submit')) {
+    // Cast callback to string to fix IDE warning caused by mixed return type.
+    $callback = (string) $callback;
     $payment_data = $form_state['values']['checkout_direct_debit_account_payer'];
     // No balance required for direct debit validation.
     $balance = 0;
-    if ($callback($payment_method, $form, $payment_data, $order, $balance) === FALSE) {
+    $response = $callback($payment_method, $form, $payment_data, $order, $balance);
+    if ($response === FALSE) {
       // If payment fails, rebuild the checkout form without progressing.
       $form_state['rebuild'] = TRUE;
     }
+    else {
+      $result = $response['AUTHRESULT'];
+
+      $order->data['validation'] = array(
+        'reference_number' => $result['ACHREFNUM'],
+        'bank_name' => $result['BANK_NAME'],
+        'bank_branch' => $result['BANK_BRANCH'],
+        'bank_address_1' => $result['BANKADDRESS1'],
+        'bank_address_2' => $result['BANKADDRESS2'],
+        'bank_address_3' => $result['BANKADDRESS3'],
+        'bank_address_4' => $result['BANKADDRESS4'],
+        'bank_city' => $result['BANK_CITY'],
+        'bank_state' => $result['BANK_STATE'],
+        'bank_postcode' => $result['BANK_POSTCODE'],
+      );
+    }
   }
-
-  // TODO: Get bank details.
-
-}
-
-/**
- * Checkout pane callback: Direct debit validation settings form.
- */
-function commerce_iats_direct_debit_validation_pane_settings_form($checkout_pane) {
-  $form = array();
-
-  $form['commerce_iats_direct_debit_validation_pane_company_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Company Name'),
-    '#size' => 32,
-    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_company_name', ''),
-  );
-
-  $form['company_address'] = array(
-    '#type' => 'fieldset',
-    '#title' => t('Company Address'),
-  );
-
-  $form['company_address']['commerce_iats_direct_debit_validation_pane_address'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Address'),
-    '#size' => 32,
-    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_address', ''),
-  );
-
-  $form['company_address']['commerce_iats_direct_debit_validation_pane_city'] = array(
-    '#type' => 'textfield',
-    '#title' => t('City'),
-    '#size' => 32,
-    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_city', ''),
-  );
-
-  $form['company_address']['commerce_iats_direct_debit_validation_pane_state'] = array(
-    '#type' => 'textfield',
-    '#title' => t('State'),
-    '#size' => 32,
-    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_state', ''),
-  );
-
-  $form['company_address']['commerce_iats_direct_debit_validation_pane_country'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Country'),
-    '#size' => 32,
-    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_country', ''),
-  );
-
-  $form['company_address']['commerce_iats_direct_debit_validation_pane_postcode'] = array(
-    '#type' => 'textfield',
-    '#title' => t('ZIP / Post Code'),
-    '#size' => 32,
-    '#default_value' => variable_get('commerce_iats_direct_debit_validation_pane_postcode', ''),
-  );
-
-  return $form;
 }
 
 /**
  * Checkout pane callback: Displays the direct debit validation details page.
  */
 function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  $settings = $order->data['payment_method_instance']['settings'];
   $pane_form = array();
 
-  $confirmation = '<p>These are the details that you have entered to set up'
-    . ' Direct Debit Instruction.</p><p><b>Important:</b> In order to complete'
-    . ' the Direct Debit set-up, please check the following details and click'
-    . ' the "Continue" button lower down this page.</p>';
+  $confirmation = t('These are the details that you have entered to set up
+    Direct Debit Instruction. Important: In order to complete the Direct Debit
+    set-up, please check the following details and click the "Continue" button
+    lower down this page.');
 
   $pane_form['confirmation'] = array(
     '#type' => 'fieldset',
@@ -463,32 +404,32 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
 
   $pane_form['company']['name'] = array(
     '#type' => 'item',
-    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_company_name', ''),
+    '#markup' => $settings['direct_debit']['company_name'],
   );
 
   $pane_form['company']['address'] = array(
     '#type' => 'item',
-    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_address', ''),
+    '#markup' => $settings['direct_debit']['company_address'],
   );
 
   $pane_form['company']['city'] = array(
     '#type' => 'item',
-    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_city', ''),
+    '#markup' => $settings['direct_debit']['company_city'],
   );
 
   $pane_form['company']['state'] = array(
     '#type' => 'item',
-    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_state', ''),
+    '#markup' => $settings['direct_debit']['company_state'],
   );
 
   $pane_form['company']['country'] = array(
     '#type' => 'item',
-    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_country', ''),
+    '#markup' => $settings['direct_debit']['company_country'],
   );
 
   $pane_form['company']['postcode'] = array(
     '#type' => 'item',
-    '#markup' => variable_get('commerce_iats_direct_debit_validation_pane_postcode', ''),
+    '#markup' => $settings['direct_debit']['company_postcode'],
   );
 
   $pane_form['details'] = array(
@@ -522,72 +463,54 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
   $pane_form['details']['service_user_number'] = array(
     '#type' => 'item',
     '#title' => t('Service User Number'),
-    // TODO: Get Service User Number.
-    '#markup' => '',
+    '#markup' => $settings['direct_debit']['service_user_number'],
   );
 
   $pane_form['details']['reference_number'] = array(
     '#type' => 'item',
     '#title' => t('Reference'),
-    // TODO: Get Reference Number.
-    '#markup' => '',
+    // TODO: Test Reference Number.
+    '#markup' => $order->data['validation']['reference_number'],
   );
 
   $pane_form['details']['instruction'] = array(
     '#type' => 'fieldset',
   );
 
-  $instruction_info = '<p><b>Instructions to your Bank or Building Society:</b>'
-    . ' Please pay @company_name from the account detailed in this instruction'
-    . ' subject to the safeguards assured by the Direct Debit Guarantee.'
-    . ' I understand that this instruction may remain with @company_name and,'
-    . ' if so, details will be passed electronically to my Bank/Building Society.';
+  $instruction_info = t('Instructions to your Bank or Building Society:
+    Please pay @company_name from the account detailed in this instruction
+    subject to the safeguards assured by the Direct Debit Guarantee.
+    I understand that this instruction may remain with @company_name and,
+    if so, details will be passed electronically to my Bank/Building Society.',
+    array(
+      '@company_name' => $settings['direct_debit']['company_name'],
+    ));
 
   $pane_form['details']['instruction']['info'] = array(
     '#type' => 'item',
-    '#markup' => t($instruction_info,
-    array(
-      '@company_name' => variable_get('commerce_iats_direct_debit_validation_pane_company_name', ''),
-    ))
+    '#markup' => $instruction_info,
   );
 
   $pane_form['details']['instruction']['value'] = array(
     '#type' => 'item',
-    // TODO: Get First Collection Date.
-    '#markup' => '',
+    // TODO: Test First Collection Date.
+    '#markup' => 'Date: ' . date('d-m-Y',
+      $order->data['account_payer']['account']['first_collection_date']),
   );
 
   return $pane_form;
 }
 
 /**
- * Checkout pane callback: Direct debit summary page settings form.
- */
-function commerce_iats_direct_debit_summary_pane_settings_form($checkout_pane) {
-  $form = array();
-
-  $form['commerce_iats_direct_debit_summary_pane_company_name'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Company Name'),
-    '#description' => t('The company name to use in the Direct Debit Instruction.'),
-    '#size' => 64,
-    '#default_value' => variable_get('commerce_iats_direct_debit_summary_pane_company_name', ''),
-  );
-
-  return $form;
-}
-
-/**
  * Checkout pane callback: Displays the direct debit summary page.
  */
 function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  $settings = $order->data['payment_method_instance']['settings'];
   $pane_form = array();
-  $company_name = variable_get('commerce_iats_direct_debit_summary_pane_company_name', '');
 
-  $info = '<p>A summary of the details of your submission are listed below.</p>'
-    . '<p>Confirmation of the Direct Debit set up will be sent by email'
-    . ' within 3 working days or no later than 10 working days before'
-    . ' first collection.</p>';
+  $info = t('A summary of the details of your submission are listed below.
+    Confirmation of the Direct Debit set up will be sent by email within
+    3 working days or no later than 10 working days before first collection.');
 
   $pane_form['summary'] = array(
     '#type' => 'fieldset',
@@ -607,28 +530,33 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
   $pane_form['service_user']['name'] = array(
     '#type' => 'item',
     '#title' => t('Name'),
-    '#markup' => $company_name,
+    '#markup' => $settings['direct_debit']['company_name'],
   );
+
+  $combined_address = $settings['direct_debit']['company_address'] . '<br />'
+    . $settings['direct_debit']['company_city'] . '<br />'
+    . $settings['direct_debit']['company_state'] . '<br />'
+    . $settings['direct_debit']['company_country'] . '<br />'
+    . $settings['direct_debit']['company_postcode'];
 
   $pane_form['service_user']['address'] = array(
     '#type' => 'item',
     '#title' => t('Address'),
-    // TODO: Get service user address.
-    '#markup' => '',
+    '#markup' => $combined_address,
   );
 
   $pane_form['service_user']['reference_number'] = array(
     '#type' => 'item',
     '#title' => t('Reference Number'),
-    // TODO: Get user reference number.
-    '#markup' => '',
+    // TODO: Test user reference number.
+    '#markup' => $order->data['validation']['reference_number'],
   );
 
   $pane_form['service_user']['company_info'] = array(
     '#type' => 'item',
     '#markup' => t('The company name that will appear on your bank statement against the Direct Debit will be "@company_name"',
       array(
-        '@company_name' => $company_name,
+        '@company_name' => $settings['direct_debit']['company_name'],
       )),
   );
 
@@ -652,8 +580,9 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
   $pane_form['amount_details']['first_collection_date'] = array(
     '#type' => 'item',
     '#title' => t('Date of first collection'),
-    // TODO: Get first collection date.
-    '#markup' => '',
+    // TODO: Test first collection date.
+    '#markup' => date('d-m-Y',
+      $order->data['account_payer']['account']['first_collection_date']),
   );
 
   $pane_form['payer_details'] = array(
@@ -740,8 +669,8 @@ function commerce_iats_direct_debit_complete_pane_checkout_form($form, &$form_st
     '#type' => 'item',
     '#markup' => t('Your Direct Debit Reference Number is @reference_number',
       array(
-        // TODO: Get reference number.
-        '@reference_number' => '',
+        // TODO: Test reference number.
+        '@reference_number' => $order->data['validation']['reference_number'],
       )),
   );
 

@@ -10,6 +10,94 @@
 function commerce_iats_direct_debit_validation_settings_form($settings = NULL) {
   $form = commerce_iats_settings_form_base($settings);
 
+  $form['direct_debit'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'Direct Debit',
+  );
+
+  // TODO: Expand on this information.
+  $info = t('Your company must be registered as a Direct Debit service user
+    with a Bank or Building Society before you can process
+    Direct Debit payments.');
+
+  $form['direct_debit']['info'] = array(
+    '#type' => 'item',
+    '#markup' => $info,
+  );
+
+  $form['direct_debit']['service_user_number'] = array(
+    '#type' => 'textfield',
+    '#title' => 'Service User Number',
+    '#size' => 32,
+    '#required' => TRUE,
+    '#default_value' => (isset($settings['direct_debit']['service_user_number'])) ?
+    $settings['direct_debit']['service_user_number'] : '',
+  );
+
+  $form['direct_debit']['company_name'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Company Name'),
+    '#size' => 32,
+    '#default_value' => (isset($settings['direct_debit']['company_name'])) ?
+    $settings['direct_debit']['company_name'] : '',
+  );
+
+  $form['direct_debit']['company_address'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Address'),
+    '#size' => 64,
+    '#default_value' => (isset($settings['direct_debit']['company_address'])) ?
+    $settings['direct_debit']['company_address'] : '',
+  );
+
+  $form['direct_debit']['company_city'] = array(
+    '#type' => 'textfield',
+    '#title' => t('City'),
+    '#size' => 32,
+    '#default_value' => (isset($settings['direct_debit']['company_city'])) ?
+    $settings['direct_debit']['company_city'] : '',
+  );
+
+  $form['direct_debit']['company_state'] = array(
+    '#type' => 'textfield',
+    '#title' => t('State'),
+    '#size' => 32,
+    '#default_value' => (isset($settings['direct_debit']['company_state'])) ?
+    $settings['direct_debit']['company_state'] : '',
+  );
+
+  $form['direct_debit']['company_country'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Country'),
+    '#size' => 32,
+    '#default_value' => (isset($settings['direct_debit']['company_country'])) ?
+    $settings['direct_debit']['company_country'] : '',
+  );
+
+  $form['direct_debit']['company_postcode'] = array(
+    '#type' => 'textfield',
+    '#title' => t('ZIP / Post Code'),
+    '#size' => 16,
+    '#default_value' => (isset($settings['direct_debit']['company_postcode'])) ?
+    $settings['direct_debit']['company_postcode'] : '',
+  );
+
+  $form['direct_debit']['company_phone'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Phone Number'),
+    '#size' => 32,
+    '#default_value' => (isset($settings['direct_debit']['company_phone'])) ?
+    $settings['direct_debit']['company_phone'] : '',
+  );
+
+  $form['direct_debit']['company_email'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Email Address'),
+    '#size' => 32,
+    '#default_value' => (isset($settings['direct_debit']['company_email'])) ?
+    $settings['direct_debit']['company_email'] : '',
+  );
+
   return $form;
 }
 
