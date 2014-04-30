@@ -6,6 +6,9 @@
 
 require_once 'includes/report_link_test.inc';
 
+/**
+ * Test case for Commerce iATS Card on File tests.
+ */
 class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
   const TEST_AGENT_CODE = 'TEST88';
   const TEST_AGENT_PASSWORD = 'TEST88';

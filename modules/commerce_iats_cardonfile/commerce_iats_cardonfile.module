@@ -252,7 +252,7 @@ function commerce_iats_cardonfile_populate_transaction_queue() {
   // TODO: Account for custom payment method rule name.
   $payment_method = commerce_payment_method_instance_load('iats_credit_card_customer_code|commerce_payment_iats_credit_card_customer_code');
 
-  if (empty($payment_method['settings'])) {
+  if (($payment_method === FALSE) || empty($payment_method['settings'])) {
     // Payment method has not been set up. Cannot retrieve transaction reports.
     return;
   }
