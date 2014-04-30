@@ -377,11 +377,11 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     $auth_result = NULL;
     if (isset($response['AUTHRESULT'])) {
       // Account for direct debit validation transaction.
-      $auth_result = $response['AUTHRESULT']['AUTHSTATUS'];
+      $auth_result = trim($response['AUTHRESULT']['AUTHSTATUS']);
     }
     elseif (isset($response['AUTHORIZATIONRESULT'])) {
       // Account for regular transaction.
-      $auth_result = $response['AUTHORIZATIONRESULT'];
+      $auth_result = trim($response['AUTHORIZATIONRESULT']);
     }
 
     $transaction_id = (isset($response['TRANSACTIONID'])) ?
