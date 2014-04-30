@@ -189,7 +189,7 @@ function commerce_iats_cardonfile_ach_eft_create_and_charge($payment_method, $pa
 
       // Create a new card on file record for the new customer code.
       commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
-        $payment_data['bank_account'], array(), $customer_code,
+        $payment_data['bank_account'], $customer_code,
         $payment_data['bank_account']['type']);
     }
     else {

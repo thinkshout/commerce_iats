@@ -75,19 +75,27 @@ function commerce_iats_cardonfile_ach_eft_customer_code_submit_form_submit($paym
  *   API response array or error string.
  */
 function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, $payment_data, $order, $charge) {
-
-  // TODO: Recurring payment fields.
   $request = array(
     'customerIPAddress' => ip_address(),
     'accountNum' => $payment_data['bank_account']['number'],
     'accountType' => $payment_data['bank_account']['type'],
-    // Only used for recurring payments.
-    'recurring' => FALSE,
-    // Only used for recurring payments.
-    'beginDate' => 0,
-    // Only used for recurring payments.
-    'endDate' => 0,
   );
+
+  if (isset($payment_method['settings']['allow_recurring'])
+    && $payment_method['settings']['allow_recurring'] == 1) {
+    $request['recurring'] = TRUE;
+    // TODO: Handle recurring begin and end dates.
+    $request['beginDate'] = 0;
+    $request['endDate'] = 0;
+    $request['amount'] = $order->data['recurring']['amount'];
+    $request['scheduleType'] = $order->data['recurring']['schedule_type'];
+    $request['scheduleDate'] = $order->data['recurring']['schedule_date'];
+  }
+  else {
+    $request['recurring'] = FALSE;
+    $request['beginDate'] = 0;
+    $request['endDate'] = 0;
+  }
 
   // Add the billing information.
   commerce_iats_address($request, $order, 'commerce_customer_billing');
@@ -106,15 +114,12 @@ function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, 
     if (isset($response['CUSTOMERCODE'])) {
       $customer_code = trim($response['CUSTOMERCODE']);
 
-      $recurring_data = (isset($payment_data['recurring'])) ?
-        $payment_data['recurring'] : NULL;
-
       $payment_data['bank_account']['default'] = (isset($payment_data['cardonfile_instance_default'])) ?
         $payment_data['cardonfile_instance_default'] : FALSE;
 
       // Create a new card on file record for the new customer code.
       commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
-        $payment_data['bank_account'], $recurring_data, $customer_code,
+        $payment_data['bank_account'], $customer_code,
         $payment_data['bank_account']['type']);
     }
     else {

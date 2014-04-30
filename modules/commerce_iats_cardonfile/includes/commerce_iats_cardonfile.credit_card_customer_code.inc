@@ -101,9 +101,9 @@ function commerce_iats_cardonfile_credit_card_create_customer_code($payment_meth
     // TODO: Handle recurring begin and end dates.
     $request['beginDate'] = 0;
     $request['endDate'] = 0;
-    $request['amount'] = $payment_data['recurring']['amount'];
-    $request['scheduleType'] = $payment_data['recurring']['schedule_type'];
-    $request['scheduleDate'] = $payment_data['recurring']['schedule_date'];
+    $request['amount'] = $order->data['recurring']['amount'];
+    $request['scheduleType'] = $order->data['recurring']['schedule_type'];
+    $request['scheduleDate'] = $order->data['recurring']['schedule_date'];
   }
   else {
     $request['recurring'] = FALSE;
@@ -128,15 +128,12 @@ function commerce_iats_cardonfile_credit_card_create_customer_code($payment_meth
     if (isset($response['CUSTOMERCODE'])) {
       $customer_code = trim($response['CUSTOMERCODE']);
 
-      $recurring_data = (isset($payment_data['recurring'])) ?
-        $payment_data['recurring'] : NULL;
-
       $payment_data['credit_card']['default'] = (isset($payment_data['cardonfile_instance_default'])) ?
         $payment_data['cardonfile_instance_default'] : FALSE;
 
       // Create a new card on file record for the new customer code.
       commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
-        $payment_data['credit_card'], $recurring_data, $customer_code,
+        $payment_data['credit_card'], $customer_code,
         $formatted_card_data['orig_type']);
     }
     else {

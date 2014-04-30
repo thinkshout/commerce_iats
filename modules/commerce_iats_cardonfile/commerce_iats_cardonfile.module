@@ -113,53 +113,8 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
       '#type' => 'value',
       '#value' => 'new',
     );
+
     $form['commerce_payment']['payment_details']['credit_card']['#access'] = TRUE;
-
-    // Add recurring payment form fields.
-    $form['commerce_payment']['payment_details']['recurring'] = array(
-      '#tree' => TRUE,
-    );
-
-    $schedule_type = '';
-    if (isset($form_state['values']['commerce_payment']['payment_details']['recurring']['schedule_type'])) {
-      $schedule_type = $form_state['values']['commerce_payment']['payment_details']['recurring']['schedule_type'];
-    }
-
-    $form['commerce_payment']['payment_details']['recurring']['amount'] = array(
-      '#type' => 'textfield',
-      '#title' => t('Amount'),
-      '#required' => TRUE,
-    );
-
-    $form['commerce_payment']['payment_details']['recurring']['schedule_type'] = array(
-      '#type' => 'select',
-      '#title' => t('Payment schedule type'),
-      '#required' => TRUE,
-      '#options' => commerce_iats_cardonfile_recurring_schedule_types(),
-      '#default_value' => '',
-      '#ajax' => array(
-        'callback' => 'commerce_iats_cardonfile_recurring_schedule_type_callback',
-        'method' => 'replace',
-        'wrapper' => 'payment-date-wrapper',
-      ),
-    );
-
-    if (!empty($schedule_type)) {
-      $payment_dates = commerce_iats_cardonfile_recurring_schedule_dates($schedule_type);
-
-      $form['commerce_payment']['payment_details']['recurring']['schedule_date'] = array(
-        '#type' => 'select',
-        '#title' => t('Payment date'),
-        '#options' => $payment_dates,
-        '#default_value' => 1,
-      );
-    }
-    else {
-      $form['commerce_payment']['payment_details']['recurring']['schedule_date'] = array();
-    }
-
-    $form['commerce_payment']['payment_details']['recurring']['schedule_date']['#prefix'] = '<div id="payment-date-wrapper">';
-    $form['commerce_payment']['payment_details']['recurring']['schedule_date']['#suffix'] = '</div>';
 
     // Disable Card on File options. If recurring is enabled, card is stored.
     $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#access'] = FALSE;
@@ -200,34 +155,20 @@ function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$for
 
       $form['credit_card']['recurring'] = array();
       $form['credit_card']['recurring']['amount'] = array(
-        '#type' => 'textfield',
+        '#type' => 'item',
         '#title' => t('Recurring payment amount'),
-        '#size' => 6,
-        '#required' => TRUE,
-        '#default_value' => $recurring->amount,
+        '#markup' => $recurring->amount,
       );
 
       $form['credit_card']['recurring']['schedule_type'] = array(
-        '#type' => 'select',
+        '#type' => 'item',
         '#title' => t('Recurring payment schedule type'),
-        '#required' => TRUE,
-        '#options' => commerce_iats_cardonfile_recurring_schedule_types(),
-        '#default_value' => $recurring->schedule_type,
+        '#markup' => $recurring->schedule_type,
       );
 
-      if (isset($form_state['values']['credit_card']['recurring']['schedule_type'])) {
-        $schedule_type = $form_state['values']['credit_card']['recurring']['schedule_type'];
-      }
-      else {
-        $schedule_type = $recurring->schedule_type;
-      }
-
-      $payment_dates = commerce_iats_cardonfile_recurring_schedule_dates($schedule_type);
-
       $form['credit_card']['recurring']['schedule_date'] = array(
-        '#type' => 'select',
+        '#type' => 'item',
         '#title' => t('Recurring payment date'),
-        '#options' => $payment_dates,
         '#default_value' => $recurring->schedule_date,
       );
 
@@ -475,8 +416,6 @@ function commerce_iats_cardonfile_customer_code_settings_form_base(array $settin
  *   The payment method used during this transaction.
  * @param array $card_data
  *   Array of credit card data.
- * @param array $recurring_data
- *   Array of recurring payment data.
  * @param string $customer_code
  *   The iATS customer code returned by the iATS API following a transaction
  *   that created a new customer code.
@@ -487,7 +426,7 @@ function commerce_iats_cardonfile_customer_code_settings_form_base(array $settin
  * @return bool
  *   TRUE or FALSE indicating success of saving card on file.
  */
-function commerce_iats_cardonfile_create_cardonfile($order, array $payment_method, array $card_data, array $recurring_data, $customer_code, $card_type) {
+function commerce_iats_cardonfile_create_cardonfile($order, array $payment_method, array $card_data, $customer_code, $card_type) {
   // Build a payment details array for the credit card.
   $payment_details = array(
     'cardNumber' => $card_data['number'],
@@ -511,7 +450,7 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
   $card_on_file->status = 1;
   $card_on_file->instance_default = $card_data['default'];
 
-  if (!empty($recurring_data) && !empty($recurring_data['amount'])) {
+  if (isset($order->data['recurring']) && !empty($order->data['recurring']['amount'])) {
     $card_on_file->recurring = TRUE;
     // A recurring payment card cannot be used as the user's default card.
     $card_on_file->instance_default = FALSE;
@@ -530,9 +469,9 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
     if ($card_on_file->recurring) {
       $card_on_file_recurring = commerce_iats_cardonfile_recurring_new();
       $card_on_file_recurring->card_id = $card_on_file->card_id;
-      $card_on_file_recurring->amount = $recurring_data['amount'];
-      $card_on_file_recurring->schedule_type = $recurring_data['schedule_type'];
-      $card_on_file_recurring->schedule_date = $recurring_data['schedule_date'];
+      $card_on_file_recurring->amount = $order->data['recurring']['amount'];
+      $card_on_file_recurring->schedule_type = $order->data['recurring']['schedule_type'];
+      $card_on_file_recurring->schedule_date = $order->data['recurring']['schedule_date'];
       commerce_iats_cardonfile_recurring_save($card_on_file_recurring);
     }
 
@@ -581,62 +520,6 @@ function commerce_iats_cardonfile_payment_method_callbacks($payment_method_type)
  */
 function commerce_iats_cardonfile_recurring_schedule_type_callback($form, $form_state) {
   return $form['commerce_payment']['payment_details']['recurring']['schedule_date'];
-}
-
-/**
- * Returns an associative array of valid payment schedule types.
- *
- * @return array
- *   Array of recurring schedule types.
- */
-function commerce_iats_cardonfile_recurring_schedule_types() {
-  $types = array(
-    '' => 'None',
-    'Weekly' => 'Weekly',
-    'Monthly' => 'Monthly',
-    'Quarterly' => 'Quarterly',
-    'Annually' => 'Annually',
-  );
-  return $types;
-}
-
-/**
- * Returns an associative array of valid payment schedule dates.
- *
- * @param string $payment_type
- *   The schedule type to return schedule dates for.
- *
- * @return array
- *   Array of schedule dates.
- */
-function commerce_iats_cardonfile_recurring_schedule_dates($payment_type) {
-  switch ($payment_type) {
-    case 'Weekly':
-      $payment_dates = array(
-        1 => 'Monday',
-        2 => 'Tuesday',
-        3 => 'Wednesday',
-        4 => 'Thursday',
-        5 => 'Friday',
-        6 => 'Saturday',
-        7 => 'Sunday',
-      );
-      break;
-
-    case 'Monthly':
-      $payment_dates = array();
-      for ($i = 1; $i <= 31; $i++) {
-        $payment_dates[$i] = $i;
-      }
-      break;
-
-    default:
-      // Payment types that do not require schedule dates.
-      $payment_dates = array(
-        '' => $payment_type,
-      );
-  }
-  return $payment_dates;
 }
 
 /**
