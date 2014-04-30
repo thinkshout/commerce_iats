@@ -324,7 +324,7 @@ function commerce_iats_cardonfile_populate_transaction_queue() {
   $queue = DrupalQueue::get(COMMERCE_IATS_CARDONFILE_TRANSACTIONS_CRON);
   $queue->createQueue();
 
-  // TODO: Account for custom rule instance ID.
+  // TODO: Account for custom payment method rule name.
   $payment_method = commerce_payment_method_instance_load('iats_credit_card_customer_code|commerce_payment_iats_credit_card_customer_code');
 
   if (empty($payment_method['settings'])) {

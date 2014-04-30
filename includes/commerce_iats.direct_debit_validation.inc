@@ -102,37 +102,6 @@ function commerce_iats_direct_debit_validation_settings_form($settings = NULL) {
 }
 
 /**
- * Payment method callback: checkout form.
- */
-function commerce_iats_direct_debit_validation_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
-  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.direct_debit.forms');
-
-  $fields = array(
-    'type' => '',
-    'number' => '',
-  );
-
-  return commerce_iats_direct_debit_validation_form($fields);
-}
-
-/**
- * Payment method callback: checkout form validation.
- */
-function commerce_iats_direct_debit_validation_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
-  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.direct_debit.forms');
-
-  // Validate the bank account fields.
-  $settings = array(
-    'form_parents' => array_merge($form_parents, array('bank_account')),
-  );
-
-  if (!commerce_iats_direct_debit_validation_payment_form_validate($pane_values['bank_account'], $settings)) {
-    return FALSE;
-  }
-  return TRUE;
-}
-
-/**
  * Payment method callback: checkout form submission.
  */
 function commerce_iats_direct_debit_validation_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
@@ -167,7 +136,7 @@ function commerce_iats_validate_direct_debit_payment($payment_method, $payment_d
     'customerIPAddress' => ip_address(),
     'ACHEFTReferenceNum' => '',
     'beginDate' => $payment_data['account']['first_collection_date'],
-    // TODO: Review this: End a year after start date.
+    // TODO: Review this: End a year after start date for now.
     'endDate' => ($payment_data['account']['first_collection_date'] + (86400 * 365)),
     'accountCustomerName' => $payment_data['account']['account_holder'],
     'accountNum' => $payment_data['account']['number'],
@@ -177,7 +146,7 @@ function commerce_iats_validate_direct_debit_payment($payment_method, $payment_d
     'address' => $combined_address,
     'city' => $payment_data['payer']['town'],
     'state' => $payment_data['payer']['county'],
-    // TODO: Implement country select, default to UK for now.
+    // Direct Debit is only available to the UK.
     'country' => 'UK',
     'email' => $payment_data['payer']['email'],
     'zipCode' => $payment_data['payer']['postcode'],

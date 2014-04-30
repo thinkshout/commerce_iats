@@ -332,14 +332,8 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form_validate($f
 function commerce_iats_direct_debit_account_payer_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
   $order->data['account_payer'] = $form_state['values']['checkout_direct_debit_account_payer'];
 
-  // TODO: Account for custom rule name.
-  $payment_method_name = 'direct_debit_validation|commerce_payment_direct_debit_validation';
-
-  // Only process if there were payment methods available.
-  $order->data['payment_method'] = $payment_method_name;
-
   // Delegate submit to the payment method callback.
-  $payment_method = commerce_payment_method_instance_load($payment_method_name);
+  $payment_method = $order->data['payment_method_instance'];
 
   if ($callback = commerce_payment_method_callback($payment_method, 'submit_form_submit')) {
     // Cast callback to string to fix IDE warning caused by mixed return type.
@@ -469,7 +463,6 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
   $pane_form['details']['reference_number'] = array(
     '#type' => 'item',
     '#title' => t('Reference'),
-    // TODO: Test Reference Number.
     '#markup' => $order->data['validation']['reference_number'],
   );
 
@@ -493,7 +486,6 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
 
   $pane_form['details']['instruction']['value'] = array(
     '#type' => 'item',
-    // TODO: Test First Collection Date.
     '#markup' => 'Date: ' . date('d-m-Y',
       $order->data['account_payer']['account']['first_collection_date']),
   );
@@ -548,7 +540,6 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
   $pane_form['service_user']['reference_number'] = array(
     '#type' => 'item',
     '#title' => t('Reference Number'),
-    // TODO: Test user reference number.
     '#markup' => $order->data['validation']['reference_number'],
   );
 
@@ -580,7 +571,6 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
   $pane_form['amount_details']['first_collection_date'] = array(
     '#type' => 'item',
     '#title' => t('Date of first collection'),
-    // TODO: Test first collection date.
     '#markup' => date('d-m-Y',
       $order->data['account_payer']['account']['first_collection_date']),
   );
@@ -652,6 +642,25 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
  */
 function commerce_iats_direct_debit_summary_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
   $order->data['summary'] = $form_state['values']['checkout_direct_debit_summary'];
+
+  // TODO: Account for custom payment method rule name.
+  $payment_method_name = 'direct_debit_customer_code|commerce_payment_direct_debit_customer_code';
+
+  $order->data['payment_method'] = $payment_method_name;
+  $payment_method = commerce_payment_method_instance_load($payment_method_name);
+
+  if ($callback = commerce_payment_method_callback($payment_method, 'submit_form_submit')) {
+    // Cast callback to string to fix IDE warning caused by mixed return type.
+    $callback = (string) $callback;
+    $payment_data = $order->data;
+    // No balance required for direct debit validation.
+    $balance = 0;
+    $response = $callback($payment_method, $form, $payment_data, $order, $balance);
+    if ($response === FALSE) {
+      // If payment fails, rebuild the checkout form without progressing.
+      $form_state['rebuild'] = TRUE;
+    }
+  }
 }
 
 /**
@@ -669,7 +678,6 @@ function commerce_iats_direct_debit_complete_pane_checkout_form($form, &$form_st
     '#type' => 'item',
     '#markup' => t('Your Direct Debit Reference Number is @reference_number',
       array(
-        // TODO: Test reference number.
         '@reference_number' => $order->data['validation']['reference_number'],
       )),
   );

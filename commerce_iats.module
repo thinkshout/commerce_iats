@@ -145,6 +145,15 @@ function commerce_iats_commerce_payment_method_info() {
     'file' => 'includes/commerce_iats.direct_debit_validation.inc',
   );
 
+  $payment_methods['direct_debit_customer_code'] = array(
+    'base' => 'commerce_iats_direct_debit_customer_code',
+    'title' => t('iATS Webservice: Direct debit customer code creation'),
+    'short_title' => t('iATS Direct debit customer code'),
+    'display_title' => t('Direct debit customer code'),
+    'description' => t('Integrates the iATS CustomerLink webservice for the creation of direct debit customer codes.'),
+    'file' => 'includes/commerce_iats.direct_debit_customer_code.inc',
+  );
+
   return $payment_methods;
 }
 
