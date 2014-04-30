@@ -107,7 +107,8 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
   if (isset($payment_method['settings']['allow_recurring'])
     && $payment_method['settings']['allow_recurring'] == 1) {
 
-    // Hide stored cards. Cannot used stored cards to create a new recurring payment.
+    // Hide stored cards.
+    // Cannot used stored cards to create a new recurring payment.
     $form['commerce_payment']['payment_details']['cardonfile'] = array(
       '#type' => 'value',
       '#value' => 'new',
@@ -444,7 +445,7 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
 }
 
 /**
- * Gets base fields settings form fields for customer code based payment methods.
+ * Gets base settings form fields for customer code based payment methods.
  *
  * @param array $settings
  *   Form field default values array.
@@ -511,9 +512,9 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
   $card_on_file->instance_default = $card_data['default'];
 
   if (!empty($recurring_data) && !empty($recurring_data['amount'])) {
-    $card_on_file->recurring = true;
+    $card_on_file->recurring = TRUE;
     // A recurring payment card cannot be used as the user's default card.
-    $card_on_file->instance_default = false;
+    $card_on_file->instance_default = FALSE;
   }
 
   // Save and log the creation of the new card on file.

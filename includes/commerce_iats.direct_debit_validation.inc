@@ -1,7 +1,8 @@
 <?php
 /**
  * @file
- * Implements iATS Payments direct debit payment validation for use in Drupal Commerce.
+ * Implements iATS Payments direct debit payment validation for use
+ * in Drupal Commerce.
  */
 
 /**

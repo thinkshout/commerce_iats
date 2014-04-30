@@ -7,6 +7,8 @@
  */
 
 /**
+ * Gets a title describing a card on file.
+ *
  * @see commerce_cardonfile_card_title()
  */
 function commerce_iats_cardonfile_card_title($card_data) {
@@ -21,6 +23,8 @@ function commerce_iats_cardonfile_card_title($card_data) {
 }
 
 /**
+ * Displays details of a card on file.
+ *
  * @see commerce_cardonfile_card_view()
  */
 function commerce_iats_cardonfile_card_view($card_data, $view_mode) {
@@ -35,6 +39,8 @@ function commerce_iats_cardonfile_card_view($card_data, $view_mode) {
 }
 
 /**
+ * Displays form elements for a card on file.
+ *
  * @see commerce_cardonfile_card_form_page()
  */
 function commerce_iats_cardonfile_card_form_page($op, $card_data, $account) {
@@ -49,6 +55,8 @@ function commerce_iats_cardonfile_card_form_page($op, $card_data, $account) {
 }
 
 /**
+ * Creates form elements for updating a card on file.
+ *
  * @see commerce_cardonfile_card_form()
  */
 function commerce_iats_cardonfile_card_form($form, &$form_state, $op, $card_data) {
@@ -63,6 +71,8 @@ function commerce_iats_cardonfile_card_form($form, &$form_state, $op, $card_data
 }
 
 /**
+ * Validates a submitted card on file.
+ *
  * @see commerce_cardonfile_card_form_validate()
  */
 function commerce_iats_cardonfile_card_form_validate($form, &$form_state) {
@@ -77,6 +87,8 @@ function commerce_iats_cardonfile_card_form_validate($form, &$form_state) {
 }
 
 /**
+ * Creates or updates a card on file.
+ *
  * @see commerce_cardonfile_card_form_submit()
  */
 function commerce_iats_cardonfile_card_form_submit($form, &$form_state) {
@@ -91,6 +103,8 @@ function commerce_iats_cardonfile_card_form_submit($form, &$form_state) {
 }
 
 /**
+ * Displays a delete form for a card on file.
+ *
  * @see commerce_cardonfile_delete_form()
  */
 function commerce_iats_cardonfile_delete_form($form, &$form_state, $card_data) {
@@ -105,6 +119,8 @@ function commerce_iats_cardonfile_delete_form($form, &$form_state, $card_data) {
 }
 
 /**
+ * Deletes a card on file.
+ *
  * @see commerce_cardonfile_delete_form_submit()
  */
 function commerce_iats_cardonfile_delete_form_submit($form, &$form_state) {

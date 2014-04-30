@@ -72,7 +72,7 @@ function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form
   );
 
   $pane_form['terms'] = array(
-    '#type' => 'fieldset'
+    '#type' => 'fieldset',
   );
 
   $pane_form['terms']['text'] = array(
@@ -294,7 +294,7 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form($form, &$fo
   );
 
   $pane_form['contact'] = array(
-    '#type' => 'fieldset'
+    '#type' => 'fieldset',
   );
 
   $pane_form['contact']['phone'] = array(

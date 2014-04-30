@@ -8,7 +8,8 @@
  * Returns a set of bank account form elements.
  *
  * @param array $fields
- *   An array specifying the bank account fields that should be included on the form.
+ *   An array specifying the bank account fields that should be included
+ *   on the form.
  * @param array $default
  *   An array of default values for the available bank account fields.
  */
@@ -86,10 +87,10 @@ function commerce_iats_ach_eft_payment_form_validate($details, $settings) {
 }
 
 /**
- * Returns an associative array of valid bank account types for ACH/EFT payments.
+ * Returns an associative array of valid account types for ACH/EFT payments.
  *
  * @return array
- *  Array of valid bank account types.
+ *   Array of valid bank account types.
  */
 function commerce_iats_ach_eft_account_types() {
   $types = array(

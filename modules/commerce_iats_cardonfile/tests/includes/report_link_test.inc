@@ -1,4 +1,8 @@
 <?php
+/**
+ * @file
+ * iATS API ReportLink service used for testing.
+ */
 
 namespace iATS;
 
