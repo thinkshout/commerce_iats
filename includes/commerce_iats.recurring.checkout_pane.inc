@@ -21,6 +21,8 @@ function commerce_iats_recurring_pane_checkout_form($form, &$form_state, $checko
   $default_values = isset($order->data['recurring']) ?
     $order->data['recurring'] : array();
 
+  $currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
+
   $schedule_type = '';
   if (isset($form_state['values']['checkout_recurring']['schedule_type'])) {
     $schedule_type = $form_state['values']['checkout_recurring']['schedule_type'];
@@ -31,7 +33,8 @@ function commerce_iats_recurring_pane_checkout_form($form, &$form_state, $checko
 
   $pane_form['amount'] = array(
     '#type' => 'textfield',
-    '#title' => t('Amount'),
+    '#title' => t('Amount (@currency)',
+    array('@currency' => $currency_code)),
     '#required' => TRUE,
     '#default_value' => isset($default_values['amount']) ? $default_values['amount'] : '',
   );

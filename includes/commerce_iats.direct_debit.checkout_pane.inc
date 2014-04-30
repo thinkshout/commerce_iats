@@ -129,6 +129,8 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form($form, &$fo
   $default_values = isset($order->data['account_payer']) ?
     $order->data['account_payer'] : array();
 
+  $currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
+
   $pane_form['account'] = array(
     '#type' => 'fieldset',
     '#title' => t('Account Details'),
@@ -171,7 +173,7 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form($form, &$fo
   $pane_form['account']['amount'] = array(
     '#type' => 'item',
     '#title' => t('Amount'),
-    '#markup' => $order->data['recurring']['amount'],
+    '#markup' => $order->data['recurring']['amount'] . ' ' . $currency_code,
   );
 
   $pane_form['account']['first_collection_date'] = array(
@@ -500,6 +502,8 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
   $settings = $order->data['payment_method_instance']['settings'];
   $pane_form = array();
 
+  $currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
+
   $info = t('A summary of the details of your submission are listed below.
     Confirmation of the Direct Debit set up will be sent by email within
     3 working days or no later than 10 working days before first collection.');
@@ -559,7 +563,7 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
   $pane_form['amount_details']['amount'] = array(
     '#type' => 'item',
     '#title' => t('Amount'),
-    '#markup' => $order->data['recurring']['amount'],
+    '#markup' => $order->data['recurring']['amount'] . ' ' . $currency_code,
   );
 
   $pane_form['amount_details']['frequency'] = array(
