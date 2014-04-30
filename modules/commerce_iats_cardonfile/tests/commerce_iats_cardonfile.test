@@ -189,6 +189,33 @@ class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
 
     $this->assertTrue($cron_run, 'Tested cron ran successfully.');
 
-    // TODO: Pull transactions from database, verify correct.
+    // Pull transactions from database, verify correct.
+    $transactions_table = $GLOBALS['db_prefix'] . 'commerce_payment_transaction';
+    $query = db_select($transactions_table, 't')
+      ->fields('t');
+
+    $result = $query->execute();
+
+    $saved_transactions = array();
+    while ($record = $result->fetchAssoc()) {
+      $saved_transactions[$record['remote_id']] = $record;
+    }
+
+    $report_link = new \iATS\ReportLinkTest();
+    $credit_card_transactions = $report_link->getTestCreditCardTransactionData();
+
+    foreach ($credit_card_transactions as $transaction) {
+      $remote_id = $transaction['TNID'] . '|' . $transaction['CST']['CSTC'];
+
+      $this->assertTrue(isset($saved_transactions[$remote_id]), 'Tested saved credit card transaction.');
+    }
+
+    $ach_eft_transactions = $report_link->getTestACHEFTTransactionData();
+
+    foreach ($ach_eft_transactions as $transaction) {
+      $remote_id = $transaction['TNID'] . '|' . $transaction['CST']['CSTC'];
+
+      $this->assertTrue(isset($saved_transactions[$remote_id]), 'Tested saved ACH/EFT transaction.');
+    }
   }
 }

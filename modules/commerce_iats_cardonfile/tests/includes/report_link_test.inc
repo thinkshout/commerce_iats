@@ -46,7 +46,7 @@ class ReportLinkTest {
    *     )
    *   )
    */
-  protected function getTestCreditCardTransactionData() {
+  public function getTestCreditCardTransactionData() {
     $data = array(
       1 => array(
         COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|CCC000001' => array(
@@ -141,7 +141,7 @@ class ReportLinkTest {
    *     )
    *   )
    */
-  protected function getTestACHEFTTransactionData() {
+  public function getTestACHEFTTransactionData() {
     $data = array(
       2 => array(
         COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|ACHC00001' => array(
