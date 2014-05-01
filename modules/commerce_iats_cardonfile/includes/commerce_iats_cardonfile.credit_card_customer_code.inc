@@ -123,9 +123,8 @@ function commerce_iats_cardonfile_credit_card_create_customer_code($payment_meth
   $response = $iats->createCreditCardCustomerCode($request);
 
   if ($response != NULL) {
-    if (isset($response['CUSTOMERCODE'])) {
-      $customer_code = trim($response['CUSTOMERCODE']);
-
+    $customer_code = trim($response['CUSTOMERCODE']);
+    if (commerce_iats_cardonfile_can_create_cardonfile($customer_code)) {
       $payment_data['credit_card']['default'] = (isset($payment_data['cardonfile_instance_default'])) ?
         $payment_data['cardonfile_instance_default'] : FALSE;
 

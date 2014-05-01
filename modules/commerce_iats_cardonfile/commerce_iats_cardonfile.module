@@ -395,6 +395,27 @@ function commerce_iats_cardonfile_customer_code_settings_form_base(array $settin
 }
 
 /**
+ * Determines if a card on file record can be created.
+ *
+ * Valid customer codes are greater than three characters in length.
+ *
+ * @param string $customer_code
+ *   The iATS Customer Code to create a card on file record for.
+ *
+ * @return bool
+ *   TRUE if the card on file record can be created.
+ */
+function commerce_iats_cardonfile_can_create_cardonfile($customer_code) {
+  if (!is_string($customer_code)) {
+    return FALSE;
+  }
+  if (strlen($customer_code) < 3) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
  * Creates a new card on file record for the user making this transaction.
  *
  * @param object $order
