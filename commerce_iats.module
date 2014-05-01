@@ -684,6 +684,19 @@ function commerce_iats_address(array &$request, $order, $field_name) {
 }
 
 /**
+ * Converts a UNIX timestamp to a date string formatted for the iATS API.
+ *
+ * @param int $timestamp
+ *   The timestamp to convert.
+ *
+ * @return string
+ *   The formatted date string.
+ */
+function commerce_iats_get_formatted_date($timestamp) {
+  return date('Y-m-d', $timestamp);
+}
+
+/**
  * Gets an instance of an iATS Payments API service.
  *
  * @param string $service_name

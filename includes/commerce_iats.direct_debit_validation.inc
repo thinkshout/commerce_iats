@@ -136,15 +136,19 @@ function commerce_iats_validate_direct_debit_payment($payment_method, $payment_d
     . $payment_data['payer']['address_2'] . "\n"
     . $payment_data['payer']['address_3'];
 
+  $account_num = $payment_data['account']['sort_code'] . $payment_data['account']['number'];
+  $begin_date = $payment_data['account']['first_collection_date'];
+  // TODO: Review this: End a year after start date for now.
+  $end_date = date('Y-m-d', strtotime($begin_date) + (86400 * 365));
+
   // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
     'ACHEFTReferenceNum' => '',
-    'beginDate' => $payment_data['account']['first_collection_date'],
-    // TODO: Review this: End a year after start date for now.
-    'endDate' => ($payment_data['account']['first_collection_date'] + (86400 * 365)),
+    'beginDate' => $begin_date,
+    'endDate' => $end_date,
     'accountCustomerName' => $payment_data['account']['account_holder'],
-    'accountNum' => $payment_data['account']['number'],
+    'accountNum' => $account_num,
     'companyName' => $payment_data['payer']['company_name'],
     'firstName' => $payment_data['payer']['first_name'],
     'lastName' => $payment_data['payer']['last_name'],

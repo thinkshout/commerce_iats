@@ -489,7 +489,7 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
   $pane_form['details']['instruction']['value'] = array(
     '#type' => 'item',
     '#markup' => 'Date: ' . date('d-m-Y',
-      $order->data['account_payer']['account']['first_collection_date']),
+      strototime($order->data['account_payer']['account']['first_collection_date'])),
   );
 
   return $pane_form;
@@ -576,7 +576,7 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
     '#type' => 'item',
     '#title' => t('Date of first collection'),
     '#markup' => date('d-m-Y',
-      $order->data['account_payer']['account']['first_collection_date']),
+      strtotime($order->data['account_payer']['account']['first_collection_date'])),
   );
 
   $pane_form['payer_details'] = array(
@@ -690,7 +690,7 @@ function commerce_iats_direct_debit_complete_pane_checkout_form($form, &$form_st
 }
 
 /**
- * Gets an array of first collection date options, indexed by UNIX timestamp.
+ * Gets an array of first collection date options, indexed by date string.
  *
  * @param string $schedule_type
  *   The iATS Schedule Type.
@@ -726,7 +726,7 @@ function commerce_iats_direct_debit_get_first_collection_options($schedule_type,
           $option_count++;
           continue;
         }
-        $dates[$time] = commerce_iats_direct_debit_get_formatted_date($time);
+        $dates[commerce_iats_get_formatted_date($time)] = commerce_iats_direct_debit_get_formatted_date($time);
       }
       break;
 
@@ -739,7 +739,7 @@ function commerce_iats_direct_debit_get_first_collection_options($schedule_type,
           $option_count++;
           continue;
         }
-        $dates[$time] = commerce_iats_direct_debit_get_formatted_date($time);
+        $dates[commerce_iats_get_formatted_date($time)] = commerce_iats_direct_debit_get_formatted_date($time);
       }
       break;
 
@@ -752,7 +752,7 @@ function commerce_iats_direct_debit_get_first_collection_options($schedule_type,
           $option_count++;
           continue;
         }
-        $dates[$time] = commerce_iats_direct_debit_get_formatted_date($time);
+        $dates[commerce_iats_get_formatted_date($time)] = commerce_iats_direct_debit_get_formatted_date($time);
       }
       break;
 
@@ -765,7 +765,7 @@ function commerce_iats_direct_debit_get_first_collection_options($schedule_type,
           $option_count++;
           continue;
         }
-        $dates[$time] = commerce_iats_direct_debit_get_formatted_date($time);
+        $dates[commerce_iats_get_formatted_date($time)] = commerce_iats_direct_debit_get_formatted_date($time);
       }
       break;
   }
