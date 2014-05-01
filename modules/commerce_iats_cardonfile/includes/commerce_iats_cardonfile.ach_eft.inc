@@ -90,6 +90,25 @@ function commerce_iats_cardonfile_ach_eft_submit_form_submit($payment_method, $p
 }
 
 /**
+ * Card on File charge callback function.
+ *
+ * @param array $payment_method
+ *   The payment method used during this transaction.
+ * @param array $card_data
+ *   Array of credit card data.
+ * @param object $order
+ *   The order processed during this transaction.
+ * @param array $charge
+ *   The transaction charge.
+ *
+ * @return Mixed
+ *   API response array or boolean FALSE on failure.
+ */
+function commerce_iats_cardonfile_ach_eft_charge_callback($payment_method, $card_data, $order, $charge = NULL) {
+  return commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_ach_eft_charge');
+}
+
+/**
  * Processes an ACH/EFT payment using a stored card on file.
  *
  * @param array $payment_method

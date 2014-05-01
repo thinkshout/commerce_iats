@@ -492,7 +492,7 @@ function commerce_iats_cardonfile_payment_method_callbacks($payment_method_type)
     // Called when card is charged. Note: Only the Commerce Recurring module
     // calls this method automatically. When using just the Commerce module,
     // we call this method manually via a form submit handler.
-    'charge callback' => 'commerce_iats_cardonfile_' . $payment_method_type . '_charge',
+    'charge callback' => 'commerce_iats_cardonfile_' . $payment_method_type . '_charge_callback',
     // Called when card on file is updated.
     'update callback' => 'commerce_iats_cardonfile_' . $payment_method_type . '_update',
     // Called when card on file is deleted.
