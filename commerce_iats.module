@@ -350,13 +350,13 @@ function commerce_iats_validate_recurring_payment(array $recurring_data) {
  * Based on the response from the iATS API.
  *
  * @param array $payment_method
- *   Associative array with the payment method details.
+ *   Associative array of payment method details.
  * @param array $payment_data
- *   Associative array with the payment data.
+ *   Associative array of payment data.
  * @param object $order
  *   Commerce order object.
- * @param object $charge
- *   Commerce charge object.
+ * @param array $charge
+ *   Associative array of charge data.
  * @param string $payment_callback
  *   Name of the payment callback.
  *
