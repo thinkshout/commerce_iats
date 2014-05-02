@@ -489,7 +489,7 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
   $pane_form['details']['instruction']['value'] = array(
     '#type' => 'item',
     '#markup' => 'Date: ' . date('d-m-Y',
-      strototime($order->data['account_payer']['account']['first_collection_date'])),
+      strtotime($order->data['account_payer']['account']['first_collection_date'])),
   );
 
   return $pane_form;

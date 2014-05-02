@@ -116,7 +116,7 @@ function commerce_iats_recurring_pane_checkout_form_validate($form, &$form_state
  */
 function commerce_iats_recurring_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
   $order->data['recurring'] = $form_state['values']['checkout_recurring'];
-  $order->data['recurring']['start_date'] = commerce_iats_get_formatted_date(time());
+  $order->data['recurring']['begin_date'] = commerce_iats_get_formatted_date(time());
 
   $payment_duration = variable_get('commerce_iats_recurring_payment_duration',
     COMMERCE_IATS_RECURRING_PAYMENT_DURATION);

@@ -69,8 +69,7 @@ function commerce_iats_direct_debit_create_customer_code($payment_method, $payme
     'recurring' => TRUE,
     'amount' => $payment_data['account_payer']['account']['amount'],
     'beginDate' => $payment_data['account_payer']['account']['first_collection_date'],
-    // TODO: Review this: End a year after start date for now.
-    'endDate' => ($payment_data['account_payer']['account']['first_collection_date'] + (86400 * 365)),
+    'endDate' => $payment_data['recurring']['end_date'],
     'schduleType' => $payment_data['recurring']['schedule_type'],
     'scheduleDate' => $payment_data['recurring']['schedule_date'],
     'accountCustomerName' => $payment_data['account_payer']['account']['account_holder'],

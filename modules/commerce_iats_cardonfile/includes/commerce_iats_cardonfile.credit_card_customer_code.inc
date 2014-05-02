@@ -96,9 +96,8 @@ function commerce_iats_cardonfile_credit_card_create_customer_code($payment_meth
   if (isset($payment_method['settings']['allow_recurring'])
     && $payment_method['settings']['allow_recurring'] == 1) {
     $request['recurring'] = TRUE;
-    // TODO: Handle recurring begin and end dates.
-    $request['beginDate'] = 0;
-    $request['endDate'] = 0;
+    $request['beginDate'] = $order->data['recurring']['begin_date'];
+    $request['endDate'] = $order->date['recurring']['end_date'];
     $request['amount'] = $order->data['recurring']['amount'];
     $request['scheduleType'] = $order->data['recurring']['schedule_type'];
     $request['scheduleDate'] = $order->data['recurring']['schedule_date'];
