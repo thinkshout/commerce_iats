@@ -19,6 +19,9 @@ define('COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID', 'REC');
 // Number of days before an initial direct debit charge can be made.
 define('COMMERCE_IATS_DIRECT_DEBIT_LEAD_DAYS', 12);
 
+// Number of days a recurring payment should be active. Defaults to 50 years.
+define('COMMERCE_IATS_RECURRING_PAYMENT_DURATION', 18250);
+
 /**
  * Implements hook_libraries_info().
  */

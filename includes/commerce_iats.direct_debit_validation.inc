@@ -11,6 +11,15 @@
 function commerce_iats_direct_debit_validation_settings_form($settings = NULL) {
   $form = commerce_iats_settings_form_base($settings);
 
+  // No invoice in Direct Debit validation.
+  unset($form['invoice_prefix']);
+
+  // Direct Debit limited to UK server.
+  $form['server']['#options'] = array(
+    COMMERCE_IATS_UK_SERVER_ID => t('UK'),
+  );
+  $form['server']['#default_value'] = COMMERCE_IATS_UK_SERVER_ID;
+
   $form['direct_debit'] = array(
     '#type' => 'fieldset',
     '#title' => 'Direct Debit',
