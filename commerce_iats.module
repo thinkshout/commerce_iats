@@ -141,19 +141,19 @@ function commerce_iats_commerce_payment_method_info() {
 
   $payment_methods['direct_debit_validation'] = array(
     'base' => 'commerce_iats_direct_debit_validation',
-    'title' => t('iATS Webservice: Direct debit payment validation'),
-    'short_title' => t('iATS Direct debit payment validation'),
-    'display_title' => t('Direct debit payment validation'),
-    'description' => t('Integrates the iATS CustomerLink webservice for the validation of direct debit payments.'),
+    'title' => t('iATS Webservice: Direct Debit payment validation'),
+    'short_title' => t('iATS Direct Debit payment validation'),
+    'display_title' => t('Direct Debit payment validation'),
+    'description' => t('Integrates the iATS CustomerLink webservice for the validation of Direct Debit payments.'),
     'file' => 'includes/commerce_iats.direct_debit_validation.inc',
   );
 
   $payment_methods['direct_debit_customer_code'] = array(
     'base' => 'commerce_iats_direct_debit_customer_code',
-    'title' => t('iATS Webservice: Direct debit customer code creation'),
-    'short_title' => t('iATS Direct debit customer code'),
-    'display_title' => t('Direct debit customer code'),
-    'description' => t('Integrates the iATS CustomerLink webservice for the creation of direct debit customer codes.'),
+    'title' => t('iATS Webservice: Direct Debit customer code creation'),
+    'short_title' => t('iATS Direct Debit customer code'),
+    'display_title' => t('Direct Debit customer code'),
+    'description' => t('Integrates the iATS CustomerLink webservice for the creation of Direct Debit customer codes.'),
     'file' => 'includes/commerce_iats.direct_debit_customer_code.inc',
   );
 

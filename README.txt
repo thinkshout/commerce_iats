@@ -31,23 +31,28 @@ There is no upgrade path from the 1.x release of iATS Commerce.
 
 ### iATS Webservice: Credit card payment
 * Processes a credit card transaction
-* May optionally be used with [Commerce Card on File](https://drupal.org/project/commerce_cardonfile) to allow reuse of the card
+* May optionally be used with Commerce Card on File to allow reuse of the card
 
 ### iATS Webservice: Credit card customer code creation
-*
-* May optionally be used with [Commerce Card on File](https://drupal.org/project/commerce_cardonfile) to allow reuse of the card
+* Creates an iATS customer code for a credit card
+* May optionally be used with Commerce Card on File to allow reuse of the card
+* May optionally be used for recurring payments managed by iATS Payments
 
 ### iATS Webservice: ACH/EFT payment
-*
-* May optionally be used with [Commerce Card on File](https://drupal.org/project/commerce_cardonfile) to allow reuse of the card
+* Processes an ACH/EFT transaction
+* May optionally be used with Commerce Card on File to allow reuse of the card
 
 ### iATS Webservice: ACH/EFT customer code creation
-*
-* May optionally be used with [Commerce Card on File](https://drupal.org/project/commerce_cardonfile) to allow reuse of the card
+* Creates an iATS customer code for a bank account.
+* May optionally be used with Commerce Card on File to allow reuse of the card
+* May optionally be used for recurring payments managed by iATS Payments
 
-### iATS Webservice: Direct debit payment validation
+### iATS Webservice: Direct Debit payment validation
+* Validates a Direct Debit and retrieves an ACH/EFT reference number from the user's bank.
+* See "Direct Debit Checkout" documentation below.
 
-### iATS Webservice: Direct debit customer code creation
+### iATS Webservice: Direct Debit customer code creation
+* Creates an iATS customer code for a Direct Debit.
 
 ## Recurring Payment Checkout
 
@@ -56,6 +61,7 @@ implement this, you will need to install the Commerce Checkout Pages module:
 https://drupal.org/project/dc_co_pages
 
 iATS Payments can provide recurring payments. To leverage this on your website:
+
 1) Enable the Commerce iATS Card on File module.
 2) Enable any of the compatible payment methods:
     * iATS Webservice: Credit card customer code creation
@@ -63,7 +69,7 @@ iATS Payments can provide recurring payments. To leverage this on your website:
 3) In the payment method settings, check the box labeled:
    "Allow recurring payments through iATS Payments"
 4) Under "Administration / Store / Configuration / Checkout settings /
-   Checkout pages", add a new page named "Recurring."
+   Checkout pages", add a new page named "Recurring"
    Move the page to the top of the pages list.
 5) Under "Administration / Store / Configuration / Checkout settings /
    Checkout form," move the "Recurring Payment" pane into the
@@ -81,11 +87,45 @@ http://api.drupalcommerce.org/api/Drupal%20Commerce/sites!all!modules!commerce!m
 
 ## Direct Debit Checkout
 
-Both the iATS Webservice: Direct debit payment validation and
-iATS Webservice: Direct debit customer code creation payment methods must
-be enabled to use Direct Debit.
+The following payment methods must both be enabled to use Direct Debit:
 
-TODO: Document Direct Debit checkout process.
+* iATS Webservice: Direct Debit payment validation
+* iATS Webservice: Direct Debit customer code creation
+
+Commerce iATS provides custom checkout panes for Direct Debit payments. To use
+these panes:
+
+1) Under "Administration / Store / Configuration / Checkout settings /
+   Checkout pages"
+
+     * Add a new page named "Recurring"
+     * Add a new page named "Confirmation"
+
+2) Arrange the Checkout pages in the following order:
+
+     1) Checkout
+     2) Declaration
+     3) Payment
+     4) Confirmation
+     5) Review Order
+     6) Checkout Complete
+
+3) Add the Direct Debit checkout panes to the pages as follows:
+
+     * Checkout
+         - Recurring Payment
+     * Declaration
+         - Direct Debit Declaration
+     * Payment
+         - Direct Debit Account / Payer Details
+     * Confirmation
+        - Direct Debit Validation
+     * Review Order
+        - Direct Debit Summary
+     * Checkout Complete
+        - Direct Debit Set Up Complete
+
+The checkout process is now configured for Direct Debit.
 
 ## Testing
 
