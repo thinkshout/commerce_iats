@@ -92,8 +92,11 @@ The following payment methods must both be enabled to use Direct Debit:
 * iATS Webservice: Direct Debit payment validation
 * iATS Webservice: Direct Debit customer code creation
 
-Commerce iATS provides custom checkout panes for Direct Debit payments. To use
-these panes:
+Commerce iATS provides custom checkout panes for Direct Debit payments.
+To implement these, you will need to install the Commerce Checkout Pages module:
+https://drupal.org/project/dc_co_pages
+
+To use the Direct Debit checkout panes:
 
 1) Under "Administration / Store / Configuration / Checkout settings /
    Checkout pages"
