@@ -369,6 +369,13 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
 
     return ($result == SAVED_NEW);
   }
+  else {
+    watchdog('commerce_iats', 'Could not find initial transaction for recurring transaction @remote_id',
+      array(
+        '@remote_id' => $remote_id,
+      ),
+      WATCHDOG_WARNING);
+  }
   return FALSE;
 }
 
