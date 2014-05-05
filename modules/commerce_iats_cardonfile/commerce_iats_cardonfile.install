@@ -6,6 +6,21 @@
  */
 
 /**
+ * Implements hook_install().
+ */
+function commerce_iats_cardonfile_install() {
+  commerce_iats_cardonfile_add_recurring_field();
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function commerce_iats_cardonfile_uninstall() {
+  db_drop_field('commerce_cardonfile', 'recurring');
+  db_drop_table('commerce_iats_cardonfile_recurring');
+}
+
+/**
  * Implements hook_schema().
  */
 function commerce_iats_cardonfile_schema() {
@@ -60,6 +75,13 @@ function commerce_iats_cardonfile_schema_alter(&$schema) {
  * Implements hook_update_N().
  */
 function commerce_iats_cardonfile_update_7200() {
+  commerce_iats_cardonfile_add_recurring_field();
+}
+
+/**
+ * Adds a boolean field to commerce_cardonfile indicating a recurring payment.
+ */
+function commerce_iats_cardonfile_add_recurring_field() {
   $spec = array(
     'type' => 'int',
     'size' => 'tiny',
@@ -69,11 +91,4 @@ function commerce_iats_cardonfile_update_7200() {
     'description' => "Boolean indicating an iATS recurring payment card.",
   );
   db_add_field('commerce_cardonfile', 'recurring', $spec);
-}
-
-/**
- * Implements hook_uninstall().
- */
-function commerce_iats_cardonfile_uninstall() {
-  db_drop_field('commerce_cardonfile', 'recurring');
 }
