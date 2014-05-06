@@ -264,20 +264,38 @@ function commerce_iats_cardonfile_populate_transaction_queue() {
     'date' => mktime(0, 0, 0, date('n'), date('j'), date('Y')),
   );
 
-  // Get credit card transactions.
-  $credit_card_response = $iats->getCreditCardJournal($request);
+  // Get successful credit card transactions.
+  $credit_card_success_response = $iats->getCreditCardJournal($request);
 
-  if (is_array($credit_card_response)) {
-    foreach ($credit_card_response as $transaction) {
+  if (is_array($credit_card_success_response)) {
+    foreach ($credit_card_success_response as $transaction) {
       $queue->createItem($transaction);
     }
   }
 
-  // Get ACH/EFT transactions.
-  $ach_eft_response = $iats->getACHEFTJournal($request);
+  // Get successful ACH/EFT transactions.
+  $ach_eft_success_response = $iats->getACHEFTJournal($request);
 
-  if (is_array($ach_eft_response)) {
-    foreach ($ach_eft_response as $transaction) {
+  if (is_array($ach_eft_success_response)) {
+    foreach ($ach_eft_success_response as $transaction) {
+      $queue->createItem($transaction);
+    }
+  }
+
+  // Get rejected credit card transactions.
+  $credit_card_reject_response = $iats->getCreditCardReject($request);
+
+  if (is_array($credit_card_reject_response)) {
+    foreach ($credit_card_reject_response as $transaction) {
+      $queue->createItem($transaction);
+    }
+  }
+
+  // Get rejected ACH/EFT transactions.
+  $ach_eft_reject_response = $iats->getACHEFTReject($request);
+
+  if (is_array($ach_eft_reject_response)) {
+    foreach ($ach_eft_reject_response as $transaction) {
       $queue->createItem($transaction);
     }
   }
@@ -368,13 +386,6 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
     $result = commerce_payment_transaction_save($transaction);
 
     return ($result == SAVED_NEW);
-  }
-  else {
-    watchdog('commerce_iats', 'Could not find initial transaction for recurring transaction @remote_id',
-      array(
-        '@remote_id' => $remote_id,
-      ),
-      WATCHDOG_WARNING);
   }
   return FALSE;
 }
