@@ -101,7 +101,7 @@ To use the Direct Debit checkout panes:
 1) Under "Administration / Store / Configuration / Checkout settings /
    Checkout pages"
 
-     * Add a new page named "Recurring"
+     * Add a new page named "Declaration"
      * Add a new page named "Confirmation"
 
 2) Arrange the Checkout pages in the following order:
