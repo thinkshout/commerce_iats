@@ -22,7 +22,7 @@ function commerce_iats_requirements($phase) {
   if (!$has_soap) {
     $requirements['commerce_iats_soap'] += array(
       'severity' => REQUIREMENT_ERROR,
-      'description' => $t('iATS requires the PHP <a href="!soap_url">SOAP extension</a>.', array('!soap_url' => 'http://php.net/manual/en/book.soap.php')),
+      'description' => $t('iATS requires the PHP !soap_url.', array('!soap_url' => l($t('SOAP extension'), 'http://php.net/manual/en/book.soap.php'))),
     );
   }
 
@@ -34,7 +34,7 @@ function commerce_iats_requirements($phase) {
   if (!$has_openssl) {
     $requirements['commerce_iats_openssl'] += array(
       'severity' => REQUIREMENT_ERROR,
-      'description' => $t('iATS requires the PHP <a href="!openssl_url">OpenSSL extension</a>.', array('!openssl_url' => 'http://php.net/manual/en/book.openssl.php')),
+      'description' => $t('iATS requires the PHP !openssl_url.', array('!openssl_url' => l($t('OpenSSL extension'), 'http://php.net/manual/en/book.openssl.php'))),
     );
   }
 
