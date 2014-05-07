@@ -12,113 +12,102 @@ namespace iATS;
  * Provides report data for test cases.
  */
 
-class ReportLinkTest {
+class ReportLinkTestService {
 
   /**
-   * Gets credit card transaction data.
+   * Gets successful credit card transactions data.
    *
    * @see iATS\ReportLink::getCreditCardJournal()
    */
   public function getCreditCardJournal() {
-    return $this->getTestCreditCardTransactionData();
+    return $this->getTestCreditCardSuccessTransactionData();
   }
 
   /**
-   * Gets ACH/EFT transaction data.
+   * Gets rejected credit card transactions data.
+   *
+   * @see iATS\ReportLink::getCreditCardReject()
+   */
+  public function getCreditCardReject() {
+    return $this->getTestCreditCardRejectTransactionData();
+  }
+
+  /**
+   * Gets successful ACH/EFT transactions data.
    *
    * @see iATS\ReportLink::getACHEFTJournal()
    */
   public function getACHEFTJournal() {
-    return $this->getTestACHEFTTransactionData();
+    return $this->getTestACHEFTSuccessTransactionData();
   }
 
   /**
-   * Gets an array of credit card transaction data for use in tests.
+   * Gets rejected ACH/EFT transactions data.
+   *
+   * @see iATS\ReportLink::getACHEFTReject()
+   */
+  public function getACHEFTReject() {
+    return $this->getTestACHEFTRejectTransactionData();
+  }
+
+  /**
+   * Gets an array of successful credit card transaction data for use in tests.
    *
    * @return array
    *   Test transaction data.
    *   array(
    *     $order_id => array(
-   *       $customer_code_creation_remote_id => array(
-   *         'success' => array(),
-   *         'failure' => array(),
-   *       ),
+   *       $customer_code_creation_remote_id => array()
    *     )
    *   )
    */
-  public function getTestCreditCardTransactionData() {
+  public function getTestCreditCardSuccessTransactionData() {
     $data = array(
       1 => array(
         COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|CCC000001' => array(
-          'success' => array(
-            array(
-              'TNTYP' => 'CreditCard',
-              'TNID' => 'CCT000001',
-              'AGT' => 'TEST88',
-              'CST' => array(
-                'CSTC' => 'CCC000001',
-                'FN' => 'Test',
-                'LN' => 'User',
-                'ADD' => '123 Any St.',
-                'CTY' => 'Anytown',
-                'ST' => 'AK',
-                'CNT' => 'US',
-                'ZC' => '11111',
-              ),
-              'CC' => array(
-                'CCN' => '************2220',
-                'MP' => 'VISA',
-                'EXP' => '12/15',
-              ),
-              'AMT' => '10.00',
-              'RST' => 'OK:678594:',
+          array(
+            'TNTYP' => 'CreditCard',
+            'TNID' => 'CCT000001',
+            'AGT' => 'TEST88',
+            'CST' => array(
+              'CSTC' => 'CCC000001',
+              'FN' => 'Test',
+              'LN' => 'User',
+              'ADD' => '123 Any St.',
+              'CTY' => 'Anytown',
+              'ST' => 'AK',
+              'CNT' => 'US',
+              'ZC' => '11111',
             ),
-            array(
-              'TNTYP' => 'CreditCard',
-              'TNID' => 'CCT000002',
-              'AGT' => 'TEST88',
-              'CST' => array(
-                'CSTC' => 'CCC000001',
-                'FN' => 'Test',
-                'LN' => 'User',
-                'ADD' => '123 Any St.',
-                'CTY' => 'Anytown',
-                'ST' => 'AK',
-                'CNT' => 'US',
-                'ZC' => '11111',
-              ),
-              'CC' => array(
-                'CCN' => '************2220',
-                'MP' => 'VISA',
-                'EXP' => '12/15',
-              ),
-              'AMT' => '10.00',
-              'RST' => 'OK:678594:',
+            'CC' => array(
+              'CCN' => '************2220',
+              'MP' => 'VISA',
+              'EXP' => '12/15',
             ),
+            'AMT' => '10.00',
+            'RST' => 'OK:678594:',
           ),
-          'failure' => array(
-            array(
-              'TNTYP' => 'CreditCard',
-              'TNID' => 'CCT000003',
-              'AGT' => 'TEST88',
-              'CST' => array(
-                'CSTC' => 'CCC000001',
-                'FN' => 'Test',
-                'LN' => 'User',
-                'ADD' => '123 Any St.',
-                'CTY' => 'Anytown',
-                'ST' => 'AK',
-                'CNT' => 'US',
-                'ZC' => '11111',
-              ),
-              'CC' => array(
-                'CCN' => '************2220',
-                'MP' => 'VISA',
-                'EXP' => '12/15',
-              ),
-              'AMT' => '10.00',
-              'RST' => 'TIMEOUT:Timeout',
+          array(
+            'TNTYP' => 'CreditCard',
+            'TNID' => 'CCT000002',
+            'AGT' => 'TEST88',
+            'CST' => array(
+              'CSTC' => 'CCC000001',
+              'FN' => 'Test',
+              'LN' => 'User',
+              'ADD' => '123 Any St.',
+              'CTY' => 'Anytown',
+              'ST' => 'AK',
+              'CNT' => 'US',
+              'ZC' => '11111',
             ),
+            'CC' => array(
+              'CCN' => '************2220',
+              'MP' => 'VISA',
+              'EXP' => '12/15',
+            ),
+            'AMT' => '10.00',
+            'RST' => 'OK:678594:',
           ),
         ),
       ),
@@ -128,89 +117,148 @@ class ReportLinkTest {
   }
 
   /**
-   * Gets an array of ACH/EFT transaction data for use in tests.
+   * Gets an array of rejected credit card transaction data for use in tests.
    *
    * @return array
    *   Test transaction data.
    *   array(
    *     $order_id => array(
-   *       $customer_code_creation_remote_id => array(
-   *         'success' => array(),
-   *         'failure' => array(),
-   *       ),
+   *       $customer_code_creation_remote_id => array()
    *     )
    *   )
    */
-  public function getTestACHEFTTransactionData() {
+  public function getTestCreditCardRejectTransactionData() {
+    $data = array(
+      1 => array(
+        COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|CCC000001' => array(
+          array(
+            'TNTYP' => 'CreditCard',
+            'TNID' => 'CCT000003',
+            'AGT' => 'TEST88',
+            'CST' => array(
+              'CSTC' => 'CCC000001',
+              'FN' => 'Test',
+              'LN' => 'User',
+              'ADD' => '123 Any St.',
+              'CTY' => 'Anytown',
+              'ST' => 'AK',
+              'CNT' => 'US',
+              'ZC' => '11111',
+            ),
+            'CC' => array(
+              'CCN' => '************2220',
+              'MP' => 'VISA',
+              'EXP' => '12/15',
+            ),
+            'AMT' => '10.00',
+            'RST' => 'TIMEOUT:Timeout',
+          ),
+        ),
+      ),
+    );
+
+    return $this->convertTestTransactionDataToReportFormat($data);
+  }
+
+  /**
+   * Gets an array of successful ACH/EFT transaction data for use in tests.
+   *
+   * @return array
+   *   Test transaction data.
+   *   array(
+   *     $order_id => array(
+   *       $customer_code_creation_remote_id => array()
+   *     )
+   *   )
+   */
+  public function getTestACHEFTSuccessTransactionData() {
     $data = array(
       2 => array(
         COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|ACHC00001' => array(
-          'success' => array(
-            array(
-              'TNTYP' => 'ACHEFT',
-              'TNID' => 'ACHT00001',
-              'AGT' => 'TEST88',
-              'CST' => array(
-                'CSTC' => 'ACHC00001',
-                'FN' => 'Test',
-                'LN' => 'User',
-                'ADD' => '123 Any St.',
-                'CTY' => 'Anytown',
-                'ST' => 'AK',
-                'CNT' => 'US',
-                'ZC' => '11111',
-              ),
-              'ACH' => array(
-                'ACN' => '************2220',
-                'ACTYP' => 'Checking',
-              ),
-              'AMT' => '10.00',
-              'RST' => 'OK:678594:',
+          array(
+            'TNTYP' => 'ACHEFT',
+            'TNID' => 'ACHT00001',
+            'AGT' => 'TEST88',
+            'CST' => array(
+              'CSTC' => 'ACHC00001',
+              'FN' => 'Test',
+              'LN' => 'User',
+              'ADD' => '123 Any St.',
+              'CTY' => 'Anytown',
+              'ST' => 'AK',
+              'CNT' => 'US',
+              'ZC' => '11111',
             ),
-            array(
-              'TNTYP' => 'ACHEFT',
-              'TNID' => 'ACHT00002',
-              'AGT' => 'TEST88',
-              'CST' => array(
-                'CSTC' => 'ACHC00001',
-                'FN' => 'Test',
-                'LN' => 'User',
-                'ADD' => '123 Any St.',
-                'CTY' => 'Anytown',
-                'ST' => 'AK',
-                'CNT' => 'US',
-                'ZC' => '11111',
-              ),
-              'ACH' => array(
-                'ACN' => '************2220',
-                'ACTYP' => 'Checking',
-              ),
-              'AMT' => '10.00',
-              'RST' => 'OK:678594:',
+            'ACH' => array(
+              'ACN' => '************2220',
+              'ACTYP' => 'Checking',
             ),
+            'AMT' => '10.00',
+            'RST' => 'OK:678594:',
           ),
-          'failure' => array(
-            array(
-              'TNTYP' => 'ACHEFT',
-              'TNID' => 'ACHT00003',
-              'AGT' => 'TEST88',
-              'CST' => array(
-                'CSTC' => 'ACHC00001',
-                'FN' => 'Test',
-                'LN' => 'User',
-                'ADD' => '123 Any St.',
-                'CTY' => 'Anytown',
-                'ST' => 'AK',
-                'CNT' => 'US',
-                'ZC' => '11111',
-              ),
-              'ACH' => array(
-                'ACN' => '************2220',
-                'ACTYP' => 'Checking',
-              ),
-              'AMT' => '10.00',
-              'RST' => 'Error',
+          array(
+            'TNTYP' => 'ACHEFT',
+            'TNID' => 'ACHT00002',
+            'AGT' => 'TEST88',
+            'CST' => array(
+              'CSTC' => 'ACHC00001',
+              'FN' => 'Test',
+              'LN' => 'User',
+              'ADD' => '123 Any St.',
+              'CTY' => 'Anytown',
+              'ST' => 'AK',
+              'CNT' => 'US',
+              'ZC' => '11111',
             ),
+            'ACH' => array(
+              'ACN' => '************2220',
+              'ACTYP' => 'Checking',
+            ),
+            'AMT' => '10.00',
+            'RST' => 'OK:678594:',
+          ),
+        ),
+      ),
+    );
+
+    return $this->convertTestTransactionDataToReportFormat($data);
+  }
+
+  /**
+   * Gets an array of rejected ACH/EFT transaction data for use in tests.
+   *
+   * @return array
+   *   Test transaction data.
+   *   array(
+   *     $order_id => array(
+   *       $customer_code_creation_remote_id => array()
+   *     )
+   *   )
+   */
+  public function getTestACHEFTRejectTransactionData() {
+    $data = array(
+      2 => array(
+        COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|ACHC00001' => array(
+          array(
+            'TNTYP' => 'ACHEFT',
+            'TNID' => 'ACHT00003',
+            'AGT' => 'TEST88',
+            'CST' => array(
+              'CSTC' => 'ACHC00001',
+              'FN' => 'Test',
+              'LN' => 'User',
+              'ADD' => '123 Any St.',
+              'CTY' => 'Anytown',
+              'ST' => 'AK',
+              'CNT' => 'US',
+              'ZC' => '11111',
+            ),
+            'ACH' => array(
+              'ACN' => '************2220',
+              'ACTYP' => 'Checking',
+            ),
+            'AMT' => '10.00',
+            'RST' => 'TIMEOUT:Timeout',
           ),
         ),
       ),
@@ -225,8 +273,8 @@ class ReportLinkTest {
    * @param array $data
    *   Transaction test data to convert.
    *
-   * @see getTestCreditCardSuccessTransactionData()
-   * @see getTestCreditCardRejectTransactionData()
+   * @see iATS\ReportLinkTestService::getTestCreditCardSuccessTransactionData()
+   * @see iATS\ReportLinkTestService::getTestCreditCardRejectTransactionData()
    *
    * @return array
    *   Array of transactions.
@@ -236,11 +284,8 @@ class ReportLinkTest {
 
     foreach ($data as $order_data) {
       foreach ($order_data as $transactions_data) {
-        foreach ($transactions_data['success'] as $success_transaction) {
-          $report_data[] = $success_transaction;
-        }
-        foreach ($transactions_data['failure'] as $failure_transaction) {
-          $report_data[] = $failure_transaction;
+        foreach ($transactions_data as $transaction) {
+          $report_data[] = $transaction;
         }
       }
     }

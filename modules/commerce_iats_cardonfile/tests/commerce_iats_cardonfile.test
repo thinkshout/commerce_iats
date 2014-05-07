@@ -84,7 +84,13 @@ class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
       'administer rules',
     );
 
-    variable_set('commerce_iats_service_name_suffix', 'Test');
+    /**
+     * 'commerce_iats_service_name_suffix' allows custom versions of the
+     * iATS API library classes to be loaded.
+     * For example, the ReportLink class will be replaced by
+     * the ReportLinkTestService class.
+     */
+    variable_set('commerce_iats_service_name_suffix', 'TestService');
 
     $this->adminUser = $this->drupalCreateUser($perms);
 
@@ -201,21 +207,42 @@ class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
       $saved_transactions[$record['remote_id']] = $record;
     }
 
-    $report_link = new \iATS\ReportLinkTest();
-    $credit_card_transactions = $report_link->getTestCreditCardTransactionData();
+    $report_link = new \iATS\ReportLinkTestService();
 
-    foreach ($credit_card_transactions as $transaction) {
+    // Verify successful credit card transactions.
+    $credit_card_success_transactions = $report_link->getTestCreditCardSuccessTransactionData();
+
+    foreach ($credit_card_success_transactions as $transaction) {
       $remote_id = $transaction['TNID'] . '|' . $transaction['CST']['CSTC'];
 
-      $this->assertTrue(isset($saved_transactions[$remote_id]), 'Tested saved credit card transaction.');
+      $this->assertTrue(isset($saved_transactions[$remote_id]), 'Tested saved credit card transaction: ' . $remote_id);
     }
 
-    $ach_eft_transactions = $report_link->getTestACHEFTTransactionData();
+    // Verify rejected credit card transactions.
+    $credit_card_reject_transactions = $report_link->getTestCreditCardSuccessTransactionData();
 
-    foreach ($ach_eft_transactions as $transaction) {
+    foreach ($credit_card_reject_transactions as $transaction) {
       $remote_id = $transaction['TNID'] . '|' . $transaction['CST']['CSTC'];
 
-      $this->assertTrue(isset($saved_transactions[$remote_id]), 'Tested saved ACH/EFT transaction.');
+      $this->assertTrue(isset($saved_transactions[$remote_id]), 'Tested saved credit card transaction: ' . $remote_id);
+    }
+
+    // Verify successful ACH/EFT transactions.
+    $ach_eft_success_transactions = $report_link->getTestACHEFTSuccessTransactionData();
+
+    foreach ($ach_eft_success_transactions as $transaction) {
+      $remote_id = $transaction['TNID'] . '|' . $transaction['CST']['CSTC'];
+
+      $this->assertTrue(isset($saved_transactions[$remote_id]), 'Tested saved ACH/EFT transaction: ' . $remote_id);
+    }
+
+    // Verify rejected ACH/EFT transactions.
+    $ach_eft_reject_transactions = $report_link->getTestACHEFTSuccessTransactionData();
+
+    foreach ($ach_eft_reject_transactions as $transaction) {
+      $remote_id = $transaction['TNID'] . '|' . $transaction['CST']['CSTC'];
+
+      $this->assertTrue(isset($saved_transactions[$remote_id]), 'Tested saved ACH/EFT transaction: ' . $remote_id);
     }
   }
 }
