@@ -199,6 +199,12 @@ function commerce_iats_cardonfile_form_alter(&$form, &$form_state, $form_id) {
 
 /**
  * Implements hook_menu_alter().
+ *
+ * Overrides the user's Card on File admin pages. Enables the display of
+ * stored credit cards and stored bank accounts, rather than just credit
+ * cards, which is the default behavior of Commerce Card on File.
+ *
+ * @see includes/commerce_iats_cardonfile.pages.inc
  */
 function commerce_iats_cardonfile_menu_alter(&$items) {
   $items['user/%user/cards/%commerce_cardonfile']['title callback'] = 'commerce_iats_cardonfile_card_title';
