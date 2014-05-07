@@ -1,6 +1,6 @@
 name = Commerce iATS Card on File
 description = Implements iATS Customer Code creation with Drupal Commerce Card on File
-package = Commerce iATS Card on File (contrib)
+package = Commerce (contrib)
 dependencies[] = commerce_iats
 dependencies[] = commerce_cardonfile
 
