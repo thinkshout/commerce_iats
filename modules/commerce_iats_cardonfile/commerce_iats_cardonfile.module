@@ -228,7 +228,10 @@ function commerce_iats_cardonfile_menu_alter(&$items) {
  * Implements hook_cron_queue_info().
  */
 function commerce_iats_cardonfile_cron_queue_info() {
-  $queues[COMMERCE_IATS_CARDONFILE_TRANSACTIONS_CRON] = array(
+  $cron_name = variable_get('commerce_iats_cardonfile_transactions_cron_name',
+    COMMERCE_IATS_CARDONFILE_TRANSACTIONS_CRON);
+
+  $queues[$cron_name] = array(
     'worker callback' => 'commerce_iats_cardonfile_process_queued_transaction',
     'time' => 60,
   );
@@ -252,7 +255,10 @@ function commerce_iats_cardonfile_cron() {
  * the module, e.g. recurring payments.
  */
 function commerce_iats_cardonfile_populate_transaction_queue() {
-  $queue = DrupalQueue::get(COMMERCE_IATS_CARDONFILE_TRANSACTIONS_CRON);
+  $cron_name = variable_get('commerce_iats_cardonfile_transactions_cron_name',
+    COMMERCE_IATS_CARDONFILE_TRANSACTIONS_CRON);
+
+  $queue = DrupalQueue::get($cron_name);
   $queue->createQueue();
 
   // TODO: Account for custom payment method rule name.
@@ -349,16 +355,15 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
     return FALSE;
   }
 
-  $transactions_table = $GLOBALS['db_prefix'] . 'commerce_payment_transaction';
-
   $remote_id = $transaction_id . '|' . $customer_code;
-  $existing_transaction = db_select($transactions_table, 't')
-    ->fields('t')
-    ->condition('remote_id', $remote_id, '=')
-    ->execute()
-    ->fetchAssoc();
 
-  if (!empty($existing_transaction)) {
+  $query = new EntityFieldQuery();
+  $existing_transaction_result = $query
+    ->entityCondition('entity_type', 'commerce_payment_transaction')
+    ->propertyCondition('remote_id', $remote_id)
+    ->execute();
+
+  if (isset($existing_transaction_result['commerce_payment_transaction'])) {
     watchdog('commerce_iats', 'Already processed transaction @remote_id',
       array(
         '@remote_id' => $remote_id,
@@ -368,16 +373,21 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
   }
 
   $initial_remote_id = COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID . '|' . $customer_code;
-  $initial_transaction = db_select($transactions_table, 't')
-    ->fields('t')
-    ->condition('remote_id', $initial_remote_id, '=')
-    ->execute()
-    ->fetchAssoc();
+  $query = new EntityFieldQuery();
+  $initial_transaction_result = $query
+    ->entityCondition('entity_type', 'commerce_payment_transaction')
+    ->propertyCondition('remote_id', $initial_remote_id)
+    ->execute();
+  if (isset($initial_transaction_result['commerce_payment_transaction'])) {
+    $initial_transaction_entity_ids = array_keys($initial_transaction_result['commerce_payment_transaction']);
+    $initial_transaction_entities = entity_load('commerce_payment_transaction', $initial_transaction_entity_ids);
+    $initial_transaction = current($initial_transaction_entities);
+  }
 
-  if (!empty($initial_transaction)) {
+  if (isset($initial_transaction)) {
     $transaction = new stdClass();
-    $transaction->uid = $initial_transaction['uid'];
-    $transaction->order_id = $initial_transaction['order_id'];
+    $transaction->uid = $initial_transaction->uid;
+    $transaction->order_id = $initial_transaction->order_id;
     $transaction->payment_method = $payment_method;
     $transaction->instance_id = $instance_id;
     $transaction->remote_id = $remote_id;
