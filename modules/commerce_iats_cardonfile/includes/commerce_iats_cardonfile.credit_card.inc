@@ -251,9 +251,9 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
     // Only used for recurring payments.
     'recurring' => FALSE,
     // Only used for recurring payments.
-    'beginDate' => 0,
+    'beginDate' => '',
     // Only used for recurring payments.
-    'endDate' => 0,
+    'endDate' => '',
   );
 
   // Get the API service.

@@ -92,8 +92,8 @@ function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, 
   }
   else {
     $request['recurring'] = FALSE;
-    $request['beginDate'] = 0;
-    $request['endDate'] = 0;
+    $request['beginDate'] = '';
+    $request['endDate'] = '';
   }
 
   // Add the billing information.

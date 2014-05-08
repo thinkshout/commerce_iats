@@ -240,9 +240,9 @@ function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_m
     // Only used for recurring payments.
     'recurring' => FALSE,
     // Only used for recurring payments.
-    'beginDate' => 0,
+    'beginDate' => '',
     // Only used for recurring payments.
-    'endDate' => 0,
+    'endDate' => '',
   );
 
   // Get the API service.

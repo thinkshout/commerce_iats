@@ -84,9 +84,9 @@ function commerce_iats_create_customer_code($payment_method, $payment_data, $ord
     // Only used for recurring payments.
     'recurring' => FALSE,
     // Only used for recurring payments.
-    'beginDate' => 0,
+    'beginDate' => '',
     // Only used for recurring payments.
-    'endDate' => 0,
+    'endDate' => '',
   );
 
   // Add the billing information.

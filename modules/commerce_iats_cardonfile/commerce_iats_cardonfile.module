@@ -273,7 +273,7 @@ function commerce_iats_cardonfile_populate_transaction_queue() {
   $iats = commerce_iats_get_service('ReportLink', $payment_method);
 
   $request = array(
-    'date' => mktime(0, 0, 0, date('n'), date('j'), date('Y')),
+    'date' => commerce_iats_get_formatted_date(mktime(0, 0, 0, date('n'), date('j'), date('Y'))),
   );
 
   // Get successful credit card transactions.
