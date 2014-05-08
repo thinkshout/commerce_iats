@@ -11,7 +11,7 @@
 function commerce_iats_cardonfile_credit_card_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
-  return commerce_iats_settings_form_base($settings);
+  return commerce_iats_credit_card_settings_form_base($settings);
 }
 
 /**
