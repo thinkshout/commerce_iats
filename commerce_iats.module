@@ -30,12 +30,10 @@ function commerce_iats_libraries_info() {
     'name' => 'iATS Payments API',
     'vendor url' => 'http://www.iatspayments.com/',
     'download url' => 'https://github.com/iATSPayments/PHP',
-    'version' => '1.0',
     'path' => 'lib',
+    'version callback' => 'commerce_iats_get_library_version',
     'version arguments' => array(
-      'file' => 'ProcessLink.php',
-      // Version 1.0
-      'pattern' => '/\iATS API version ((\d+)\.(\d+))/',
+      'file' => 'composer.json',
     ),
     'files' => array(
       'php' => array(
@@ -48,6 +46,33 @@ function commerce_iats_libraries_info() {
   );
 
   return $libraries;
+}
+
+/**
+ * Callback used by hook_libraries_info.
+ * Parses a JSON file and returns the value of the "version" property.
+ *
+ * @param array $library
+ *   Associative array containing all information about the library.
+ * @param array $options
+ *   Associative array containing library version options.
+ *
+ * @return string
+ *   The library version.
+ */
+function commerce_iats_get_library_version(array $library, array $options) {
+  $version = '';
+  $config_file = DRUPAL_ROOT . '/' . $library['library path'] . '/' . $options['file'];
+
+  if (file_exists($config_file)) {
+    $file_content = file_get_contents($config_file);
+    $config = drupal_json_decode($file_content);
+
+    if (isset($config['version'])) {
+      $version = $config['version'];
+    }
+  }
+  return $version;
 }
 
 /**
