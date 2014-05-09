@@ -1,10 +1,10 @@
 name = Commerce iATS
 description = Implements iATS payment services for use with Drupal Commerce.
 package = Commerce (contrib)
+
 dependencies[] = commerce
 dependencies[] = commerce_payment
 dependencies[] = commerce_order
+dependencies[] = libraries (>=2)
 
 core = 7.x
-
-dependencies[] = libraries (>=2)
