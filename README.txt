@@ -29,29 +29,29 @@ There is no upgrade path from the 1.x release of iATS Commerce.
 
 ## Payment Methods
 
-### iATS Webservice: Credit card payment
+### iATS Payments: Credit card payment
 * Processes a credit card transaction
 * May optionally be used with Commerce Card on File to allow reuse of the card
 
-### iATS Webservice: Credit card customer code creation
+### iATS Payments: Credit card customer code creation
 * Creates an iATS customer code for a credit card
 * May optionally be used with Commerce Card on File to allow reuse of the card
 * May optionally be used for recurring payments managed by iATS Payments
 
-### iATS Webservice: ACH/EFT payment
+### iATS Payments: ACH/EFT payment
 * Processes an ACH/EFT transaction
 * May optionally be used with Commerce Card on File to allow reuse of the card
 
-### iATS Webservice: ACH/EFT customer code creation
+### iATS Payments: ACH/EFT customer code creation
 * Creates an iATS customer code for a bank account.
 * May optionally be used with Commerce Card on File to allow reuse of the card
 * May optionally be used for recurring payments managed by iATS Payments
 
-### iATS Webservice: Direct Debit payment validation
+### iATS Payments: Direct Debit payment validation
 * Validates a Direct Debit and retrieves an ACH/EFT reference number from the user's bank.
 * See "Direct Debit Checkout" documentation below.
 
-### iATS Webservice: Direct Debit customer code creation
+### iATS Payments: Direct Debit customer code creation
 * Creates an iATS customer code for a Direct Debit.
 
 ## Recurring Payment Checkout
@@ -64,8 +64,8 @@ iATS Payments can provide recurring payments. To leverage this on your website:
 
 1) Enable the Commerce iATS Card on File module.
 2) Enable any of the compatible payment methods:
-    * iATS Webservice: Credit card customer code creation
-    * iATS Webservice: ACH/EFT customer code creation
+    * iATS Payments: Credit card customer code creation
+    * iATS Payments: ACH/EFT customer code creation
 3) In the payment method settings, check the box labeled:
    "Allow recurring payments through iATS Payments"
 4) Under "Administration / Store / Configuration / Checkout settings /
@@ -89,8 +89,8 @@ http://api.drupalcommerce.org/api/Drupal%20Commerce/sites!all!modules!commerce!m
 
 The following payment methods must both be enabled to use Direct Debit:
 
-* iATS Webservice: Direct Debit payment validation
-* iATS Webservice: Direct Debit customer code creation
+* iATS Payments: Direct Debit payment validation
+* iATS Payments: Direct Debit customer code creation
 
 Commerce iATS provides custom checkout panes for Direct Debit payments.
 To implement these, you will need to install the Commerce Checkout Pages module:
