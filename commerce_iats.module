@@ -382,6 +382,23 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
 }
 
 /**
+ * Ensures payment method settings have been populated.
+ *
+ * @param array $payment_method
+ *   Array of payment method data.
+ *
+ * @return bool
+ *   TRUE if payment method is valid for use.
+ */
+function commerce_iats_validate_payment_method(array $payment_method) {
+  if (empty($payment_method['settings'])) {
+    return FALSE;
+  }
+
+  return TRUE;
+}
+
+/**
  * Validates recurring payment data.
  *
  * @param array $recurring_data

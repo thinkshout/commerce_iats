@@ -33,6 +33,11 @@ function commerce_iats_cardonfile_credit_card_submit_form($payment_method, $pane
  * Payment method callback: checkout form validation.
  */
 function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+  if (!commerce_iats_validate_payment_method($payment_method)) {
+    drupal_set_message('This payment method has not been configured.', 'error');
+    return FALSE;
+  }
+
   // Skip normal validation if the customer specified a card on file.
   if (!empty($pane_values['cardonfile']) && ($pane_values['cardonfile'] !== 'new')) {
     return TRUE;

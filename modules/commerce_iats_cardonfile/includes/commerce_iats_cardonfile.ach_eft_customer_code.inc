@@ -34,7 +34,12 @@ function commerce_iats_cardonfile_ach_eft_customer_code_submit_form($payment_met
 /**
  * Payment method callback: checkout form validation.
  */
-function commerce_iats_cardonfile_ach_eft_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+function commerce_iats_cardonfile_ach_eft_customer_code_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+  if (!commerce_iats_validate_payment_method($payment_method)) {
+    drupal_set_message('This payment method has not been configured.', 'error');
+    return FALSE;
+  }
+
   module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
 
   // Validate the bank account fields.

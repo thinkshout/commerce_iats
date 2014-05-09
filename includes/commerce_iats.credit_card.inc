@@ -34,6 +34,11 @@ function commerce_iats_credit_card_submit_form($payment_method, $pane_values, $c
  * Payment method callback: checkout form validation.
  */
 function commerce_iats_credit_card_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+  if (!commerce_iats_validate_payment_method($payment_method)) {
+    drupal_set_message('This payment method has not been configured.', 'error');
+    return FALSE;
+  }
+
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
   // Validate the credit card fields.

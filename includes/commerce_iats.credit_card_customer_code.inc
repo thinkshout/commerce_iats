@@ -36,6 +36,28 @@ function commerce_iats_credit_card_customer_code_submit_form($payment_method, $p
 }
 
 /**
+ * Payment method callback: checkout form validation.
+ */
+function commerce_iats_credit_card_customer_code_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+  if (!commerce_iats_validate_payment_method($payment_method)) {
+    drupal_set_message('This payment method has not been configured.', 'error');
+    return FALSE;
+  }
+
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+
+  // Validate the credit card fields.
+  $settings = array(
+    'form_parents' => array_merge($form_parents, array('credit_card')),
+  );
+
+  if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
+    return FALSE;
+  }
+  return TRUE;
+}
+
+/**
  * Payment method callback: checkout form submission.
  */
 function commerce_iats_credit_card_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
