@@ -86,18 +86,13 @@ class CommerceiATSCardOnFileTestCase extends DrupalWebTestCase {
       'administer rules',
     );
 
-    /**
-     * 'commerce_iats_service_name_suffix' allows custom versions of the
-     * iATS API library classes to be loaded.
-     * For example, the ReportLink class will be replaced by
-     * the ReportLinkTestService class.
-     */
+    // 'commerce_iats_service_name_suffix' allows custom versions of the
+    // iATS API library classes to be loaded. For example, the ReportLink class
+    // will be replaced by the  ReportLinkTestService class.
     variable_set('commerce_iats_service_name_suffix', 'TestService');
 
-    /**
-     * Set a custom transactions cron name so real transaction
-     * processing isn't affected.
-     */
+    // Set a custom transactions cron name so real transaction processing isn't
+    // affected.
     variable_set('commerce_iats_cardonfile_transactions_cron_name',
       self::COMMERCE_IATS_CARDONFILE_TRANSACTIONS_TEST_CRON);
 
