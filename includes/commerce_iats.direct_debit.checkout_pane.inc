@@ -32,6 +32,22 @@ function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form
   $order->data['payment_method'] = $payment_method_name;
   $order->data['payment_method_instance'] = commerce_payment_method_instance_load($payment_method_name);
 
+  if (!commerce_iats_validate_payment_method($order->data['payment_method_instance'])) {
+    drupal_set_message('The Direct Debit set-up process encountered an error.
+          Please contact the site administrator.', 'error');
+
+    // Stop checkout process.
+    $form_state['checkout_page']['buttons'] = 0;
+    $form_state['checkout_page']['next_page'] = NULL;
+    return;
+  }
+
+  if (!commerce_iats_direct_debit_verify_order_data($order, array(
+    'recurring' => 'Recurring Payment',
+  ))) {
+    return;
+  }
+
   $settings = $order->data['payment_method_instance']['settings'];
   $pane_form = array();
 
@@ -101,7 +117,8 @@ function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form
  * Checkout pane callback: Saves the direct debit declaration status.
  */
 function commerce_iats_direct_debit_declaration_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
-  $order->data['declaration'] = $form_state['values']['checkout_direct_debit_declaration'];
+  $order->data['declaration'] = isset($form_state['values']['checkout_direct_debit_declaration']) ?
+    $form_state['values']['checkout_direct_debit_declaration'] : array();
 }
 
 /**
@@ -332,7 +349,8 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form_validate($f
  * Checkout pane callback: Saves the account / payer details.
  */
 function commerce_iats_direct_debit_account_payer_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
-  $order->data['account_payer'] = $form_state['values']['checkout_direct_debit_account_payer'];
+  $order->data['account_payer'] = (isset($form_state['values']['checkout_direct_debit_account_payer'])) ?
+    $form_state['values']['checkout_direct_debit_account_payer'] : array();
 
   // Delegate submit to the payment method callback.
   $payment_method = $order->data['payment_method_instance'];
@@ -371,6 +389,12 @@ function commerce_iats_direct_debit_account_payer_pane_checkout_form_submit($for
  * Checkout pane callback: Displays the direct debit validation details page.
  */
 function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  if (!commerce_iats_direct_debit_verify_order_data($order, array(
+    'account_payer' => 'Account Payer',
+  ))) {
+    return;
+  }
+
   $settings = $order->data['payment_method_instance']['settings'];
   $pane_form = array();
 
@@ -450,10 +474,26 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
     '#markup' => $order->data['account_payer']['account']['sort_code'],
   );
 
+  $combined_address = '';
+  for ($i = 1; $i <= 4; $i++) {
+    $address_line = $order->data['validation']['bank_address_' . $i];
+    if (is_string($address_line) && !empty($address_line)) {
+      $combined_address .= $address_line . '<br />';
+    }
+  }
+
+  $combined_address .= $order->data['validation']['bank_city'] . '<br />'
+    . $order->data['validation']['bank_state'] . '<br />'
+    . $order->data['validation']['bank_postcode'];
+
+  $name_address = $order->data['validation']['bank_name'] . '<br />'
+    . $order->data['validation']['bank_branch'] . '<br />'
+    . $combined_address;
+
   $pane_form['details']['name_address'] = array(
     '#type' => 'item',
     '#title' => t('Name and full postal address of your Bank or Building Society'),
-    '#markup' => $order->data['account_payer']['account']['sort_code'],
+    '#markup' => $name_address,
   );
 
   $pane_form['details']['service_user_number'] = array(
@@ -499,6 +539,12 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
  * Checkout pane callback: Displays the direct debit summary page.
  */
 function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  if (!commerce_iats_direct_debit_verify_order_data($order, array(
+    'validation' => 'Validation',
+  ))) {
+    return;
+  }
+
   $settings = $order->data['payment_method_instance']['settings'];
   $pane_form = array();
 
@@ -596,17 +642,22 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
     '#markup' => $order->data['account_payer']['payer']['last_name'],
   );
 
-  $address = $order->data['account_payer']['payer']['address_1'] . '<br />'
-    . $order->data['account_payer']['payer']['address_2'] . '<br />'
-    . $order->data['account_payer']['payer']['address_3'] . '<br />'
-    . $order->data['account_payer']['payer']['town'] . '<br />'
+  $combined_address = '';
+  for ($i = 1; $i <= 3; $i++) {
+    $address_line = $order->data['account_payer']['payer']['address_' . $i];
+    if (is_string($address_line) && !empty($address_line)) {
+      $combined_address .= $address_line . '<br />';
+    }
+  }
+
+  $combined_address .= $order->data['account_payer']['payer']['town'] . '<br />'
     . $order->data['account_payer']['payer']['county'] . '<br />'
     . $order->data['account_payer']['payer']['postcode'];
 
   $pane_form['payer_details']['address'] = array(
     '#type' => 'item',
     '#title' => t('Address'),
-    '#markup' => $address,
+    '#markup' => $combined_address,
   );
 
   $pane_form['payer_details']['email_address'] = array(
@@ -645,13 +696,21 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
  * Checkout pane callback: Saves the account / payer details.
  */
 function commerce_iats_direct_debit_summary_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
-  $order->data['summary'] = $form_state['values']['checkout_direct_debit_summary'];
-
   // TODO: Account for custom payment method rule name.
   $payment_method_name = 'direct_debit_customer_code|commerce_payment_direct_debit_customer_code';
 
   $order->data['payment_method'] = $payment_method_name;
   $payment_method = commerce_payment_method_instance_load($payment_method_name);
+
+  if (!commerce_iats_validate_payment_method($payment_method)) {
+    drupal_set_message('The Direct Debit set-up process encountered an error.
+          Please contact the site administrator.', 'error');
+
+    // Stop checkout process.
+    $form_state['checkout_page']['buttons'] = 0;
+    $form_state['checkout_page']['next_page'] = NULL;
+    return;
+  }
 
   if ($callback = commerce_payment_method_callback($payment_method, 'submit_form_submit')) {
     // Cast callback to string to fix IDE warning caused by mixed return type.
@@ -800,4 +859,37 @@ function commerce_iats_direct_debit_validate_lead_time($time) {
  */
 function commerce_iats_direct_debit_get_formatted_date($time) {
   return date('l, F jS, Y', $time);
+}
+
+/**
+ * Verifies order data exists and displays a message when data is missing.
+ *
+ * Used to ensure integrity throughout the checkout process.
+ *
+ * @param object $order
+ *   The order object.
+ * @param array $expected_data
+ *   Associative array of expected order data indexes mapped to readable name.
+ *
+ * @return bool
+ *   TRUE if order data exists.
+ */
+function commerce_iats_direct_debit_verify_order_data($order, array $expected_data) {
+  $success = TRUE;
+  foreach ($expected_data as $index => $name) {
+    if (!isset($order->data[$index]) || empty($order->data[$index])) {
+      drupal_set_message('The Direct Debit set-up process encountered an error.
+          Please contact the site administrator.', 'error');
+
+      watchdog('commerce_iats', 'Order is missing @name data. Please ensure Direct
+          Debit checkout panes are arranged as specified in README.txt',
+        array(
+          '@name' => $name,
+        ),
+        WATCHDOG_ERROR);
+
+      $success = FALSE;
+    }
+  }
+  return $success;
 }

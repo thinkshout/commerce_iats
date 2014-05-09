@@ -154,7 +154,7 @@ function commerce_iats_validate_direct_debit_payment($payment_method, $payment_d
 
   $account_num = $payment_data['account']['sort_code'] . $payment_data['account']['number'];
   $begin_date = $payment_data['account']['first_collection_date'];
-  $end_date = $payment_data['recurring']['end_date'];
+  $end_date = $order->data['recurring']['end_date'];
 
   // Create and populate the API request.
   $request = array(

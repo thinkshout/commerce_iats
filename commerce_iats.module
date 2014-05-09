@@ -392,6 +392,12 @@ function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
  */
 function commerce_iats_validate_payment_method(array $payment_method) {
   if (empty($payment_method['settings'])) {
+    watchdog('commerce_iats', 'Payment method @method must be configured before use.',
+      array(
+        '@method' => $payment_method['short_title'],
+      ),
+      WATCHDOG_WARNING);
+
     return FALSE;
   }
 

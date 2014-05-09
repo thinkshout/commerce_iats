@@ -58,14 +58,18 @@ function commerce_iats_direct_debit_customer_code_submit_form_submit($payment_me
  *   API response array or error string.
  */
 function commerce_iats_direct_debit_create_customer_code($payment_method, $payment_data, $order, $charge) {
-  $combined_address = $payment_data['account_payer']['payer']['address_1'] . "\n"
-    . $payment_data['account_payer']['payer']['address_2'] . "\n"
-    . $payment_data['account_payer']['payer']['address_3'];
+  $combined_address = '';
+  for ($i = 1; $i <= 3; $i++) {
+    $address_line = $payment_data['account_payer']['payer']['address_' . $i];
+    if (is_string($address_line) && !empty($address_line)) {
+      $combined_address .= $address_line . "\n";
+    }
+  }
 
   // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
-    'ACHEFTReferenceNum' => $payment_data['validate']['reference_number'],
+    'ACHEFTReferenceNum' => $payment_data['validation']['reference_number'],
     'firstName' => $payment_data['account_payer']['payer']['first_name'],
     'lastName' => $payment_data['account_payer']['payer']['last_name'],
     'companyName' => $payment_data['account_payer']['payer']['company_name'],
@@ -73,10 +77,9 @@ function commerce_iats_direct_debit_create_customer_code($payment_method, $payme
     'city' => $payment_data['account_payer']['payer']['town'],
     'state' => $payment_data['account_payer']['payer']['county'],
     'zipCode' => $payment_data['account_payer']['payer']['postcode'],
-    'phone' => $payment_data['account_payer']['payer']['phone'],
     'email' => $payment_data['account_payer']['payer']['email'],
     'recurring' => TRUE,
-    'amount' => $payment_data['account_payer']['account']['amount'],
+    'amount' => $payment_data['recurring']['amount'],
     'beginDate' => $payment_data['account_payer']['account']['first_collection_date'],
     'endDate' => $payment_data['recurring']['end_date'],
     'schduleType' => $payment_data['recurring']['schedule_type'],

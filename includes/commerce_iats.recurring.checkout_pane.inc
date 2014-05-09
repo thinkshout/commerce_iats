@@ -115,6 +115,7 @@ function commerce_iats_recurring_pane_checkout_form_validate($form, &$form_state
  * Checkout pane callback: Saves the recurring payment state.
  */
 function commerce_iats_recurring_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
+  if (isset($form_state['values']['checkout_recurring'])) {
   $order->data['recurring'] = $form_state['values']['checkout_recurring'];
   $order->data['recurring']['begin_date'] = commerce_iats_get_formatted_date(time());
 
@@ -123,6 +124,10 @@ function commerce_iats_recurring_pane_checkout_form_submit($form, &$form_state, 
   $end_time = mktime(0, 0, 0, date('n'), date('j') + $payment_duration, date('y'));
 
   $order->data['recurring']['end_date'] = commerce_iats_get_formatted_date($end_time);
+  }
+  else {
+    $order->data['recurring'] = array();
+  }
 }
 
 /**

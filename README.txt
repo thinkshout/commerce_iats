@@ -102,16 +102,18 @@ To use the Direct Debit checkout panes:
    Checkout pages"
 
      * Add a new page named "Declaration"
+     * Add a new page named "Account Details"
      * Add a new page named "Confirmation"
 
 2) Arrange the Checkout pages in the following order:
 
      1) Checkout
      2) Declaration
-     3) Payment
-     4) Confirmation
-     5) Review Order
-     6) Checkout Complete
+     3) Account Details
+     4) Payment
+     5) Confirmation
+     6) Review Order
+     7) Checkout Complete
 
 3) Add the Direct Debit checkout panes to the pages as follows:
 
@@ -119,14 +121,18 @@ To use the Direct Debit checkout panes:
          - Recurring Payment
      * Declaration
          - Direct Debit Declaration
-     * Payment
+     * Account Details
          - Direct Debit Account / Payer Details
+     * Payment
+         - Off-site payment redirect (Commerce default, cannot be changed.)
      * Confirmation
         - Direct Debit Validation
      * Review Order
         - Direct Debit Summary
      * Checkout Complete
         - Direct Debit Set Up Complete
+
+4) Move all other panes to the "Disabled" section.
 
 The checkout process is now configured for Direct Debit.
 

@@ -32,7 +32,7 @@ function commerce_iats_ach_eft_submit_form($payment_method, $pane_values, $check
  */
 function commerce_iats_ach_eft_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
   if (!commerce_iats_validate_payment_method($payment_method)) {
-    drupal_set_message('This payment method has not been configured.', 'error');
+    drupal_set_message(t('Unable to process payment. Please contact the site administrator.'), 'error');
     return FALSE;
   }
 
