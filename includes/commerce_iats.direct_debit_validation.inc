@@ -11,6 +11,15 @@
 function commerce_iats_direct_debit_validation_settings_form($settings = NULL) {
   $form = commerce_iats_settings_form_base($settings);
 
+  $form['notice'] = array(
+    '#type' => 'item',
+    '#markup' => t('Direct Debit payment validation does not behave in the same
+                  way as standard payment methods; it cannot be selected by a
+                  user during the checkout process. See README.txt for
+                  information on implementing a Direct Debit checkout process.'),
+    '#weight' => -1,
+  );
+
   // No invoice in Direct Debit validation.
   unset($form['invoice_prefix']);
 
@@ -25,13 +34,11 @@ function commerce_iats_direct_debit_validation_settings_form($settings = NULL) {
     '#title' => 'Direct Debit',
   );
 
-  $info = t('Your company must be registered as a Direct Debit service user
-    with a Bank or Building Society before you can process
-    Direct Debit payments.');
-
   $form['direct_debit']['info'] = array(
     '#type' => 'item',
-    '#markup' => $info,
+    '#markup' => t('Your company must be registered as a Direct Debit service
+                    user with a Bank or Building Society before you can process
+                    Direct Debit payments.'),
   );
 
   $form['direct_debit']['registration_link'] = array(

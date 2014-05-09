@@ -11,6 +11,15 @@
 function commerce_iats_direct_debit_customer_code_settings_form($settings = NULL) {
   $form = commerce_iats_settings_form_base($settings);
 
+  $form['notice'] = array(
+    '#type' => 'item',
+    '#markup' => t('Direct Debit customer code creation does not behave in the
+                  same way as standard payment methods; it cannot be selected
+                  by a user during the checkout process. See README.txt for
+                  information on implementing a Direct Debit checkout process.'),
+    '#weight' => -1,
+  );
+
   // No invoice in Direct Debit customer code creation.
   unset($form['invoice_prefix']);
 

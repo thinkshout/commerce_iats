@@ -256,6 +256,42 @@ function commerce_iats_commerce_checkout_pane_info() {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Alters checkout form to hide Direct Debit payment methods from
+ * available payment method options.
+ *
+ * See README.txt for documentation on using Direct Debit payment methods.
+ */
+function commerce_iats_form_commerce_checkout_form_checkout_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['commerce_payment']['payment_methods'])
+    && is_array($form['commerce_payment']['payment_methods']['#value'])) {
+    $payment_method_names = array_keys($form['commerce_payment']['payment_methods']['#value']);
+
+    foreach ($payment_method_names as $method_name) {
+      if (substr($method_name, 0, 12) == 'direct_debit') {
+        unset($form['commerce_payment']['payment_methods']['#value'][$method_name]);
+      }
+    }
+  }
+
+  if (isset($form['commerce_payment']['payment_method'])) {
+    $payment_method_option_names = array_keys($form['commerce_payment']['payment_method']['#options']);
+
+    foreach ($payment_method_option_names as $method_name) {
+      if (substr($method_name, 0, 12) == 'direct_debit') {
+        unset($form['commerce_payment']['payment_method']['#options'][$method_name]);
+      }
+    }
+
+    $default_value = $form['commerce_payment']['payment_method']['#default_value'];
+    if (substr($default_value, 0, 12) == 'direct_debit') {
+      $form['commerce_payment']['payment_method']['#default_value'] = '';
+    }
+  }
+}
+
+/**
  * Gets base fields settings form fields for all payment methods.
  *
  * @param array $settings
