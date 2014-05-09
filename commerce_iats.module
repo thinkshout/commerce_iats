@@ -50,6 +50,7 @@ function commerce_iats_libraries_info() {
 
 /**
  * Callback used by hook_libraries_info.
+ *
  * Parses a JSON file and returns the value of the "version" property.
  *
  * @param array $library
