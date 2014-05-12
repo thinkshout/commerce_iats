@@ -33,8 +33,7 @@ function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form
   $order->data['payment_method_instance'] = commerce_payment_method_instance_load($payment_method_name);
 
   if (!commerce_iats_validate_payment_method($order->data['payment_method_instance'])) {
-    drupal_set_message('The Direct Debit set-up process encountered an error.
-          Please contact the site administrator.', 'error');
+    drupal_set_message(t('The Direct Debit set-up process encountered an error. Please contact the site administrator.'), 'error');
 
     // Stop checkout process.
     $form_state['checkout_page']['buttons'] = 0;
