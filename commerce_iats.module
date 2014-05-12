@@ -272,7 +272,7 @@ function commerce_iats_page_alter(&$page) {
       $rule = rules_config_load($machine_name);
 
       foreach ($rule->actions() as $action) {
-        if (isset($action->settings['payment_method']['settings'])) {
+        if (isset($action->settings['payment_method']['settings']) && strpos($action->settings['payment_method']['method_id'], 'iats') !== FALSE) {
           $payment_method_settings = $action->settings['payment_method']['settings'];
         }
       }
