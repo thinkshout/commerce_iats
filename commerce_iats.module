@@ -259,8 +259,7 @@ function commerce_iats_commerce_checkout_pane_info() {
  * Implements hook_page_alter().
  */
 function commerce_iats_page_alter(&$page) {
-
-  if (isset($page['content']['system_main']['enabled']['rules']['#rows'])) {
+  if (isset($page['content']['system_main']['#page_callback']) && $page['content']['system_main']['#page_callback'] == 'commerce_payment_ui_admin_page') {
     $enabled_rules = $page['content']['system_main']['enabled']['rules']['#rows'];
 
     foreach ($enabled_rules as $key => $rule_data) {
