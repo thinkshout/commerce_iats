@@ -110,10 +110,10 @@ To use the Direct Debit checkout panes:
      1) Checkout
      2) Declaration
      3) Account Details
-     4) Payment
-     5) Confirmation
-     6) Review Order
-     7) Checkout Complete
+     4) Confirmation
+     5) Review Order
+     6) Checkout Complete
+     7) Payment (unused, but cannot be removed.)
 
 3) Add the Direct Debit checkout panes to the pages as follows:
 

@@ -294,12 +294,41 @@ function commerce_iats_page_alter(&$page) {
  *
  * Alters checkout form to hide Direct Debit payment methods from
  * available payment method options.
+ * Alters checkout form buttons to comply with Direct Debit requirements.
  *
  * See README.txt for documentation on using Direct Debit payment methods.
  */
 function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form_state['order']) && isset($form_state['order']->data['payment_method'])) {
+    if (substr($form_state['order']->data['payment_method'], 0, 12) == 'direct_debit') {
+
+      if ($form_id == 'commerce_checkout_form_declaration') {
+        $form['buttons']['continue']['#value'] = 'Proceed';
+        $form['buttons']['back']['#access'] = FALSE;
+      } elseif ($form_id == 'commerce_checkout_form_account_details') {
+          $form['buttons']['continue']['#value'] = 'Continue';
+          $form['buttons']['back']['#access'] = FALSE;
+      } elseif (($form_id == 'commerce_checkout_form_confirmation') || ($form_id == 'commerce_checkout_form_review')) {
+        $form['buttons']['continue']['#value'] = 'Confirm';
+        $form['buttons']['back']['#value'] = 'Amend';
+        $form['buttons']['back']['#submit'] = array('commerce_iats_checkout_form_amend_submit');
+      }
+
+      unset($form['buttons']['back']['#attributes']['class']);
+      unset($form['buttons']['back']['#prefix']);
+
+      $form['buttons']['cancel'] = array(
+        '#type' => 'submit',
+        '#value' => 'Cancel',
+        '#submit' => array('commerce_iats_checkout_form_cancel_submit'),
+        '#limit_validation_errors' => array(),
+      );
+    }
+  }
+
   if (isset($form['commerce_payment']['payment_methods'])
-    && is_array($form['commerce_payment']['payment_methods']['#value'])) {
+    && is_array($form['commerce_payment']['payment_methods']['#value'])
+  ) {
     $payment_method_names = array_keys($form['commerce_payment']['payment_methods']['#value']);
 
     foreach ($payment_method_names as $method_name) {
@@ -323,6 +352,22 @@ function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
       $form['commerce_payment']['payment_method']['#default_value'] = '';
     }
   }
+}
+
+/**
+ * Special submit handler for the amend button.
+ */
+function commerce_iats_checkout_form_amend_submit($form, &$form_state) {
+  $order = commerce_order_load($form_state['order']->order_id);
+  $form_state['redirect'] = 'checkout/' . $order->order_id . '/account_details';
+}
+
+/**
+ * Special submit handler for the cancel button to avoid processing orders.
+ */
+function commerce_iats_checkout_form_cancel_submit($form, &$form_state) {
+  $order = commerce_order_load($form_state['order']->order_id);
+  $form_state['redirect'] = 'checkout/' . $order->order_id;
 }
 
 /**
