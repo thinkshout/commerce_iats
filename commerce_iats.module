@@ -309,9 +309,18 @@ function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
           $form['buttons']['continue']['#value'] = 'Continue';
           $form['buttons']['back']['#access'] = FALSE;
       } elseif (($form_id == 'commerce_checkout_form_confirmation') || ($form_id == 'commerce_checkout_form_review')) {
+        $form['#attached']['js'] = array(
+          drupal_get_path('module', 'commerce_iats') . '/js/commerce_iats.direct_debit.js',
+        );
+
         $form['buttons']['continue']['#value'] = 'Confirm';
         $form['buttons']['back']['#value'] = 'Amend';
         $form['buttons']['back']['#submit'] = array('commerce_iats_checkout_form_amend_submit');
+
+        $form['buttons']['print'] = array(
+          '#type' => 'button',
+          '#value' => 'Print',
+        );
       }
 
       unset($form['buttons']['back']['#attributes']['class']);
