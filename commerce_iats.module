@@ -257,6 +257,8 @@ function commerce_iats_commerce_checkout_pane_info() {
 
 /**
  * Implements hook_page_alter().
+ *
+ * Display a message for payment methods that are not configured.
  */
 function commerce_iats_page_alter(&$page) {
   if (isset($page['content']['system_main']['#page_callback']) && $page['content']['system_main']['#page_callback'] == 'commerce_payment_ui_admin_page') {
