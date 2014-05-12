@@ -256,6 +256,40 @@ function commerce_iats_commerce_checkout_pane_info() {
 }
 
 /**
+ * Implements hook_page_alter().
+ */
+function commerce_iats_page_alter(&$page) {
+
+  if (isset($page['content']['system_main']['enabled']['rules']['#rows'])) {
+    $enabled_rules = $page['content']['system_main']['enabled']['rules']['#rows'];
+
+    foreach ($enabled_rules as $key => $rule_data) {
+      $payment_method_settings = NULL;
+
+      $orig_machine_name = $rule_data[0]['data']['description']['settings']['machine_name']['#markup'];
+      $machine_name = str_replace('Machine name: ', '', $orig_machine_name);
+
+      $rule = rules_config_load($machine_name);
+
+      foreach ($rule->actions() as $action) {
+        if (isset($action->settings['payment_method']['settings'])) {
+          $payment_method_settings = $action->settings['payment_method']['settings'];
+        }
+      }
+
+      if (empty($payment_method_settings)) {
+        $page['content']['system_main']['enabled']['rules']['#rows'][$key][0]['data']['status'] = array(
+          '#type' => 'item',
+          '#markup' => 'This payment method must be configured before use.',
+          '#prefix' => '<div class="rules-content-group-integrity-error">',
+          '#suffix' => '</div>',
+        );
+      }
+    }
+  }
+}
+
+/**
  * Implements hook_form_alter().
  *
  * Alters checkout form to hide Direct Debit payment methods from
