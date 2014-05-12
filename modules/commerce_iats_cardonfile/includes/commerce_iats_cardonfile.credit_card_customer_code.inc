@@ -109,8 +109,8 @@ function commerce_iats_cardonfile_credit_card_create_customer_code($payment_meth
   }
   else {
     $request['recurring'] = FALSE;
-    $request['beginDate'] = '';
-    $request['endDate'] = '';
+    $request['beginDate'] = commerce_iats_get_formatted_date(time());
+    $request['endDate'] = commerce_iats_get_formatted_date(time());
   }
 
   // Add the billing information.
