@@ -280,7 +280,7 @@ function commerce_iats_page_alter(&$page) {
       if (empty($payment_method_settings)) {
         $page['content']['system_main']['enabled']['rules']['#rows'][$key][0]['data']['status'] = array(
           '#type' => 'item',
-          '#markup' => 'This payment method must be configured before use.',
+          '#markup' => t('This payment method must be configured before use.'),
           '#prefix' => '<div class="rules-content-group-integrity-error">',
           '#suffix' => '</div>',
         );
