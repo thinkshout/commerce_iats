@@ -123,14 +123,14 @@ To use the Direct Debit checkout panes:
          - Direct Debit Declaration
      * Account Details
          - Direct Debit Account / Payer Details
-     * Payment
-         - Off-site payment redirect (Commerce default, cannot be changed.)
      * Confirmation
         - Direct Debit Validation
      * Review Order
         - Direct Debit Summary
      * Checkout Complete
         - Direct Debit Set Up Complete
+     * Payment
+        - Off-site payment redirect (Commerce default, cannot be changed.)
 
 4) Move all other panes to the "Disabled" section.
 
