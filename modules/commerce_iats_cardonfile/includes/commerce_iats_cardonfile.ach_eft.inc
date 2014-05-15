@@ -241,9 +241,9 @@ function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_m
     'lastName' => $last_name,
     'accountCustomerName' => $card_data->card_name,
     'accountType' => $card_data->type,
-    'updateAccountNum' => FALSE,
+    'updateAccountNum' => 0,
     // Only used for recurring payments.
-    'recurring' => FALSE,
+    'recurring' => 0,
     // Only used for recurring payments.
     'beginDate' => '',
     // Only used for recurring payments.

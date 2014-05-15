@@ -88,7 +88,7 @@ function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, 
 
   if (isset($payment_method['settings']['allow_recurring'])
     && $payment_method['settings']['allow_recurring'] == 1) {
-    $request['recurring'] = TRUE;
+    $request['recurring'] = 1;
     $request['beginDate'] = $order->data['recurring']['begin_date'];
     $request['endDate'] = $order->data['recurring']['end_date'];
     $request['amount'] = $order->data['recurring']['amount'];
@@ -96,7 +96,7 @@ function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, 
     $request['scheduleDate'] = $order->data['recurring']['schedule_date'];
   }
   else {
-    $request['recurring'] = FALSE;
+    $request['recurring'] = 0;
     $request['beginDate'] = commerce_iats_get_formatted_date(time());
     $request['endDate'] = commerce_iats_get_formatted_date(time());
   }

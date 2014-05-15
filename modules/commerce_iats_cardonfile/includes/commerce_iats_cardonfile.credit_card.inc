@@ -252,9 +252,9 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
     'lastName' => $last_name,
     'creditCardExpiry' => $formatted_card_data['expiry'],
     'mop' => commerce_iats_credit_card_mop($card_data->card_type),
-    'updateCreditCardNum' => FALSE,
+    'updateCreditCardNum' => 0,
     // Only used for recurring payments.
-    'recurring' => FALSE,
+    'recurring' => 0,
     // Only used for recurring payments.
     'beginDate' => '',
     // Only used for recurring payments.

@@ -87,7 +87,7 @@ function commerce_iats_create_customer_code($payment_method, $payment_data, $ord
     'accountNum' => $payment_data['bank_account']['number'],
     'accountType' => $payment_data['bank_account']['type'],
     // Only used for recurring payments.
-    'recurring' => FALSE,
+    'recurring' => 0,
     // Only used for recurring payments.
     'beginDate' => '',
     // Only used for recurring payments.

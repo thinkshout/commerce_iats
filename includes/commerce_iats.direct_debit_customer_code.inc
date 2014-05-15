@@ -80,7 +80,7 @@ function commerce_iats_direct_debit_create_customer_code($payment_method, $payme
     'state' => $payment_data['account_payer']['payer']['county'],
     'zipCode' => $payment_data['account_payer']['payer']['postcode'],
     'email' => $payment_data['account_payer']['payer']['email'],
-    'recurring' => TRUE,
+    'recurring' => 1,
     'amount' => $payment_data['recurring']['amount'],
     'beginDate' => $payment_data['account_payer']['account']['first_collection_date'],
     'endDate' => $payment_data['recurring']['end_date'],
