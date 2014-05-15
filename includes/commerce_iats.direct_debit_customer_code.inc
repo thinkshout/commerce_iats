@@ -67,6 +67,8 @@ function commerce_iats_direct_debit_create_customer_code($payment_method, $payme
   }
 
   // Create and populate the API request.
+  $account_num = $payment_data['account_payer']['account']['sort_code'] . $payment_data['account_payer']['account']['number'];
+
   $request = array(
     'customerIPAddress' => ip_address(),
     'ACHEFTReferenceNum' => $payment_data['validation']['reference_number'],
@@ -82,10 +84,10 @@ function commerce_iats_direct_debit_create_customer_code($payment_method, $payme
     'amount' => $payment_data['recurring']['amount'],
     'beginDate' => $payment_data['account_payer']['account']['first_collection_date'],
     'endDate' => $payment_data['recurring']['end_date'],
-    'schduleType' => $payment_data['recurring']['schedule_type'],
+    'scheduleType' => $payment_data['recurring']['schedule_type'],
     'scheduleDate' => $payment_data['recurring']['schedule_date'],
     'accountCustomerName' => $payment_data['account_payer']['account']['account_holder'],
-    'accountNum' => $payment_data['account_payer']['account']['number'],
+    'accountNum' => $account_num,
   );
 
   // Get the API service.
