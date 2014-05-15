@@ -329,12 +329,14 @@ function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
       unset($form['buttons']['back']['#attributes']['class']);
       unset($form['buttons']['back']['#prefix']);
 
-      $form['buttons']['cancel'] = array(
-        '#type' => 'submit',
-        '#value' => 'Cancel',
-        '#submit' => array('commerce_iats_checkout_form_cancel_submit'),
-        '#limit_validation_errors' => array(),
-      );
+      if ($form_id != 'commerce_checkout_form_complete') {
+        $form['buttons']['cancel'] = array(
+          '#type' => 'submit',
+          '#value' => 'Cancel',
+          '#submit' => array('commerce_iats_checkout_form_cancel_submit'),
+          '#limit_validation_errors' => array(),
+        );
+      }
     }
   }
 
