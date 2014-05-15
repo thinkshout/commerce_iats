@@ -148,4 +148,4 @@ To test Direct Debit transactions, use the following credentials in the
 payment method configuration:
 
   * Agent Code: UDDD88
-  * Password: UDDD88
+  * Password: UDDD888
