@@ -82,7 +82,7 @@ function commerce_iats_get_library_version(array $library, array $options) {
 function commerce_iats_menu() {
   $items = array();
 
-  // Add a menu item for refunding transactions.
+  // Add a menu item for refunding credit card transactions.
   $items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/iats-credit-card-refund'] = array(
     'title' => 'Refund',
     'page callback' => 'drupal_get_form',
@@ -93,6 +93,19 @@ function commerce_iats_menu() {
     'context' => MENU_CONTEXT_INLINE,
     'weight' => 2,
     'file' => 'includes/commerce_iats.credit_card.admin.inc',
+  );
+
+  // Add a menu item for refunding ACH/EFT transactions.
+  $items['admin/commerce/orders/%commerce_order/payment/%commerce_payment_transaction/iats-ach-eft-refund'] = array(
+    'title' => 'Refund',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('commerce_iats_ach_eft_refund_form', 3, 5),
+    'access callback' => 'commerce_iats_ach_eft_refund_access',
+    'access arguments' => array(5),
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'context' => MENU_CONTEXT_INLINE,
+    'weight' => 2,
+    'file' => 'includes/commerce_iats.ach_eft.admin.inc',
   );
 
   return $items;
@@ -109,6 +122,31 @@ function commerce_iats_menu() {
  */
 function commerce_iats_credit_card_refund_access($transaction) {
   if (($transaction->payment_method != 'iats_credit_card')
+    || ($transaction->status != 'success')
+    || ($transaction->amount <= 0)) {
+    return FALSE;
+  }
+
+  // Return FALSE if it is more than 120 days past the original capture.
+  if (time() - $transaction->created > 86400 * 120) {
+    return FALSE;
+  }
+
+  // Allow access if the user can update this transaction.
+  return commerce_payment_transaction_access('update', $transaction);
+}
+
+/**
+ * Determines access to the refund form for iATS ACH/EFT transactions.
+ *
+ * @param object $transaction
+ *   The payment transaction object to be refunded.
+ *
+ * @return bool
+ *   TRUE or FALSE indicating refund access.
+ */
+function commerce_iats_ach_eft_refund_access($transaction) {
+  if (($transaction->payment_method != 'iats_ach_eft')
     || ($transaction->status != 'success')
     || ($transaction->amount <= 0)) {
     return FALSE;
@@ -172,6 +210,7 @@ function commerce_iats_commerce_payment_method_info() {
     'display_title' => t('Direct Debit payment validation'),
     'description' => t('Integrates the iATS CustomerLink webservice for the validation of Direct Debit payments.'),
     'file' => 'includes/commerce_iats.direct_debit_validation.inc',
+    'terminal' => 0,
   );
 
   $payment_methods['direct_debit_customer_code'] = array(
@@ -181,6 +220,7 @@ function commerce_iats_commerce_payment_method_info() {
     'display_title' => t('Direct Debit customer code'),
     'description' => t('Integrates the iATS CustomerLink webservice for the creation of Direct Debit customer codes.'),
     'file' => 'includes/commerce_iats.direct_debit_customer_code.inc',
+    'terminal' => 0,
   );
 
   return $payment_methods;
@@ -273,12 +313,15 @@ function commerce_iats_page_alter(&$page) {
       $rule = rules_config_load($machine_name);
 
       foreach ($rule->actions() as $action) {
-        if (isset($action->settings['payment_method']['settings']) && strpos($action->settings['payment_method']['method_id'], 'iats') !== FALSE) {
+        if (isset($action->settings['payment_method']['settings'])
+          && (strpos($action->settings['payment_method']['method_id'], 'iats') !== FALSE)
+          || (strpos($action->settings['payment_method']['method_id'], 'direct_debit') !== FALSE)) {
           $payment_method_settings = $action->settings['payment_method']['settings'];
         }
       }
 
       if (empty($payment_method_settings)) {
+        $var = 1;
         $page['content']['system_main']['enabled']['rules']['#rows'][$key][0]['data']['status'] = array(
           '#type' => 'item',
           '#markup' => t('This payment method must be configured before use.'),
@@ -418,8 +461,8 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     '#description' =>
     t('Select the transaction server to use for processing payments.'),
     '#options' => array(
-      COMMERCE_IATS_NA_SERVER_ID => t('NA'),
-      COMMERCE_IATS_UK_SERVER_ID => t('UK'),
+      COMMERCE_IATS_NA_SERVER_ID => t('NA (For USD and CAD currencies)'),
+      COMMERCE_IATS_UK_SERVER_ID => t('UK (For all other currencies)'),
     ),
     '#default_value' => (isset($settings['server'])) ?
     $settings['server'] : COMMERCE_IATS_NA_SERVER_ID,
