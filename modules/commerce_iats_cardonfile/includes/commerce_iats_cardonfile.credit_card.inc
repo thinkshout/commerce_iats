@@ -253,12 +253,9 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
     'creditCardExpiry' => $formatted_card_data['expiry'],
     'mop' => commerce_iats_credit_card_mop($card_data->card_type),
     'updateCreditCardNum' => 0,
-    // Only used for recurring payments.
     'recurring' => 0,
-    // Only used for recurring payments.
-    'beginDate' => '',
-    // Only used for recurring payments.
-    'endDate' => '',
+    'beginDate' => commerce_iats_get_formatted_date(time()),
+    'endDate' => commerce_iats_get_formatted_date(time()),
   );
 
   // Get the API service.

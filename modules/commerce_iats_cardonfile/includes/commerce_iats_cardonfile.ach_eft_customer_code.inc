@@ -27,11 +27,24 @@ function commerce_iats_cardonfile_ach_eft_customer_code_submit_form($payment_met
   module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
 
   $fields = array(
-    'type' => '',
     'number' => '',
   );
 
-  return commerce_iats_ach_eft_payment_form($fields);
+  $currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
+
+  switch ($currency_code) {
+    case 'USD':
+      return commerce_iats_ach_eft_payment_form_usd($fields);
+      break;
+    case 'CAD':
+      return commerce_iats_ach_eft_payment_form_cad($fields);
+      break;
+    case 'GBP':
+      return commerce_iats_ach_eft_payment_form_gbp($fields);
+      break;
+    default:
+      return commerce_iats_ach_eft_payment_form($fields);
+  }
 }
 
 /**
@@ -83,10 +96,28 @@ function commerce_iats_cardonfile_ach_eft_customer_code_submit_form_submit($paym
  *   API response array or error string.
  */
 function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, $payment_data, $order, $charge) {
+  // Create currency-specific account number string.
+  $account_num = '';
+  switch ($charge['currency_code']) {
+    case 'USD':
+      $account_num .= $payment_data['bank_account']['routing_number'];
+      break;
+    case 'CAD':
+      $account_num .= $payment_data['bank_account']['bank_number'];
+      $account_num .= $payment_data['bank_account']['transit_number'];
+      break;
+    case 'GBP':
+      $account_num .= commerce_iats_format_sort_code($payment_data['bank_account']['sort_code']);
+      break;
+  }
+
+  $account_num .= $payment_data['bank_account']['number'];
+
+  // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
-    'accountNum' => $payment_data['bank_account']['number'],
-    'accountType' => $payment_data['bank_account']['type'],
+    'accountNum' => $account_num,
+    'accountType' => isset($payment_data['bank_account']['type']) ? $payment_data['bank_account']['type'] : '',
   );
 
   if (isset($payment_method['settings']['allow_recurring'])

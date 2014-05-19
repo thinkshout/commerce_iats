@@ -313,15 +313,15 @@ function commerce_iats_page_alter(&$page) {
       $rule = rules_config_load($machine_name);
 
       foreach ($rule->actions() as $action) {
-        if (isset($action->settings['payment_method']['settings'])
-          && (strpos($action->settings['payment_method']['method_id'], 'iats') !== FALSE)
-          || (strpos($action->settings['payment_method']['method_id'], 'direct_debit') !== FALSE)) {
-          $payment_method_settings = $action->settings['payment_method']['settings'];
+        if (isset($action->settings['payment_method']['method_id'])) {
+          if ((strpos($action->settings['payment_method']['method_id'], 'iats') !== FALSE)
+            || (strpos($action->settings['payment_method']['method_id'], 'direct_debit') !== FALSE)) {
+            $payment_method_settings = $action->settings['payment_method']['settings'];
+          }
         }
       }
 
       if (empty($payment_method_settings)) {
-        $var = 1;
         $page['content']['system_main']['enabled']['rules']['#rows'][$key][0]['data']['status'] = array(
           '#type' => 'item',
           '#markup' => t('This payment method must be configured before use.'),
@@ -849,6 +849,21 @@ function commerce_iats_format_credit_card_data(array $card_data) {
   );
 
   return $formatted_card_data;
+}
+
+/**
+ * Removes all non-numeric characters from a sort code.
+ * Sort codes may be provided as three blocks of numbers,
+ * separated by a space or dash character.
+ *
+ * @param string $sort_code
+ *   The unformatted sort code.
+ *
+ * @return string
+ *   The formatted sort code.
+ */
+function commerce_iats_format_sort_code($sort_code) {
+  return preg_replace('/[^0-9]+/', '', $sort_code);
 }
 
 /**

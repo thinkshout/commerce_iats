@@ -24,12 +24,24 @@ function commerce_iats_ach_eft_customer_code_submit_form($payment_method, $pane_
   module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
 
   $fields = array(
-    'type' => '',
     'number' => '',
   );
 
-  $form = commerce_iats_ach_eft_payment_form($fields);
-  return $form;
+  $currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
+
+  switch ($currency_code) {
+    case 'USD':
+      return commerce_iats_ach_eft_payment_form_usd($fields);
+      break;
+    case 'CAD':
+      return commerce_iats_ach_eft_payment_form_cad($fields);
+      break;
+    case 'GBP':
+      return commerce_iats_ach_eft_payment_form_gbp($fields);
+      break;
+    default:
+      return commerce_iats_ach_eft_payment_form($fields);
+  }
 }
 
 /**
@@ -57,11 +69,11 @@ function commerce_iats_ach_eft_customer_code_submit_form_validate($payment_metho
 /**
  * Payment method callback: checkout form submission.
  */
-function commerce_iats_ach_eft_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
+function commerce_iats_ach_eft_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
   $payment_data = $pane_values;
 
   return commerce_iats_process_payment($payment_method, $payment_data, $order,
-    NULL, 'commerce_iats_create_customer_code');
+    $charge, 'commerce_iats_create_customer_code');
 }
 
 /**
@@ -81,17 +93,31 @@ function commerce_iats_ach_eft_customer_code_submit_form_submit($payment_method,
  *   API response array or error string.
  */
 function commerce_iats_create_customer_code($payment_method, $payment_data, $order, $charge) {
+  // Create currency-specific account number string.
+  $account_num = '';
+  switch ($charge['currency_code']) {
+    case 'USD':
+      $account_num .= $payment_data['bank_account']['routing_number'];
+      break;
+    case 'CAD':
+      $account_num .= $payment_data['bank_account']['bank_number'];
+      $account_num .= $payment_data['bank_account']['transit_number'];
+      break;
+    case 'GBP':
+      $account_num .= commerce_iats_format_sort_code($payment_data['bank_account']['sort_code']);
+      break;
+  }
+
+  $account_num .= $payment_data['bank_account']['number'];
+
   // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
-    'accountNum' => $payment_data['bank_account']['number'],
-    'accountType' => $payment_data['bank_account']['type'],
-    // Only used for recurring payments.
+    'accountNum' => $account_num,
+    'accountType' => isset($payment_data['bank_account']['type']) ? $payment_data['bank_account']['type'] : '',
     'recurring' => 0,
-    // Only used for recurring payments.
-    'beginDate' => '',
-    // Only used for recurring payments.
-    'endDate' => '',
+    'beginDate' => commerce_iats_get_formatted_date(time()),
+    'endDate' => commerce_iats_get_formatted_date(time()),
   );
 
   // Add the billing information.
