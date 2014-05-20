@@ -89,7 +89,10 @@ function commerce_iats_recurring_pane_checkout_form_validate($form, &$form_state
 
   $amount = $form_state['values']['checkout_recurring']['amount'];
   $schedule_type = $form_state['values']['checkout_recurring']['schedule_type'];
-  $schedule_date = $form_state['values']['checkout_recurring']['schedule_date'];
+
+  if (isset($form_state['values']['checkout_recurring']['schedule_date'])) {
+    $schedule_date = $form_state['values']['checkout_recurring']['schedule_date'];
+  }
 
   if ($amount <= 0) {
     form_error($form['checkout_recurring']['amount'], t('Amount must be greater than zero.'));
@@ -102,10 +105,12 @@ function commerce_iats_recurring_pane_checkout_form_validate($form, &$form_state
     $valid = FALSE;
   }
 
-  $valid_schedule_dates = commerce_iats_recurring_pane_schedule_dates($schedule_type);
-  if (!isset($valid_schedule_dates[$schedule_date])) {
-    form_error($form['checkout_recurring']['schedule_date'], t('Please select a valid schedule date.'));
-    $valid = FALSE;
+  if (isset($schedule_date)) {
+    $valid_schedule_dates = commerce_iats_recurring_pane_schedule_dates($schedule_type);
+    if (!isset($valid_schedule_dates[$schedule_date])) {
+      form_error($form['checkout_recurring']['schedule_date'], t('Please select a valid schedule date.'));
+      $valid = FALSE;
+    }
   }
 
   return $valid;
