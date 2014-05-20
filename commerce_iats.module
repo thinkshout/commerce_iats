@@ -22,6 +22,8 @@ define('COMMERCE_IATS_DIRECT_DEBIT_LEAD_DAYS', 12);
 // Number of days a recurring payment should be active. Defaults to 50 years.
 define('COMMERCE_IATS_RECURRING_PAYMENT_DURATION', 18250);
 
+define('COMMERCE_IATS_TRANSACTIONS_CRON', 'commerce_iats_transactions_cron');
+
 /**
  * Implements hook_libraries_info().
  */
@@ -409,6 +411,134 @@ function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
       $form['commerce_payment']['payment_method']['#default_value'] = '';
     }
   }
+}
+
+/**
+ * Implements hook_cron_queue_info().
+ */
+function commerce_iats_cron_queue_info() {
+  $cron_name = variable_get('commerce_iats_transactions_cron_name',
+    COMMERCE_IATS_TRANSACTIONS_CRON);
+
+  $queues[$cron_name] = array(
+    'worker callback' => 'commerce_iats_update_ach_eft_order',
+    'time' => 60,
+  );
+  return $queues;
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * Retrieves daily ACH/EFT transaction reports from iATS.
+ * Updates status of ACH/EFT transactions.
+ */
+function commerce_iats_cron() {
+  commerce_iats_populate_ach_eft_transaction_queue();
+}
+
+/**
+ * Populates a queue of ACH/EFT payment transactions from transaction reports.
+ *
+ * Used to update the status of Commerce iATS ACH/EFT orders as they are
+ * processed by iATS and the users' banks.
+ */
+function commerce_iats_populate_ach_eft_transaction_queue() {
+  $cron_name = variable_get('commerce_iats_transactions_cron_name',
+    COMMERCE_IATS_TRANSACTIONS_CRON);
+
+  $queue = DrupalQueue::get($cron_name);
+  $queue->createQueue();
+
+  // TODO: Account for custom payment method rule name.
+  $payment_method = commerce_payment_method_instance_load('iats_ach_eft|commerce_payment_iats_ach_eft');
+
+  if (($payment_method === FALSE) || empty($payment_method['settings'])) {
+    // Payment method has not been set up. Cannot retrieve transaction reports.
+    return;
+  }
+
+  // Get the API service.
+  $iats = commerce_iats_get_service('ReportLink', $payment_method);
+
+  $request = array(
+    'date' => commerce_iats_get_formatted_date(mktime(0, 0, 0, date('n'), date('j'), date('Y'))),
+  );
+
+  // Get successful ACH/EFT transactions.
+  $ach_eft_success_response = $iats->getACHEFTJournal($request);
+
+  if (is_array($ach_eft_success_response)) {
+    foreach ($ach_eft_success_response as $transaction) {
+      $queue->createItem($transaction);
+    }
+  }
+
+  // Get rejected ACH/EFT transactions.
+  $ach_eft_reject_response = $iats->getACHEFTReject($request);
+
+  if (is_array($ach_eft_reject_response)) {
+    foreach ($ach_eft_reject_response as $transaction) {
+      $queue->createItem($transaction);
+    }
+  }
+}
+
+/**
+ * Updates the status of a Commerce iATS ACH/EFT order as it is
+ * processed by iATS and the user's bank.
+ * Creates a new Commerce transaction for each status update.
+ *
+ * @param array $data
+ *   Array of transaction data.
+ *
+ * @return bool
+ *   TRUE if the transaction data is used to update an order.
+ */
+function commerce_iats_update_ach_eft_order($data) {
+  $transaction_id = $data['TNID'];
+  if (isset($data['CST']['CSTC']) && !empty($data['CST']['CSTC'])) {
+    $customer_code = $data['CST']['CSTC'];
+  }
+  $result_code = $data['RST'];
+
+  $transaction_status = (substr($result_code, 0, 2) == 'OK') ?
+    COMMERCE_PAYMENT_STATUS_SUCCESS : COMMERCE_PAYMENT_STATUS_FAILURE;
+
+  $remote_id = (isset($customer_code)) ? $transaction_id . '|' . $customer_code : $transaction_id;
+
+  $query = new EntityFieldQuery();
+  $initial_transaction_result = $query
+    ->entityCondition('entity_type', 'commerce_payment_transaction')
+    ->propertyCondition('remote_id', $remote_id)
+    ->execute();
+  if (isset($initial_transaction_result['commerce_payment_transaction'])) {
+    $initial_transaction_entity_ids = array_keys($initial_transaction_result['commerce_payment_transaction']);
+    $initial_transaction_entities = entity_load('commerce_payment_transaction', $initial_transaction_entity_ids);
+    $initial_transaction = current($initial_transaction_entities);
+  }
+
+  if (isset($initial_transaction)) {
+    $transaction = new stdClass();
+    $transaction->uid = $initial_transaction->uid;
+    $transaction->order_id = $initial_transaction->order_id;
+    $transaction->payment_method = 'iats_ach_eft';
+    $transaction->instance_id = 'iats_ach_eft|commerce_payment_iats_ach_eft';
+    $transaction->remote_id = $remote_id;
+    $transaction->message = $result_code;
+    $transaction->message_variables = array();
+    // No payment amount required to update ACH/EFT status.
+    $transaction->amount = 0;
+    $transaction->currency_code = '';
+    $transaction->status = $transaction_status;
+    $transaction->remote_status = '';
+    $transaction->payload = array();
+
+    $result = commerce_payment_transaction_save($transaction);
+
+    return ($result == SAVED_NEW);
+  }
+  return FALSE;
 }
 
 /**

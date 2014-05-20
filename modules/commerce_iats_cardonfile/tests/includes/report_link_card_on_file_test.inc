@@ -12,7 +12,7 @@ namespace iATS;
  * Provides report data for test cases.
  */
 
-class ReportLinkTestService {
+class ReportLinkCardOnFileTestService {
 
   /**
    * Gets successful credit card transactions data.
