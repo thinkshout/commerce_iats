@@ -18,6 +18,9 @@ function commerce_iats_cardonfile_install() {
 function commerce_iats_cardonfile_uninstall() {
   db_drop_field('commerce_cardonfile', 'recurring');
   db_drop_table('commerce_iats_cardonfile_recurring');
+
+  variable_del('commerce_iats_service_name_suffix');
+  variable_del('commerce_iats_cardonfile_transactions_cron_name');
 }
 
 /**
