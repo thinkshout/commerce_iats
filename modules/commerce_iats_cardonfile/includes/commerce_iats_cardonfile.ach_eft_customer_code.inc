@@ -72,11 +72,11 @@ function commerce_iats_cardonfile_ach_eft_customer_code_submit_form_validate($pa
 /**
  * Payment method callback: checkout form submission.
  */
-function commerce_iats_cardonfile_ach_eft_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order) {
+function commerce_iats_cardonfile_ach_eft_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
   $payment_data = $pane_values;
 
   return commerce_iats_process_payment($payment_method, $payment_data, $order,
-    NULL, 'commerce_iats_cardonfile_ach_eft_create_customer_code');
+    $charge, 'commerce_iats_cardonfile_ach_eft_create_customer_code');
 }
 
 /**
@@ -161,10 +161,12 @@ function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, 
       $payment_data['bank_account']['exp_year'] = (int) date('Y') + 10;
       $payment_data['bank_account']['exp_month'] = (int) date('m');
 
+      $account_type = (isset($payment_data['bank_account']['type'])) ?
+        $payment_data['bank_account']['type'] : 'Account';
+
       // Create a new card on file record for the new customer code.
       commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
-        $payment_data['bank_account'], $customer_code,
-        $payment_data['bank_account']['type']);
+        $payment_data['bank_account'], $customer_code, $account_type);
     }
     else {
       drupal_set_message(t('Your account details could not be stored for later use.'), 'error');
