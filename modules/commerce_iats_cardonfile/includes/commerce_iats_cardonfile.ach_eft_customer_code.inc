@@ -162,7 +162,7 @@ function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, 
       $payment_data['bank_account']['exp_month'] = (int) date('m');
 
       $account_type = (isset($payment_data['bank_account']['type'])) ?
-        $payment_data['bank_account']['type'] : 'Account';
+        $payment_data['bank_account']['type'] : 'account';
 
       // Create a new card on file record for the new customer code.
       commerce_iats_cardonfile_create_cardonfile($order, $payment_method,

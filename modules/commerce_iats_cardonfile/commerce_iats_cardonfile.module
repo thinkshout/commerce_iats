@@ -469,22 +469,12 @@ function commerce_iats_cardonfile_can_create_cardonfile($customer_code) {
  *   TRUE or FALSE indicating success of saving card on file.
  */
 function commerce_iats_cardonfile_create_cardonfile($order, array $payment_method, array $card_data, $customer_code, $card_type) {
-  // Build a payment details array for the credit card.
-  $payment_details = array(
-    'cardNumber' => $card_data['number'],
-    'expirationDate' => $card_data['exp_year'] . '-' . $card_data['exp_month'],
-  );
-
-  if (isset($pane_values['credit_card']['code'])) {
-    $payment_details['cardCode'] = $pane_values['credit_card']['code'];
-  }
-
   $card_on_file = commerce_cardonfile_new();
   $card_on_file->uid = $order->uid;
   $card_on_file->payment_method = $payment_method['method_id'];
   $card_on_file->instance_id = $payment_method['instance_id'];
   $card_on_file->remote_id = $customer_code;
-  $card_on_file->card_type = !empty($card_type) ? $card_type : 'card';
+  $card_on_file->card_type = !empty($card_type) ? strtolower($card_type) : 'card';
   $card_on_file->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';
   $card_on_file->card_number = substr($card_data['number'], -4);
   $card_on_file->card_exp_month = $card_data['exp_month'];
