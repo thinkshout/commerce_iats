@@ -38,13 +38,13 @@ function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form
     // Stop checkout process.
     $form_state['checkout_page']['buttons'] = 0;
     $form_state['checkout_page']['next_page'] = NULL;
-    return;
+    return NULL;
   }
 
   if (!commerce_iats_direct_debit_verify_order_data($order, array(
     'recurring' => 'Recurring Payment',
   ))) {
-    return;
+    return NULL;
   }
 
   $settings = $order->data['payment_method_instance']['settings'];
@@ -391,7 +391,7 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
   if (!commerce_iats_direct_debit_verify_order_data($order, array(
     'account_payer' => 'Account Payer',
   ))) {
-    return;
+    return NULL;
   }
 
   $settings = $order->data['payment_method_instance']['settings'];
@@ -541,7 +541,7 @@ function commerce_iats_direct_debit_summary_pane_checkout_form($form, &$form_sta
   if (!commerce_iats_direct_debit_verify_order_data($order, array(
     'validation' => 'Validation',
   ))) {
-    return;
+    return NULL;
   }
 
   $settings = $order->data['payment_method_instance']['settings'];
