@@ -157,8 +157,8 @@ class CommerceiATSACHEFTTestCase extends DrupalWebTestCase {
     $transaction = new stdClass();
     $transaction->uid = $this->adminUser->uid;
     $transaction->order_id = $order->order_id;
-    $transaction->payment_method = 'iats_ach_eft_customer_code';
-    $transaction->instance_id = 'iats_ach_eft_customer_code|commerce_payment_iats_ach_eft_customer_code';
+    $transaction->payment_method = 'iats_ach_eft';
+    $transaction->instance_id = 'iats_ach_eft|commerce_payment_iats_ach_eft';
     $transaction->remote_id = $remote_id;
     $transaction->message = 'OK:555555:';
     $transaction->message_variables = array();
@@ -181,7 +181,7 @@ class CommerceiATSACHEFTTestCase extends DrupalWebTestCase {
     $query = new EntityFieldQuery();
     $order_transaction_result = $query
       ->entityCondition('entity_type', 'commerce_payment_transaction')
-      ->propertyCondition('remote_id', $remote_id)
+      ->propertyCondition('order_id', $order->order_id)
       ->execute();
     if (isset($order_transaction_result['commerce_payment_transaction'])) {
       $order_transaction_entity_ids = array_keys($order_transaction_result['commerce_payment_transaction']);
@@ -242,8 +242,8 @@ class CommerceiATSACHEFTTestCase extends DrupalWebTestCase {
     $transaction = new stdClass();
     $transaction->uid = $this->adminUser->uid;
     $transaction->order_id = $order->order_id;
-    $transaction->payment_method = 'iats_ach_eft_customer_code';
-    $transaction->instance_id = 'iats_ach_eft_customer_code|commerce_payment_iats_ach_eft_customer_code';
+    $transaction->payment_method = 'iats_ach_eft';
+    $transaction->instance_id = 'iats_ach_eft|commerce_payment_iats_ach_eft';
     $transaction->remote_id = $remote_id;
     $transaction->message = 'OK:555555:';
     $transaction->message_variables = array();
@@ -266,7 +266,7 @@ class CommerceiATSACHEFTTestCase extends DrupalWebTestCase {
     $query = new EntityFieldQuery();
     $order_transaction_result = $query
       ->entityCondition('entity_type', 'commerce_payment_transaction')
-      ->propertyCondition('remote_id', $remote_id)
+      ->propertyCondition('order_id', $order->order_id)
       ->execute();
     if (isset($order_transaction_result['commerce_payment_transaction'])) {
       $order_transaction_entity_ids = array_keys($order_transaction_result['commerce_payment_transaction']);
@@ -327,8 +327,8 @@ class CommerceiATSACHEFTTestCase extends DrupalWebTestCase {
     $transaction = new stdClass();
     $transaction->uid = $this->adminUser->uid;
     $transaction->order_id = $order->order_id;
-    $transaction->payment_method = 'iats_ach_eft_customer_code';
-    $transaction->instance_id = 'iats_ach_eft_customer_code|commerce_payment_iats_ach_eft_customer_code';
+    $transaction->payment_method = 'iats_ach_eft';
+    $transaction->instance_id = 'iats_ach_eft|commerce_payment_iats_ach_eft';
     $transaction->remote_id = $remote_id;
     $transaction->message = 'OK:555555:';
     $transaction->message_variables = array();
@@ -351,7 +351,7 @@ class CommerceiATSACHEFTTestCase extends DrupalWebTestCase {
     $query = new EntityFieldQuery();
     $order_transaction_result = $query
       ->entityCondition('entity_type', 'commerce_payment_transaction')
-      ->propertyCondition('remote_id', $remote_id)
+      ->propertyCondition('order_id', $order->order_id)
       ->execute();
     if (isset($order_transaction_result['commerce_payment_transaction'])) {
       $order_transaction_entity_ids = array_keys($order_transaction_result['commerce_payment_transaction']);
@@ -370,6 +370,88 @@ class CommerceiATSACHEFTTestCase extends DrupalWebTestCase {
         $this->assertEqual($transaction->remote_id, $remote_id,
           'Tested saved ACH/EFT transaction: ' . $transaction->remote_id . ' with status: ' . $transaction->message);
 
+        $this->assertTrue(isset($expected_results[$transaction->message]),
+          'Tested expected transaction result: ' . $transaction->message);
+
+        $expected_results[$transaction->message] = TRUE;
+      }
+
+      foreach ($expected_results as $result => $received) {
+        $this->assertTrue($received, 'Tested received transaction with result: ' . $result);
+      }
+    }
+  }
+
+  /**
+   * Tests creating an ACH/EFT order then processing transaction updates.
+   *
+   * This tests functionality used when updating ACH/EFT transaction states.
+   */
+  public function testProcessRejectedTransactionQueueWithInvoiceNumber() {
+    // Create initial order.
+    $initial_order_number = 4;
+
+    $order = new stdClass();
+    $order->order_number = $initial_order_number;
+    $order->type = 'commerce_order';
+    $order->uid = $this->adminUser->uid;
+    $order->mail = 'admin@example.org';
+    $order->status = 'pending';
+
+    $order_save_result = commerce_order_save($order);
+
+    $this->assertIdentical($order_save_result, SAVED_NEW,
+      'commerce_order_save() successfully saved a new order.');
+
+    $order = commerce_order_load_by_number($initial_order_number);
+
+    // Create transaction ID with no customer code.
+    $remote_id = 'A0000004';
+
+    // Create ACH/EFT recurring payment transaction.
+    $transaction = new stdClass();
+    $transaction->uid = $this->adminUser->uid;
+    $transaction->order_id = $order->order_id;
+    $transaction->payment_method = 'iats_ach_eft';
+    $transaction->instance_id = 'iats_ach_eft|commerce_payment_iats_ach_eft';
+    $transaction->remote_id = $remote_id;
+    $transaction->message = 'OK:555555:';
+    $transaction->message_variables = array();
+    $transaction->amount = 0;
+    $transaction->currency_code = '';
+    $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+    $transaction->remote_status = '';
+    $transaction->payload = array();
+
+    $transaction_save_result = commerce_payment_transaction_save($transaction);
+
+    $this->assertIdentical($transaction_save_result, SAVED_NEW,
+      'commerce_payment_transaction_save() successfully saved ACH/EFT transaction.');
+
+    // Run cron to queue and process recurring transactions.
+    $cron_run = drupal_cron_run();
+
+    $this->assertTrue($cron_run, 'Tested cron ran successfully.');
+
+    $query = new EntityFieldQuery();
+    $order_transaction_result = $query
+      ->entityCondition('entity_type', 'commerce_payment_transaction')
+      ->propertyCondition('order_id', $order->order_id)
+      ->execute();
+    if (isset($order_transaction_result['commerce_payment_transaction'])) {
+      $order_transaction_entity_ids = array_keys($order_transaction_result['commerce_payment_transaction']);
+      $order_transactions = entity_load('commerce_payment_transaction', $order_transaction_entity_ids);
+    }
+
+    $this->assertTrue(isset($order_transactions), 'Tested existing order transactions.');
+
+    if (isset($order_transactions)) {
+      $expected_results = array(
+        'OK:555555:' => FALSE,
+        'OK:Reject' => FALSE,
+      );
+
+      foreach ($order_transactions as $transaction) {
         $this->assertTrue(isset($expected_results[$transaction->message]),
           'Tested expected transaction result: ' . $transaction->message);
 

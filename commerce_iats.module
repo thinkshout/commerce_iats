@@ -496,6 +496,13 @@ function commerce_iats_populate_ach_eft_transaction_queue() {
  *   TRUE if the transaction data is used to update an order.
  */
 function commerce_iats_update_ach_eft_order($data) {
+  // Set up payment method.
+  $payment_method_id = 'iats_ach_eft';
+  $payment_method_instance_id = 'commerce_payment_iats_ach_eft';
+
+  $payment_method = commerce_payment_method_instance_load($payment_method_id . '|' . $payment_method_instance_id);
+
+  // Parse transaction data.
   $transaction_id = $data['TNID'];
   if (isset($data['CST']['CSTC']) && !empty($data['CST']['CSTC'])) {
     $customer_code = $data['CST']['CSTC'];
@@ -507,6 +514,7 @@ function commerce_iats_update_ach_eft_order($data) {
 
   $remote_id = (isset($customer_code)) ? $transaction_id . '|' . $customer_code : $transaction_id;
 
+  // Look up initial order transaction from the remote ID.
   $query = new EntityFieldQuery();
   $initial_transaction_result = $query
     ->entityCondition('entity_type', 'commerce_payment_transaction')
@@ -519,11 +527,42 @@ function commerce_iats_update_ach_eft_order($data) {
   }
 
   if (isset($initial_transaction)) {
+    $uid = $initial_transaction->uid;
+    $order_id = $initial_transaction->order_id;
+  }
+  else {
+    // No initial transaction found. Attempt to match transaction to an
+    // existing order using the invoice number.
+    $invoice_number = $data['INV'];
+
+    // Parse the order number from the invoice number.
+    if (isset($payment_method['settings']['invoice_prefix'])) {
+      $order_number = str_replace($payment_method['settings']['invoice_prefix'], '', $invoice_number);
+
+      // Look order from the order ID.
+      $query = new EntityFieldQuery();
+      $order_result = $query
+        ->entityCondition('entity_type', 'commerce_order')
+        ->propertyCondition('order_number', $order_number)
+        ->execute();
+      if (isset($order_result['commerce_order'])) {
+        $order_entity_ids = array_keys($order_result['commerce_order']);
+        $order_entities = entity_load('commerce_order', $order_entity_ids);
+        $order = current($order_entities);
+
+        $uid = $order->uid;
+        $order_id = $order->order_id;
+      }
+    }
+  }
+
+  // Found a matching order. Add a new transaction.
+  if (isset($uid) && isset($order_id)) {
     $transaction = new stdClass();
-    $transaction->uid = $initial_transaction->uid;
-    $transaction->order_id = $initial_transaction->order_id;
-    $transaction->payment_method = 'iats_ach_eft';
-    $transaction->instance_id = 'iats_ach_eft|commerce_payment_iats_ach_eft';
+    $transaction->uid = $order_id;
+    $transaction->order_id = $order_id;
+    $transaction->payment_method = $payment_method_id;
+    $transaction->instance_id = $payment_method_id . '|' . $payment_method_instance_id;
     $transaction->remote_id = $remote_id;
     $transaction->message = $result_code;
     $transaction->message_variables = array();
