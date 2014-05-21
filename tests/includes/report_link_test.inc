@@ -64,6 +64,33 @@ class ReportLinkTestService {
               'ACN' => '************0001',
               'ACTYP' => 'Checking',
             ),
+            'INV' => 'INVOICE-1',
+            'AMT' => '10.00',
+            'RST' => 'OK:BankAccept',
+          ),
+        ),
+      ),
+      2 => array(
+        'A0000002|CCC000001' => array(
+          array(
+            'TNTYP' => 'ACHEFT',
+            'TNID' => 'A0000002',
+            'AGT' => 'TEST88',
+            'CST' => array(
+              'CSTC' => 'CCC000001',
+              'FN' => 'Test',
+              'LN' => 'User',
+              'ADD' => '123 Any St.',
+              'CTY' => 'Anytown',
+              'ST' => 'AK',
+              'CNT' => 'US',
+              'ZC' => '11111',
+            ),
+            'ACH' => array(
+              'ACN' => '************0001',
+              'ACTYP' => 'Checking',
+            ),
+            'INV' => 'INVOICE-2',
             'AMT' => '10.00',
             'RST' => 'OK:BankAccept',
           ),
@@ -87,11 +114,11 @@ class ReportLinkTestService {
    */
   public function getTestACHEFTRejectTransactionData() {
     $data = array(
-      2 => array(
-        'A0000002' => array(
+      3 => array(
+        'A0000003' => array(
           array(
             'TNTYP' => 'ACHEFT',
-            'TNID' => 'A0000002',
+            'TNID' => 'A0000003',
             'AGT' => 'TEST88',
             'CST' => array(
               'CSTC' => '',
@@ -107,6 +134,7 @@ class ReportLinkTestService {
               'ACN' => '************0001',
               'ACTYP' => 'Checking',
             ),
+            'INV' => 'INVOICE-3',
             'AMT' => '10.00',
             'RST' => 'OK:Reject',
           ),
