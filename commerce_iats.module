@@ -872,6 +872,9 @@ function commerce_iats_log_request(array $payment_method, $payment_callback, arr
   elseif (isset($request['creditCardNum'])) {
     $request['creditCardNum'] = commerce_iats_mask_credit_card_number($request['creditCardNum']);
   }
+  elseif (isset($request['accountNum'])) {
+    $request['accountNum'] = commerce_iats_mask_credit_card_number($request['accountNum']);
+  }
 
   if (isset($request['cvv2']) && !empty($request['cvv2'])) {
     $request['cvv2'] = str_repeat('X', strlen($request['cvv2']));
