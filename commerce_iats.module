@@ -509,8 +509,13 @@ function commerce_iats_update_ach_eft_order($data) {
   }
   $result_code = $data['RST'];
 
-  $transaction_status = (substr($result_code, 0, 2) == 'OK') ?
-    COMMERCE_PAYMENT_STATUS_SUCCESS : COMMERCE_PAYMENT_STATUS_FAILURE;
+  if ($result_code == 'OK:Reject') {
+    $transaction_status = COMMERCE_PAYMENT_STATUS_FAILURE;
+  }
+  else {
+    $transaction_status = (substr($result_code, 0, 2) == 'OK') ?
+      COMMERCE_PAYMENT_STATUS_SUCCESS : COMMERCE_PAYMENT_STATUS_FAILURE;
+  }
 
   $remote_id = (isset($customer_code)) ? $transaction_id . '|' . $customer_code : $transaction_id;
 
