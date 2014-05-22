@@ -818,17 +818,18 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
       // Create a failed transaction with the error message.
       $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+      $message = array('Transaction failed.');
     }
     else {
       $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+      $message = array('Transaction successful.');
+      if (!is_null($customer_code)) {
+        $message[] = 'Customer code created: ' . $customer_code;
+      }
+      if ($payment_method['method_id'] == 'iats_ach_eft') {
+        $message[] = 'ACH/EFT payment pending.';
+      }
     }
-
-    // Build a meaningful response message.
-    $message = array(
-      '<b>' . t('iATS Payments result from @payment_callback',
-        array('@payment_callback' => $payment_callback)) . '</b>',
-      '<b>' . t('@decision', array('@decision' => $auth_result)) . '</b>',
-    );
 
     $transaction->message = implode('<br />', $message);
 
