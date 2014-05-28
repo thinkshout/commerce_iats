@@ -763,6 +763,7 @@ function commerce_iats_validate_recurring_payment(array $recurring_data) {
  */
 function commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, $payment_callback) {
   // Process the payment using the defined callback method.
+  include_once($payment_method['file']);
   $response = $payment_callback($payment_method, $payment_data, $order, $charge);
 
   // Handle the payment response.
