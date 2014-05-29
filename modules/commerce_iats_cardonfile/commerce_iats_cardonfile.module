@@ -599,3 +599,22 @@ function commerce_iats_cardonfile_recurring_new(array $values = array()) {
 function commerce_iats_cardonfile_recurring_save($recurring_data) {
   return entity_save('commerce_iats_cardonfile_recurring', $recurring_data);
 }
+
+/**
+ * Card on File card charge callback function.
+ *
+ * @param array $payment_method
+ *   The payment method used during this transaction.
+ * @param array $card_data
+ *   Array of credit card data.
+ * @param object $order
+ *   The order processed during this transaction.
+ * @param array $charge
+ *   The transaction charge.
+ *
+ * @return Mixed
+ *   API response array or boolean FALSE on failure.
+ */
+function commerce_iats_cardonfile_credit_card_charge_callback($payment_method, $card_data, $order, $charge = NULL) {
+  return commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
+}
