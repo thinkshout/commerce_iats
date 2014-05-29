@@ -41,11 +41,6 @@ function commerce_iats_direct_debit_validation_settings_form($settings = NULL) {
                     Direct Debit payments.'),
   );
 
-  $form['direct_debit']['registration_link'] = array(
-    '#type' => 'item',
-    '#markup' => l(t('iATS recommends SmartDebit'), 'http://www.smartdebit.co.uk/'),
-  );
-
   $form['direct_debit']['service_user_number'] = array(
     '#type' => 'textfield',
     '#title' => 'Service User Number',
