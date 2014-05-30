@@ -94,12 +94,9 @@ function commerce_iats_create_customer_code($payment_method, $payment_data, $ord
     'creditCardNum' => $formatted_card_data['number'],
     'creditCardExpiry' => $formatted_card_data['expiry'],
     'cvv2' => $payment_data['credit_card']['code'],
-    // Only used for recurring payments.
     'recurring' => 0,
-    // Only used for recurring payments.
-    'beginDate' => '',
-    // Only used for recurring payments.
-    'endDate' => '',
+    'beginDate' => commerce_iats_get_formatted_date(time()),
+    'endDate' => commerce_iats_get_formatted_date(time()),
     'currency' => 'USD',
   );
 
