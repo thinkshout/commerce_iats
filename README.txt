@@ -23,6 +23,12 @@ http://iatspayments.com/
 * Commerce Checkout Pages - https://drupal.org/project/dc_co_pages
     Used to customize the checkout process
 
+### Installation
+
+The iATS PHP API Wrapper should exist in a directory named "iatspayments" under "libraries"
+
+If your Drupal installation uses a .make file, see the example in commerce_iats.make.example
+
 ## Upgrading from Commerce iATS 1.x
 
 There is no upgrade path from the 1.x release of iATS Commerce.
