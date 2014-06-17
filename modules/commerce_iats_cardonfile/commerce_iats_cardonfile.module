@@ -489,7 +489,7 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
   }
 
   // Save and log the creation of the new card on file.
-  if (commerce_cardonfile_save($card_on_file)) {
+  if (commerce_cardonfile_save($card_on_file) !== FALSE) {
     watchdog('commerce_iats',
       'iATS Customer Code @customer_code created and saved to user @uid.',
       array(
