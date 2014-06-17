@@ -127,18 +127,20 @@ function commerce_iats_cardonfile_credit_card_create_customer_code($payment_meth
   $response = $iats->createCreditCardCustomerCode($request);
 
   if ($response != NULL) {
-    $customer_code = trim($response['CUSTOMERCODE']);
-    if (commerce_iats_cardonfile_can_create_cardonfile($customer_code)) {
-      $payment_data['credit_card']['default'] = (isset($payment_data['cardonfile_instance_default'])) ?
-        $payment_data['cardonfile_instance_default'] : FALSE;
+    if ($payment_data['credit_card']['cardonfile_store']) {
+      $customer_code = trim($response['CUSTOMERCODE']);
+      if (commerce_iats_cardonfile_can_create_cardonfile($customer_code)) {
+        $payment_data['credit_card']['default'] = (isset($payment_data['cardonfile_instance_default'])) ?
+          $payment_data['cardonfile_instance_default'] : FALSE;
 
-      // Create a new card on file record for the new customer code.
-      commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
-        $payment_data['credit_card'], $customer_code,
-        $formatted_card_data['orig_type']);
-    }
-    else {
-      drupal_set_message(t('Your credit card could not be stored for later use.'), 'error');
+        // Create a new card on file record for the new customer code.
+        commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
+          $payment_data['credit_card'], $customer_code,
+          $formatted_card_data['orig_type']);
+      }
+      else {
+        drupal_set_message(t('Your credit card could not be stored for later use.'), 'error');
+      }
     }
   }
 
