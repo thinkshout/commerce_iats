@@ -774,20 +774,25 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     }
 
     $auth_result = NULL;
-    if (isset($response['AUTHRESULT'])) {
-      // Account for direct debit validation transaction.
-      $auth_result = trim($response['AUTHRESULT']['AUTHSTATUS']);
-    }
-    elseif (isset($response['AUTHORIZATIONRESULT'])) {
-      // Account for regular transaction.
-      $auth_result = trim($response['AUTHORIZATIONRESULT']);
-    }
+    $transaction_id = NULL;
+    $customer_code = NULL;
 
-    $transaction_id = (isset($response['TRANSACTIONID'])) ?
-      trim($response['TRANSACTIONID']) : NULL;
-    $customer_code = (isset($response['CUSTOMERCODE']) &&
-      !empty($response['CUSTOMERCODE'])) ?
-      trim($response['CUSTOMERCODE']) : NULL;
+    if (is_array($response)) {
+      if (isset($response['AUTHRESULT'])) {
+        // Account for direct debit validation transaction.
+        $auth_result = trim($response['AUTHRESULT']['AUTHSTATUS']);
+      }
+      elseif (isset($response['AUTHORIZATIONRESULT'])) {
+        // Account for regular transaction.
+        $auth_result = trim($response['AUTHORIZATIONRESULT']);
+      }
+
+      $transaction_id = (isset($response['TRANSACTIONID'])) ?
+        trim($response['TRANSACTIONID']) : NULL;
+      $customer_code = (isset($response['CUSTOMERCODE']) &&
+        !empty($response['CUSTOMERCODE'])) ?
+        trim($response['CUSTOMERCODE']) : NULL;
+    }
 
     // If AUTHORIZATIONRESULT or AUTHRESULT are not set, then the API returned
     // an error string. Assign it here for logging purposes.
