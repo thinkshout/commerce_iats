@@ -19,15 +19,21 @@ function commerce_iats_credit_card_settings_form($settings = NULL) {
  * Payment method callback: checkout form.
  */
 function commerce_iats_credit_card_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
-  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+  if (isset($payment_method['settings']['direct_post']) && $payment_method['settings']['direct_post'] == 1) {
+    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.direct_post.forms');
+    return commerce_iats_direct_post_credit_card_form_base($payment_method, $order);
+  }
+  else {
+    module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
-  // Prepare the fields to include on the credit card form.
-  $fields = array(
-    'code' => '',
-    'type' => commerce_iats_enabled_credit_card_types($payment_method),
-  );
+    // Prepare the fields to include on the credit card form.
+    $fields = array(
+      'code' => '',
+      'type' => commerce_iats_enabled_credit_card_types($payment_method),
+    );
 
-  return commerce_payment_credit_card_form($fields);
+    return commerce_payment_credit_card_form($fields);
+  }
 }
 
 /**
