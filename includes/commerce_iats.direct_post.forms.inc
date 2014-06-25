@@ -1,0 +1,133 @@
+<?php
+/**
+ * @file
+ * Implements iATS Payments credit card services for use in Drupal Commerce.
+ */
+
+function commerce_iats_direct_post_form_base($payment_method, $order) {
+  $form = array();
+
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $address_data = $order_wrapper->commerce_customer_billing->commerce_customer_address->value();
+
+  // Process Key.
+  $form['iats_dpm_process_key'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_ProcessID',
+    '#default_value' => $payment_method['settings']['process_key'],
+  );
+
+  // First name for the end user.
+  $form['iats_dpm_first_name'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_FirstName',
+    '#default_value' => $address_data['first_name'],
+  );
+
+  // Last name for the end user.
+  $form['iats_dpm_last_name'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_LastName',
+    '#default_value' => $address_data['last_name'],
+  );
+
+  // Address for the end user.
+  $form['iats_dpm_address'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Address',
+    '#default_value' => $address_data['thoroughfare'],
+  );
+
+  // City of the address.
+  $form['iats_dpm_city'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_City',
+    '#default_value' => $address_data['locality'],
+  );
+
+  // Province of the address.
+  $form['iats_dpm_province'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Province',
+    '#default_value' => $address_data['administrative_area'],
+  );
+
+  // Country of the address.
+  $form['iats_dpm_country'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Country',
+    '#default_value' => $address_data['country'],
+  );
+
+  // Zip code of the address.
+  $form['iats_dpm_zip_code'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_ZipCode',
+    '#default_value' => $address_data['postal_code'],
+  );
+
+  return $form;
+}
+
+function commerce_iats_direct_post_credit_card_form_base($payment_method, $order) {
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+
+  $form = commerce_iats_direct_post_form_base($payment_method, $order);
+
+  $credit_card_types = commerce_iats_credit_card_types();
+
+  $credit_card_mop = array();
+  foreach ($credit_card_types as $type => $name) {
+    $credit_card_mop[commerce_iats_credit_card_mop($type)] = $name;
+  }
+
+  // Credit card type.
+  $form['iats_dpm_mop'] = array(
+    '#type' => 'select',
+    '#title' => t('Card type'),
+    '#name' => 'IATS_DPM_MOP',
+    '#options' => $credit_card_mop,
+    '#required' => TRUE,
+  );
+
+  // Credit card number.
+  $form['iats_dpm_account_number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Card number'),
+    '#name' => 'IATS_DPM_AccountNumber',
+    '#attributes' => array('autocomplete' => 'off'),
+    '#required' => TRUE,
+    '#maxlength' => 19,
+    '#size' => 20,
+  );
+
+  // Expiry date.
+  $form['iats_dpm_exp'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Expiration'),
+    '#name' => 'IATS_DPM_EXP',
+    '#required' => TRUE,
+    '#maxlength' => 5,
+    '#size' => 5,
+  );
+
+  // CVV2.
+  $form['iats_dpm_cvv2'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Security code'),
+    '#name' => 'IATS_DPM_CVV2',
+    '#attributes' => array('autocomplete' => 'off'),
+    '#required' => TRUE,
+    '#maxlength' => 4,
+    '#size' => 4,
+  );
+
+  // Total processed amount.
+  $form['iats_dpm_amount'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Amount',
+    '#default_value' => $order->commerce_order_total[LANGUAGE_NONE][0]['amount'],
+  );
+
+  return $form;
+}
