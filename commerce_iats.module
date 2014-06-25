@@ -629,6 +629,24 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     $settings['agent_password'] : '',
     '#required' => TRUE,
   );
+  $form['direct_post'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Enable Direct Post Method',
+    '#description' => 'Enable to submit the user\'s payment information directly to iATS Payments\' servers.',
+    '#default_value' => isset($settings['direct_post']) ? $settings['direct_post'] : FALSE,
+  );
+  $form['process_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Direct Post Process Key'),
+    '#description' => t('Process Key is required to process payments using the Direct Post Method.'),
+    '#default_value' => (isset($settings['process_key'])) ?
+        $settings['process_key'] : '',
+    '#states' => array(
+      'visible' => array(
+        ':input[name="parameter[payment_method][settings][payment_method][settings][direct_post]"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
   $form['server'] = array(
     '#type' => 'radios',
     '#title' => t('Transaction Server'),
