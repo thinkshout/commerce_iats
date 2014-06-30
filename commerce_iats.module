@@ -650,6 +650,12 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     ),
     '#default_value' => (isset($settings['log'])) ? $settings['log'] : array(),
   );
+  $form['detailed_failure_message'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Enable detailed failure messages',
+    '#description' => 'Enable to attach a detailed message to a payment when the transaction fails.',
+    '#default_value' => isset($settings['detailed_failure_message']) ? $settings['detailed_failure_message'] : FALSE,
+  );
   $form['invoice_prefix'] = array(
     '#type' => 'textfield',
     '#title' => t('Invoice Prefix'),
@@ -824,7 +830,14 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
       // Create a failed transaction with the error message.
       $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
-      $message = array('Transaction failed.');
+
+      if (isset($payment_method['settings']['detailed_failure_message'])
+        && $payment_method['settings']['detailed_failure_message'] == 1) {
+        $message = array($auth_result);
+      }
+      else {
+        $message = array('Transaction failed.');
+      }
     }
     else {
       $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
