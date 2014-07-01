@@ -125,6 +125,8 @@ function commerce_iats_direct_post_process_response($response) {
       return FALSE;
     }
 
+    commerce_checkout_complete($order);
+
     return TRUE;
   }
   else {
