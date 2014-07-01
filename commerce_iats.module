@@ -25,7 +25,7 @@ define('COMMERCE_IATS_RECURRING_PAYMENT_DURATION', 18250);
 define('COMMERCE_IATS_TRANSACTIONS_CRON', 'commerce_iats_transactions_cron');
 
 // The URL used to submit payments via the Direct Post Method.
-define('COMMERCE_IATS_DIRECT_POST_URL', 'http://www.iatspayments.com/netgate/IATSDPMProcess.asxp');
+define('COMMERCE_IATS_DIRECT_POST_URL', 'https://www.iatspayments.com/netgate/IATSDPMProcess.aspx');
 
 /**
  * Implements hook_libraries_info().
@@ -111,6 +111,15 @@ function commerce_iats_menu() {
     'context' => MENU_CONTEXT_INLINE,
     'weight' => 2,
     'file' => 'includes/commerce_iats.ach_eft.admin.inc',
+  );
+
+  // Add a callback URL for iATS Direct Post payments.
+  $items['commerce_iats/direct_post_relay'] = array(
+    'title' => 'Commerce iATS Direct Post Relay URL',
+    'page callback' => 'commerce_iats_direct_post_relay',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/commerce_iats.direct_post.inc',
   );
 
   return $items;

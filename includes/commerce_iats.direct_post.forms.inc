@@ -1,14 +1,23 @@
 <?php
 /**
  * @file
- * Implements iATS Payments credit card services for use in Drupal Commerce.
+ * Forms for use in Direct Post Method transactions.
  */
 
 function commerce_iats_direct_post_form_base($payment_method, $order) {
+  global $base_url;
+
   $form = array();
 
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
   $address_data = $order_wrapper->commerce_customer_billing->commerce_customer_address->value();
+
+  // Relay URL.
+  $form['iats_dpm_relay_url'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_RelayURL',
+    '#default_value' => $base_url . '/commerce_iats/direct_post_relay/',
+  );
 
   // Process Key.
   $form['iats_dpm_process_key'] = array(
@@ -105,7 +114,7 @@ function commerce_iats_direct_post_credit_card_form_base($payment_method, $order
   $form['iats_dpm_exp'] = array(
     '#type' => 'textfield',
     '#title' => t('Expiration'),
-    '#name' => 'IATS_DPM_EXP',
+    '#name' => 'IATS_DPM_ExpiryDate',
     '#required' => TRUE,
     '#maxlength' => 5,
     '#size' => 5,
@@ -126,7 +135,8 @@ function commerce_iats_direct_post_credit_card_form_base($payment_method, $order
   $form['iats_dpm_amount'] = array(
     '#type' => 'hidden',
     '#name' => 'IATS_DPM_Amount',
-    '#default_value' => $order->commerce_order_total[LANGUAGE_NONE][0]['amount'],
+    '#default_value' => commerce_currency_amount_to_decimal($order->commerce_order_total[LANGUAGE_NONE][0]['amount'],
+      $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code']),
   );
 
   return $form;
