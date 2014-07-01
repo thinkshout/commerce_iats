@@ -4,6 +4,17 @@
  * Forms for use in Direct Post Method transactions.
  */
 
+/**
+ * Returns an array of form elements common to all Direct Post forms.
+ *
+ * @param array $payment_method
+ *   The current payment method.
+ * @param $order
+ *   The current order.
+ *
+ * @return array
+ *   Array of common Direct Post form fields.
+ */
 function commerce_iats_direct_post_form_base($payment_method, $order) {
   global $base_url;
 
@@ -24,6 +35,35 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
     '#type' => 'hidden',
     '#name' => 'IATS_DPM_ProcessID',
     '#default_value' => $payment_method['settings']['process_key'],
+  );
+
+  // Total processed amount.
+  $form['iats_dpm_amount'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Amount',
+    '#default_value' => commerce_currency_amount_to_decimal($order->commerce_order_total[LANGUAGE_NONE][0]['amount'],
+      $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code']),
+  );
+
+  // Store order information in comment for future reference.
+
+  // Get current payment method instance ID.
+  foreach ($order->payment_methods as $instance_id => $payment_method_instance) {
+    if ($payment_method_instance['method_id'] == $payment_method['method_id']) {
+      $payment_method_instance_id = $instance_id;
+      continue;
+    }
+  }
+
+  $comment_parts = array(
+    $order->order_id,
+    $payment_method_instance_id,
+  );
+
+  $form['iats_dpm_comment'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Comment',
+    '#default_value' => implode('|', $comment_parts),
   );
 
   // First name for the end user.
@@ -78,7 +118,18 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
   return $form;
 }
 
-function commerce_iats_direct_post_credit_card_form_base($payment_method, $order) {
+/**
+ * Returns an array of form elements used by the credit card Direct Post form.
+ *
+ * @param array $payment_method
+ *   The current payment method.
+ * @param $order
+ *   The current order.
+ *
+ * @return array
+ *   Array of credit card Direct Post form fields.
+ */
+function commerce_iats_direct_post_credit_card_form($payment_method, $order) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
   $form = commerce_iats_direct_post_form_base($payment_method, $order);
@@ -131,19 +182,50 @@ function commerce_iats_direct_post_credit_card_form_base($payment_method, $order
     '#size' => 4,
   );
 
-  // Total processed amount.
-  $form['iats_dpm_amount'] = array(
+  return $form;
+}
+
+/**
+ * Returns an array of form elements used by the ACH/EFT Direct Post form.
+ *
+ * @param array $payment_method
+ *   The current payment method.
+ * @param $order
+ *   The current order.
+ *
+ * @return array
+ *   Array of ACH/EFT Direct Post form fields.
+ */
+function commerce_iats_direct_post_ach_eft_form($payment_method, $order) {
+  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
+
+  $form = commerce_iats_direct_post_form_base($payment_method, $order);
+
+  // ACH/EFT payment type.
+  $form['iats_dpm_mop'] = array(
     '#type' => 'hidden',
-    '#name' => 'IATS_DPM_Amount',
-    '#default_value' => commerce_currency_amount_to_decimal($order->commerce_order_total[LANGUAGE_NONE][0]['amount'],
-      $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code']),
+    '#name' => 'IATS_DPM_MOP',
+    '#default_value' => 'ACHEFT',
   );
 
-  // Store order ID in comment for future reference.
-  $form['iats_dpm_comment'] = array(
-    '#type' => 'hidden',
-    '#name' => 'IATS_DPM_Comment',
-    '#default_value' => $order->order_id,
+  // Account number.
+  $form['iats_dpm_account_number'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Account number'),
+    '#name' => 'IATS_DPM_AccountNumber',
+    '#attributes' => array('autocomplete' => 'off'),
+    '#required' => TRUE,
+    '#maxlength' => 40,
+    '#size' => 30,
+  );
+
+  // Account type.
+  $form['iats_dpm_account_type'] = array(
+    '#type' => 'select',
+    '#title' => t('Account type'),
+    '#name' => 'IATS_DPM_AccountType',
+    '#options' => commerce_iats_ach_eft_account_types(),
+    '#required' => TRUE,
   );
 
   return $form;

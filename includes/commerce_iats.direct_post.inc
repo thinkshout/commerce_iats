@@ -12,12 +12,19 @@
 function commerce_iats_direct_post_relay() {
   global $base_url;
 
-  $order_id = $_POST['IATS_Comment'];
+  if (isset($_POST['IATS_Comment'])) {
+    $comment_parts = explode('|', $_POST['IATS_Comment']);
 
-  $success = commerce_iats_direct_post_process_response($_POST);
+    $order_id = $comment_parts[0];
 
-  $target_url = $base_url . '/checkout/' . $order_id;
-  $target_url .= ($success) ? '/complete' : '/review';
+    $success = commerce_iats_direct_post_process_response($_POST);
+
+    $target_url = $base_url . '/checkout/' . $order_id;
+    $target_url .= ($success) ? '/complete' : '/review';
+  }
+  else {
+    $target_url = $base_url . '/checkout';
+  }
 
   $markup = "<html>\n"
     . "<head>\n"
@@ -65,12 +72,13 @@ function commerce_iats_direct_post_relay() {
  */
 function commerce_iats_direct_post_process_response($response) {
   if (!empty($response['IATS_Result'])) {
-    // Get the order ID from the comment.
-    $order_id = $response['IATS_Comment'];
+    $comment_parts = explode('|', $_POST['IATS_Comment']);
+
+    $order_id = $comment_parts[0];
+    $payment_method_instance_id = $comment_parts[1] . '|' . $comment_parts[2];
 
     $order = commerce_order_load($order_id);
 
-    $payment_method_instance_id = $order->data['payment_method'];
     $currency_code = $order->commerce_order_total['und'][0]['currency_code'];
 
     $payment_method = commerce_payment_method_instance_load($payment_method_instance_id);
