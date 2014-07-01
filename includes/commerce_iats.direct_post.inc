@@ -4,6 +4,11 @@
  * Methods used in processing Direct Post Method transactions.
  */
 
+/**
+ * Relay page for Direct Post response.
+ * Handles response and provides JavaScript to redirect user
+ * to the appropriate checkout page.
+ */
 function commerce_iats_direct_post_relay() {
   global $base_url;
 
@@ -27,7 +32,8 @@ function commerce_iats_direct_post_relay() {
 }
 
 /**
- * Handles Direct Post transaction response.
+ * Processes a Direct Post response.
+ * Creates payment transaction and completes order on payment success.
  *
  * @param array $response
  *
