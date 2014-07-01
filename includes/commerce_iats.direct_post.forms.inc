@@ -139,5 +139,12 @@ function commerce_iats_direct_post_credit_card_form_base($payment_method, $order
       $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code']),
   );
 
+  // Store order ID in comment for future reference.
+  $form['iats_dpm_comment'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Comment',
+    '#default_value' => $order->order_id,
+  );
+
   return $form;
 }
