@@ -431,7 +431,7 @@ function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
  * Overrides the action URL of the checkout form when Direct Post is enabled.
  */
 function commerce_iats_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
-  $payment_method_name = $form_state['order']->data['payment_method'];
+  $payment_method_name = $form['commerce_payment']['payment_method']['#default_value'];
   $payment_method = $form_state['order']->payment_methods[$payment_method_name];
 
   if (isset($payment_method['settings']['direct_post']) && $payment_method['settings']['direct_post'] == 1) {
