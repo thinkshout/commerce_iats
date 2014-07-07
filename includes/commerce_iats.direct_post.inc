@@ -156,8 +156,8 @@ function commerce_iats_direct_post_process_response($response, $order_id, $payme
 
     commerce_checkout_complete($order);
 
-    // Store card on file if commerce_iats_cardonfile is enabled.
-    if ($success) {
+    // Store card on file if a customer code is returned.
+    if ($success && ($customer_code != NULL)) {
       commerce_iats_direct_post_create_cardonfile($response, $order, $payment_method, $customer_code);
     }
 

@@ -104,11 +104,13 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
   }
 
   $payment_method = $form_state['order']->payment_methods[$payment_method_id];
-  if (isset($payment_method['settings']['allow_recurring'])
-    && $payment_method['settings']['allow_recurring'] == 1) {
 
+  $allow_recurring = (isset($payment_method['settings']['allow_recurring']) && ($payment_method['settings']['allow_recurring'] == 1));
+  $direct_post = (isset($payment_method['settings']['direct_post']) && ($payment_method['settings']['direct_post'] == 1));
+
+  if ($allow_recurring || $direct_post) {
     // Hide stored cards.
-    // Cannot used stored cards to create a new recurring payment.
+    // Cannot used stored cards to create a new recurring payment / Direct Post.
     $form['commerce_payment']['payment_details']['cardonfile'] = array(
       '#type' => 'value',
       '#value' => 'new',
@@ -116,7 +118,9 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
 
     $form['commerce_payment']['payment_details']['credit_card']['#access'] = TRUE;
 
-    // Disable Card on File options. If recurring is enabled, card is stored.
+    // Disable Card on File options. Card is automatically stored when:
+    // Recurring is enabled.
+    // Using Direct Post to create a customer code.
     $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#access'] = FALSE;
     $form['commerce_payment']['payment_details']['cardonfile_instance_default']['#access'] = FALSE;
   }
