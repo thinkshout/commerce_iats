@@ -185,6 +185,65 @@ function commerce_iats_direct_post_credit_card_form($payment_method, $order) {
   return $form;
 }
 
+function commerce_iats_direct_post_credit_card_customer_code_form($payment_method, $order, $recurring = FALSE) {
+  $form = commerce_iats_direct_post_credit_card_form($payment_method, $order);
+
+  // Creating token set to TRUE.
+  $form['iats_dpm_creating_token'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_CreatingToken',
+    '#default_value' => 'TRUE',
+  );
+
+  if ($recurring) {
+
+    // Recurring set to TRUE.
+    $form['iats_dpm_recurring_on'] = array(
+      '#type' => 'hidden',
+      '#name' => 'IATS_DPM_RecurringOn',
+      '#default_value' => TRUE,
+    );
+
+    // Begin date.
+    $form['iats_dpm_begin_date'] = array(
+      '#type' => 'hidden',
+      '#name' => 'IATS_DPM_BeginDate',
+      '#default_value' => '',
+    );
+
+    // End date.
+    $form['iats_dpm_end_date'] = array(
+      '#type' => 'hidden',
+      '#name' => 'IATS_DPM_EndDate',
+      '#default_value' => '',
+    );
+
+    // Schedule type.
+    $form['iats_dpm_schedule_type'] = array(
+      '#type' => 'hidden',
+      '#name' => 'IATS_DPM_ScheduleType',
+      '#default_value' => '',
+    );
+
+    // Schedule month.
+    $form['iats_dpm_schedule_month'] = array(
+      '#type' => 'hidden',
+      '#name' => 'IATS_DPM_ScheduleMonth',
+      '#default_value' => '',
+    );
+
+    // Schedule date.
+    $form['iats_dpm_schedule_date'] = array(
+      '#type' => 'hidden',
+      '#name' => 'IATS_DPM_ScheduleDate',
+      '#default_value' => '',
+    );
+
+  }
+
+  return $form;
+}
+
 /**
  * Returns an array of form elements used by the ACH/EFT Direct Post form.
  *

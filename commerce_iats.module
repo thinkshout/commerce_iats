@@ -7,6 +7,8 @@
 
 // iATS response code definitions.
 define('COMMERCE_IATS_TXN_OK', 'OK');
+define('COMMERCE_IATS_TOKEN_CREATED', 'TokenCreated');
+define('COMMERCE_IATS_TOKEN_FAILED', 'TokenFailed');
 
 // iATS server ID definitions.
 define('COMMERCE_IATS_NA_SERVER_ID', 'NA');

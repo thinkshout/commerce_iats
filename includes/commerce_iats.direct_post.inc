@@ -13,11 +13,19 @@ function commerce_iats_direct_post_relay() {
   global $base_url;
 
   if (isset($_POST['IATS_Comment'])) {
-    $comment_parts = explode('|', $_POST['IATS_Comment']);
+    $comment = $_POST['IATS_Comment'];
+  }
+  else if (isset($_POST['IATS_comment'])) {
+    $comment = $_POST['IATS_comment'];
+  }
+
+  if (isset($comment)) {
+    $comment_parts = explode('|', $comment);
 
     $order_id = $comment_parts[0];
+    $payment_method_instance_id = $comment_parts[1] . '|' . $comment_parts[2];
 
-    $success = commerce_iats_direct_post_process_response($_POST);
+    $success = commerce_iats_direct_post_process_response($_POST, $order_id, $payment_method_instance_id);
 
     $target_url = $base_url . '/checkout/' . $order_id;
     $target_url .= ($success) ? '/complete' : '/review';
@@ -32,7 +40,6 @@ function commerce_iats_direct_post_relay() {
     . "window.location = '{$target_url}';\n"
     . "</script>\n"
     . "</head>\n"
-    . "<body></body>\n"
     . "</html>\n";
 
   echo $markup;
@@ -67,16 +74,14 @@ function commerce_iats_direct_post_relay() {
  * $response['IATS_ExpiryYear'] = '2016';
  * $response['IATS_Payment_SubCode'] = '88';
  *
+ * @param int $order_id
+ * @param string $payment_method_instance_id
+ *
  * @return boolean
  *   True if the transaction was successful.
  */
-function commerce_iats_direct_post_process_response($response) {
+function commerce_iats_direct_post_process_response($response, $order_id, $payment_method_instance_id) {
   if (!empty($response['IATS_Result'])) {
-    $comment_parts = explode('|', $_POST['IATS_Comment']);
-
-    $order_id = $comment_parts[0];
-    $payment_method_instance_id = $comment_parts[1] . '|' . $comment_parts[2];
-
     $order = commerce_order_load($order_id);
 
     $currency_code = $order->commerce_order_total['und'][0]['currency_code'];
@@ -87,10 +92,10 @@ function commerce_iats_direct_post_process_response($response) {
       commerce_iats_log_response($payment_method, $response);
     }
 
+    $success = FALSE;
     $result = $response['IATS_Result'];
     $transaction_id = $response['IATS_TransID'];
-    // TODO: Get customer code when available.
-    $customer_code = NULL;
+    $customer_code = ($result == COMMERCE_IATS_TOKEN_CREATED) ? $_POST['IATS_ResultDetail'] : NULL;
 
     // Build the remote ID from the transaction ID and customer code.
     $remote_id = $transaction_id;
@@ -108,12 +113,9 @@ function commerce_iats_direct_post_process_response($response) {
     $transaction->amount = $amount;
     $transaction->currency_code = $currency_code;
 
-    if (substr($result, 0, 2) != COMMERCE_IATS_TXN_OK) {
-      // Create a failed transaction with the error message.
-      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
-      $message = array('Transaction failed.');
-    }
-    else {
+    // Check for success or failure result.
+    if (($result == COMMERCE_IATS_TOKEN_CREATED) || (substr($result, 0, 2) == COMMERCE_IATS_TXN_OK))
+    {
       $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
       $message = array('Transaction successful.');
       if (!is_null($customer_code)) {
@@ -122,6 +124,13 @@ function commerce_iats_direct_post_process_response($response) {
       if ($payment_method['method_id'] == 'iats_ach_eft') {
         $message[] = 'ACH/EFT payment pending.';
       }
+
+      $success = TRUE;
+    }
+    else {
+      // Create a failed transaction with the error message.
+      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+      $message = array('Transaction failed.');
     }
 
     $transaction->message = implode('<br />', $message);
@@ -130,10 +139,17 @@ function commerce_iats_direct_post_process_response($response) {
     commerce_payment_transaction_save($transaction);
 
     // If the payment failed, display an error and rebuild the form.
-    if (substr($result, 0, 2) != COMMERCE_IATS_TXN_OK) {
+    if (!$success) {
+      if ($result == COMMERCE_IATS_TOKEN_FAILED) {
+        $result_message = $_POST['IATS_ResultDetail'];
+      }
+      else {
+        $result_message = $result;
+      }
+
       drupal_set_message(
         t('We received the following error while attempting to process your payment: @reason',
-          array('@reason' => $result)),
+          array('@reason' => $result_message)),
         'error'
       );
       return FALSE;
