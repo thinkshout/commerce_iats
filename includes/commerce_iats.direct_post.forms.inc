@@ -185,7 +185,7 @@ function commerce_iats_direct_post_credit_card_form($payment_method, $order) {
   return $form;
 }
 
-function commerce_iats_direct_post_credit_card_customer_code_form($payment_method, $order, $recurring = FALSE) {
+function commerce_iats_direct_post_credit_card_customer_code_form($payment_method, $order) {
   $form = commerce_iats_direct_post_credit_card_form($payment_method, $order);
 
   // Creating token set to TRUE.

@@ -25,9 +25,7 @@ function commerce_iats_credit_card_customer_code_settings_form($settings = NULL)
 function commerce_iats_credit_card_customer_code_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   if (isset($payment_method['settings']['direct_post']) && $payment_method['settings']['direct_post'] == 1) {
     module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.direct_post.forms');
-    // TODO: Allow for recurring payments.
-    $recurring = FALSE;
-    return commerce_iats_direct_post_credit_card_customer_code_form($payment_method, $order, $recurring);
+    return commerce_iats_direct_post_credit_card_customer_code_form($payment_method, $order);
   }
   else {
     module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');

@@ -114,8 +114,7 @@ function commerce_iats_direct_post_process_response($response, $order_id, $payme
     $transaction->currency_code = $currency_code;
 
     // Check for success or failure result.
-    if (($result == COMMERCE_IATS_TOKEN_CREATED) || (substr($result, 0, 2) == COMMERCE_IATS_TXN_OK))
-    {
+    if (($result == COMMERCE_IATS_TOKEN_CREATED) || (substr($result, 0, 2) == COMMERCE_IATS_TXN_OK)) {
       $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
       $message = array('Transaction successful.');
       if (!is_null($customer_code)) {
@@ -157,6 +156,11 @@ function commerce_iats_direct_post_process_response($response, $order_id, $payme
 
     commerce_checkout_complete($order);
 
+    // Store card on file if commerce_iats_cardonfile is enabled.
+    if ($success) {
+      commerce_iats_direct_post_create_cardonfile($response, $order, $payment_method, $customer_code);
+    }
+
     return TRUE;
   }
   else {
@@ -165,5 +169,20 @@ function commerce_iats_direct_post_process_response($response, $order_id, $payme
       'error'
     );
     return FALSE;
+  }
+}
+
+function commerce_iats_direct_post_create_cardonfile($response, $order, $payment_method, $customer_code) {
+  if (function_exists('commerce_iats_direct_post_create_cardonfile')) {
+    $card_data = array(
+      'number' => $response['IATS_AccountNumber'],
+      'exp_month' => $response['IATS_ExpiryMonth'],
+      'exp_year' => $response['IATS_ExpiryYear'],
+      'status' => 1,
+      'default' => 0,
+    );
+
+    commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
+      $card_data, $customer_code, strtolower($response['IATS_PaymentMethod']));
   }
 }
