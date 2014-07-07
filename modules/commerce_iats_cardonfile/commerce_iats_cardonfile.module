@@ -169,7 +169,7 @@ function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$for
       $form['credit_card']['recurring']['schedule_date'] = array(
         '#type' => 'item',
         '#title' => t('Recurring payment date'),
-        '#default_value' => $recurring->schedule_date,
+        '#markup' => $recurring->schedule_date,
       );
     }
   }
