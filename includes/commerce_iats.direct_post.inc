@@ -97,6 +97,14 @@ function commerce_iats_direct_post_process_response($response, $order_id, $payme
     $transaction_id = (isset($response['IATS_TransID'])) ? $response['IATS_TransID'] : NULL;
     $customer_code = ($result == COMMERCE_IATS_TOKEN_CREATED) ? $_POST['IATS_ResultDetail'] : NULL;
 
+    // Creating a recurring payment does not result in a transaction ID.
+    // Add custom transaction ID here for reference.
+    if (($transaction_id == NULL)
+      && (isset($payment_method['settings']['allow_recurring'])
+        && $payment_method['settings']['allow_recurring'] == 1)) {
+      $transaction_id = COMMERCE_IATS_RECURRING_PAYMENT_TRANSACTION_ID;
+    }
+
     // Build the remote ID from the transaction ID and customer code.
     $remote_id = $transaction_id;
     if ($customer_code != NULL) {
