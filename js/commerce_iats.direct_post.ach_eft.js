@@ -18,20 +18,26 @@
 
         var routing_number = $("input[name=internal_iats_dpm_routing_number]").val();
 
-        $("input[name=IATS_DPM_AccountNumber]").val(String(routing_number) + String(account_number));
+        if (routing_number) {
+          $("input[name=IATS_DPM_AccountNumber]").val(String(routing_number) + String(account_number));
+        }
 
         // CAD currency fields.
 
         var bank_number = $("input[name=internal_iats_dpm_bank_number]").val();
         var transit_number = $("input[name=internal_iats_dpm_transit_number]").val();
 
-        $("input[name=IATS_DPM_AccountNumber]").val(String(bank_number) + String(transit_number) + String(account_number));
+        if (bank_number) {
+          $("input[name=IATS_DPM_AccountNumber]").val(String(bank_number) + String(transit_number) + String(account_number));
+        }
 
         // GBP currency fields.
 
         var sort_code = $("input[name=internal_iats_dpm_sort_code]").val();
 
-        $("input[name=IATS_DPM_AccountNumber]").val(String(sort_code) + String(account_number));
+        if (sort_code) {
+          $("input[name=IATS_DPM_AccountNumber]").val(String(sort_code) + String(account_number));
+        }
 
         if (type) {
           $("input[name=IATS_DPM_AccountType]").val(type);
