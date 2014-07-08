@@ -5,7 +5,19 @@
  */
 
 function commerce_iats_cardonfile_direct_post_credit_card_customer_code_form($payment_method, $order) {
-  $form = commerce_iats_direct_post_credit_card_form($payment_method, $order);
+  $form = commerce_iats_cardonfile_direct_post_customer_code_form($payment_method, $order, 'commerce_iats_direct_post_credit_card_form');
+
+  return $form;
+}
+
+function commerce_iats_cardonfile_direct_post_ach_eft_customer_code_form($payment_method, $order) {
+  $form = commerce_iats_cardonfile_direct_post_customer_code_form($payment_method, $order, 'commerce_iats_direct_post_ach_eft_form');
+
+  return $form;
+}
+
+function commerce_iats_cardonfile_direct_post_customer_code_form($payment_method, $order, $form_method) {
+  $form = $form_method($payment_method, $order);
 
   // Creating token set to TRUE.
   $form['iats_dpm_creating_token'] = array(
