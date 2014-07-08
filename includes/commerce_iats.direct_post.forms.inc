@@ -169,8 +169,10 @@ function commerce_iats_direct_post_credit_card_form($payment_method, $order) {
   );
 
   // Expiry date elements shown to the user.
-  $form['iats_dpm_exp_month'] = $default_form['credit_card']['exp_month'];
-  $form['iats_dpm_exp_year'] = $default_form['credit_card']['exp_year'];
+  $form['internal_iats_dpm_exp_month'] = $default_form['credit_card']['exp_month'];
+  $form['internal_iats_dpm_exp_month']['#name'] = 'internal_iats_dpm_exp_month';
+  $form['internal_iats_dpm_exp_year'] = $default_form['credit_card']['exp_year'];
+  $form['internal_iats_dpm_exp_year']['#name'] = 'internal_iats_dpm_exp_year';
 
   // Expiry date string populated using JS.
   $form['iats_dpm_exp'] = array(
