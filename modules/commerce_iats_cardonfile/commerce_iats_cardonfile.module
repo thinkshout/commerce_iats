@@ -446,8 +446,9 @@ function commerce_iats_cardonfile_customer_code_settings_form_base(array $settin
   );
 
   foreach ($payment_methods as $method_id => $method) {
-    if (isset($rules_map[$method_id]))
-    $payment_method_options[$rules_map[$method_id]] = $method['title'];
+    if (isset($rules_map[$method_id])) {
+      $payment_method_options[$rules_map[$method_id]] = $method['title'];
+    }
   }
 
   $form['cardonfile_payment_method'] = array(
