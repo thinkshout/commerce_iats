@@ -132,7 +132,14 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
 function commerce_iats_direct_post_credit_card_form($payment_method, $order) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
+  $default_form = commerce_payment_credit_card_form();
+
   $form = commerce_iats_direct_post_form_base($payment_method, $order);
+
+  $form['#attached'] = $default_form['credit_card']['#attached'];
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'commerce_iats') . '/js/commerce_iats.direct_post.credit_card.js',
+  );
 
   $credit_card_types = commerce_iats_credit_card_types();
 
@@ -161,14 +168,14 @@ function commerce_iats_direct_post_credit_card_form($payment_method, $order) {
     '#size' => 20,
   );
 
-  // Expiry date.
+  // Expiry date elements shown to the user.
+  $form['iats_dpm_exp_month'] = $default_form['credit_card']['exp_month'];
+  $form['iats_dpm_exp_year'] = $default_form['credit_card']['exp_year'];
+
+  // Expiry date string populated using JS.
   $form['iats_dpm_exp'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Expiration'),
+    '#type' => 'hidden',
     '#name' => 'IATS_DPM_ExpiryDate',
-    '#required' => TRUE,
-    '#maxlength' => 5,
-    '#size' => 5,
   );
 
   // CVV2.
@@ -194,52 +201,6 @@ function commerce_iats_direct_post_credit_card_customer_code_form($payment_metho
     '#name' => 'IATS_DPM_CreatingToken',
     '#default_value' => 'TRUE',
   );
-
-  if ($recurring) {
-
-    // Recurring set to TRUE.
-    $form['iats_dpm_recurring_on'] = array(
-      '#type' => 'hidden',
-      '#name' => 'IATS_DPM_RecurringOn',
-      '#default_value' => TRUE,
-    );
-
-    // Begin date.
-    $form['iats_dpm_begin_date'] = array(
-      '#type' => 'hidden',
-      '#name' => 'IATS_DPM_BeginDate',
-      '#default_value' => '',
-    );
-
-    // End date.
-    $form['iats_dpm_end_date'] = array(
-      '#type' => 'hidden',
-      '#name' => 'IATS_DPM_EndDate',
-      '#default_value' => '',
-    );
-
-    // Schedule type.
-    $form['iats_dpm_schedule_type'] = array(
-      '#type' => 'hidden',
-      '#name' => 'IATS_DPM_ScheduleType',
-      '#default_value' => '',
-    );
-
-    // Schedule month.
-    $form['iats_dpm_schedule_month'] = array(
-      '#type' => 'hidden',
-      '#name' => 'IATS_DPM_ScheduleMonth',
-      '#default_value' => '',
-    );
-
-    // Schedule date.
-    $form['iats_dpm_schedule_date'] = array(
-      '#type' => 'hidden',
-      '#name' => 'IATS_DPM_ScheduleDate',
-      '#default_value' => '',
-    );
-
-  }
 
   return $form;
 }
@@ -285,6 +246,19 @@ function commerce_iats_direct_post_ach_eft_form($payment_method, $order) {
     '#name' => 'IATS_DPM_AccountType',
     '#options' => commerce_iats_ach_eft_account_types(),
     '#required' => TRUE,
+  );
+
+  return $form;
+}
+
+function commerce_iats_direct_post_ach_eft_customer_code_form($payment_method, $order) {
+  $form = commerce_iats_direct_post_ach_eft_form($payment_method, $order);
+
+  // Creating token set to TRUE.
+  $form['iats_dpm_creating_token'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_CreatingToken',
+    '#default_value' => 'TRUE',
   );
 
   return $form;
