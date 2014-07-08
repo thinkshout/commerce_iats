@@ -14,6 +14,7 @@ function commerce_iats_cardonfile_direct_post_credit_card_customer_code_form($pa
     '#default_value' => 'TRUE',
   );
 
+  $recurring = FALSE;
   if (isset($payment_method['settings']['allow_recurring'])
     && ($payment_method['settings']['allow_recurring'] == 1)
     && isset($order->data['recurring'])) {
