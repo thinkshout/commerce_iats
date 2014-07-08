@@ -439,6 +439,13 @@ function commerce_iats_form_commerce_checkout_form_review_alter(&$form, &$form_s
   if (isset($payment_method['settings']['direct_post']) && $payment_method['settings']['direct_post'] == 1) {
     $form['#action'] = url(COMMERCE_IATS_DIRECT_POST_URL, array('external' => TRUE));
   }
+
+  // Display any error message received during the last Direct Post.
+  if (isset($form_state['order']->data['iats_error'])) {
+    drupal_set_message($form_state['order']->data['iats_error'], 'error');
+    unset($form_state['order']->data['iats_error']);
+    commerce_order_save($form_state['order']);
+  }
 }
 
 /**

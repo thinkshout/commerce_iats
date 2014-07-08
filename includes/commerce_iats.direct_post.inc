@@ -94,7 +94,7 @@ function commerce_iats_direct_post_process_response($response, $order_id, $payme
 
     $success = FALSE;
     $result = $response['IATS_Result'];
-    $transaction_id = $response['IATS_TransID'];
+    $transaction_id = (isset($response['IATS_TransID'])) ? $response['IATS_TransID'] : NULL;
     $customer_code = ($result == COMMERCE_IATS_TOKEN_CREATED) ? $_POST['IATS_ResultDetail'] : NULL;
 
     // Build the remote ID from the transaction ID and customer code.
@@ -146,11 +146,10 @@ function commerce_iats_direct_post_process_response($response, $order_id, $payme
         $result_message = $result;
       }
 
-      drupal_set_message(
-        t('We received the following error while attempting to process your payment: @reason',
-          array('@reason' => $result_message)),
-        'error'
-      );
+      $order->data['iats_error'] = t('We received the following error while attempting to process your payment: @reason',
+        array('@reason' => $result_message));
+
+      commerce_order_save($order);
       return FALSE;
     }
 
@@ -163,13 +162,7 @@ function commerce_iats_direct_post_process_response($response, $order_id, $payme
 
     return TRUE;
   }
-  else {
-    drupal_set_message(
-      t('We encountered an error contacting our payment processor. Please try submitting your payment again.'),
-      'error'
-    );
-    return FALSE;
-  }
+  return FALSE;
 }
 
 function commerce_iats_direct_post_create_cardonfile($response, $order, $payment_method, $customer_code) {
