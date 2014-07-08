@@ -223,6 +223,50 @@ function commerce_iats_direct_post_ach_eft_form($payment_method, $order) {
 
   $form = commerce_iats_direct_post_form_base($payment_method, $order);
 
+  $form['#attached']['js'] = array(
+    drupal_get_path('module', 'commerce_iats') . '/js/commerce_iats.direct_post.ach_eft.js',
+  );
+
+  $currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
+
+  $fields = array(
+    'number' => '',
+  );
+
+  switch ($currency_code) {
+    case 'USD':
+      $fields['routing_number'] = '';
+      $fields['type'] = '';
+      $default_form = commerce_iats_ach_eft_payment_form($fields);
+      $default_form['bank_account']['routing_number']['#name'] = 'internal_iats_dpm_routing_number';
+      break;
+    case 'CAD':
+      $fields['bank_number'] = '';
+      $fields['transit_number'] = '';
+      $fields['type'] = '';
+      $default_form = commerce_iats_ach_eft_payment_form($fields);
+      $default_form['bank_account']['bank_number']['#name'] = 'internal_iats_dpm_bank_number';
+      $default_form['bank_account']['transit_number']['#name'] = 'internal_iats_dpm_transit_number';
+      break;
+    case 'GBP':
+      $fields['sort_code'] = '';
+      $default_form = commerce_iats_ach_eft_payment_form($fields);
+      $default_form['bank_account']['sort_code']['#name'] = 'internal_iats_dpm_sort_code';
+      break;
+    default:
+      $default_form = commerce_iats_ach_eft_payment_form($fields);
+  }
+
+  if (isset($default_form['bank_account']['number'])) {
+    $default_form['bank_account']['number']['#name'] = 'internal_iats_dpm_number';
+  }
+
+  if (isset($default_form['bank_account']['type'])) {
+    $default_form['bank_account']['type']['#name'] = 'internal_iats_dpm_type';
+  }
+
+  $form = array_merge($default_form, $form);
+
   // ACH/EFT payment type.
   $form['iats_dpm_mop'] = array(
     '#type' => 'hidden',
@@ -232,22 +276,14 @@ function commerce_iats_direct_post_ach_eft_form($payment_method, $order) {
 
   // Account number.
   $form['iats_dpm_account_number'] = array(
-    '#type' => 'textfield',
-    '#title' => t('Account number'),
+    '#type' => 'hidden',
     '#name' => 'IATS_DPM_AccountNumber',
-    '#attributes' => array('autocomplete' => 'off'),
-    '#required' => TRUE,
-    '#maxlength' => 40,
-    '#size' => 30,
   );
 
   // Account type.
   $form['iats_dpm_account_type'] = array(
-    '#type' => 'select',
-    '#title' => t('Account type'),
+    '#type' => 'hidden',
     '#name' => 'IATS_DPM_AccountType',
-    '#options' => commerce_iats_ach_eft_account_types(),
-    '#required' => TRUE,
   );
 
   return $form;
