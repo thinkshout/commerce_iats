@@ -431,11 +431,11 @@ function commerce_iats_cardonfile_customer_code_settings_form_base(array $settin
   foreach ($rules as $rule_name => $rule) {
     if ($rule->active) {
       foreach ($rule->actions() as $action) {
-        $settings = $action->settings;
+        $action_settings = $action->settings;
         continue;
       }
-      if (isset($settings['payment_method'])) {
-        $method_id = $settings['payment_method']['method_id'];
+      if (isset($action_settings['payment_method'])) {
+        $method_id = $action_settings['payment_method']['method_id'];
         $rules_map[$method_id] = $method_id . '|' . $rule_name;
       }
     }
