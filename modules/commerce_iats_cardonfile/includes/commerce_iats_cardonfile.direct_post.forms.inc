@@ -33,7 +33,7 @@ function commerce_iats_cardonfile_direct_post_customer_code_form($payment_method
     $recurring = TRUE;
   }
 
-  // Recurring set to TRUE.
+  // Recurring set to TRUE or FALSE.
   $form['iats_dpm_recurring_on'] = array(
     '#type' => 'hidden',
     '#name' => 'IATS_DPM_RecurringOn',
@@ -64,11 +64,11 @@ function commerce_iats_cardonfile_direct_post_customer_code_form($payment_method
     );
 
     if ($order->data['recurring']['schedule_type'] == 'Annually') {
-      // Schedule month.
+      // Schedule month is similar to schedule date, but for annual payments.
       $form['iats_dpm_schedule_month'] = array(
         '#type' => 'hidden',
         '#name' => 'IATS_DPM_ScheduleMonth',
-        '#default_value' => '',
+        '#default_value' => $order->data['recurring']['schedule_date'],
       );
     }
     else {
