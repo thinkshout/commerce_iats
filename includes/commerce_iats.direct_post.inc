@@ -5,9 +5,13 @@
  */
 
 /**
- * Relay page for Direct Post response.
- * Handles response and provides JavaScript to redirect user
- * to the appropriate checkout page.
+ * Relay page for iATS Direct Post response.
+ * This function creates the page that receives Direct Post payment
+ * responses from the iATS API.
+ *
+ * Processes the response, creates a payment transaction and produces
+ * the client-side JavaScript that iATS uses to redirect the user
+ * back into the checkout process.
  */
 function commerce_iats_direct_post_relay() {
   global $base_url;
@@ -28,6 +32,8 @@ function commerce_iats_direct_post_relay() {
     $success = commerce_iats_direct_post_process_response($_POST, $order_id, $payment_method_instance_id);
 
     $target_url = $base_url . '/checkout/' . $order_id;
+    // Send the user to the appropriate checkout page,
+    // based on transaction success.
     $target_url .= ($success) ? '/complete' : '/review';
   }
   else {
@@ -56,18 +62,18 @@ function commerce_iats_direct_post_relay() {
  * $response['IATS_PaymentType'] = 'CreditCard';
  * $response['IATS_Result'] = 'OK: 678594:';
  * $response['IATS_TransID'] = 'A70FC33C';
- * $response['IATS_Address'] = '433 North West Fourth Ave';
- * $response['IATS_City'] = 'Portland';
+ * $response['IATS_Address'] = '123 Street Name';
+ * $response['IATS_City'] = 'City';
  * $response['IATS_Comment'] = '';
  * $response['IATS_Country'] = 'US';
  * $response['IATS_EMail'] = '';
- * $response['IATS_FirstName'] = 'Test';
- * $response['IATS_LastName'] = 'User';
+ * $response['IATS_FirstName'] = 'First Name';
+ * $response['IATS_LastName'] = 'Last Name';
  * $response['IATS_Phone'] = '';
  * $response['IATS_Fax'] = '';
  * $response['IATS_Phone2'] = '';
- * $response['IATS_State'] = 'OR';
- * $response['IATS_ZipCode'] = '97209';
+ * $response['IATS_State'] = 'State';
+ * $response['IATS_ZipCode'] = '00000';
  * $response['IATS_Amount'] = '10.00';
  * $response['IATS_Payment_AgencyCodeHash'] = '984816FD329622876E14907634264E6F332E9FB3';
  * $response['IATS_ExpiryMonth'] = '04';
@@ -75,10 +81,12 @@ function commerce_iats_direct_post_relay() {
  * $response['IATS_Payment_SubCode'] = '88';
  *
  * @param int $order_id
+ *   The ID of the order being processed.
  * @param string $payment_method_instance_id
+ *   The instance ID of the payment method used in this transaction.
  *
  * @return boolean
- *   True if the transaction was successful.
+ *   TRUE if the transaction was successful.
  */
 function commerce_iats_direct_post_process_response($response, $order_id, $payment_method_instance_id) {
   if (!empty($response['IATS_Result'])) {
@@ -173,6 +181,18 @@ function commerce_iats_direct_post_process_response($response, $order_id, $payme
   return FALSE;
 }
 
+/**
+ * Creates a card on file record using data from a Direct Post transaction.
+ *
+ * @param array $response
+ *   The Direct Post response.
+ * @param $order
+ *   The order being processed.
+ * @param $payment_method
+ *   The payment method used in this transaction.
+ * @param $customer_code
+ *   The iATS customer code created by this transaction.
+ */
 function commerce_iats_direct_post_create_cardonfile($response, $order, $payment_method, $customer_code) {
   if (function_exists('commerce_iats_direct_post_create_cardonfile')) {
     $card_data = array(

@@ -48,6 +48,7 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
   // Store order information in comment for future reference.
 
   // Get current payment method instance ID.
+  $payment_method_instance_id = NULL;
   foreach ($order->payment_methods as $instance_id => $payment_method_instance) {
     if ($payment_method_instance['method_id'] == $payment_method['method_id']) {
       $payment_method_instance_id = $instance_id;
@@ -194,6 +195,17 @@ function commerce_iats_direct_post_credit_card_form($payment_method, $order) {
   return $form;
 }
 
+/**
+ * Adds customer code capability to the Direct Post credit card form.
+ *
+ * @param array $payment_method
+ *   The current payment method.
+ * @param $order
+ *   The current order.
+ *
+ * @return array
+ *   Array of credit card Direct Post form fields.
+ */
 function commerce_iats_direct_post_credit_card_customer_code_form($payment_method, $order) {
   $form = commerce_iats_direct_post_credit_card_form($payment_method, $order);
 
@@ -289,6 +301,17 @@ function commerce_iats_direct_post_ach_eft_form($payment_method, $order) {
   return $form;
 }
 
+/**
+ * Adds customer code capability to the Direct Post ACH/EFT form.
+ *
+ * @param array $payment_method
+ *   The current payment method.
+ * @param $order
+ *   The current order.
+ *
+ * @return array
+ *   Array of ACH/EFT Direct Post form fields.
+ */
 function commerce_iats_direct_post_ach_eft_customer_code_form($payment_method, $order) {
   $form = commerce_iats_direct_post_ach_eft_form($payment_method, $order);
 
