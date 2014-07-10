@@ -25,6 +25,7 @@ function commerce_iats_direct_post_relay() {
   }
 
   if (isset($comment)) {
+    unset($_POST['IATS_comment']);
     $comment_parts = explode('|', $comment);
 
     $order_id = $comment_parts[0];
