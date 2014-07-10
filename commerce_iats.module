@@ -433,12 +433,22 @@ function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
  * Overrides the action URL of the checkout form when Direct Post is enabled.
  */
 function commerce_iats_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
+  $form['#id'] = 'commerce-checkout-form-review';
+
   $payment_method_name = $form['commerce_payment']['payment_method']['#default_value'];
   $payment_method = $form_state['order']->payment_methods[$payment_method_name];
 
   if (isset($payment_method['settings']['direct_post']) && $payment_method['settings']['direct_post'] == 1) {
     $form['#action'] = url(COMMERCE_IATS_DIRECT_POST_URL, array('external' => TRUE));
   }
+  else {
+    $form['#action'] = '/checkout/' . $form_state['order']->order_id . '/review';
+  }
+
+  // Override payment method AJAX to allow for entire form to be refreshed.
+  // Allows for form action changes required by Direct Post payment methods.
+  $form['commerce_payment']['payment_method']['#ajax']['callback'] = 'commerce_iats_pane_checkout_form_details_refresh';
+  $form['commerce_payment']['payment_method']['#ajax']['wrapper'] = 'commerce-checkout-form-review';
 
   // Display any error message received during the last Direct Post.
   if (isset($form_state['order']->data['iats_error'])) {
@@ -446,6 +456,15 @@ function commerce_iats_form_commerce_checkout_form_review_alter(&$form, &$form_s
     unset($form_state['order']->data['iats_error']);
     commerce_order_save($form_state['order']);
   }
+}
+
+/**
+ * Callback to refresh form on payment method change.
+ * Full form refresh required to account for form action change
+ * by Direct Post payment methods.
+ */
+function commerce_iats_pane_checkout_form_details_refresh($form, $form_state) {
+  return $form;
 }
 
 /**

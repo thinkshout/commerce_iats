@@ -7,7 +7,8 @@
 
   Drupal.behaviors.commerce_iats_direct_post_ach_eft = {
     attach: function(context, settings) {
-      $('input#edit-continue', context).unbind('click').bind('click', function() {
+      // Attach click handler to populate Direct Post form elements on submit.
+      $('input.checkout-continue', context).unbind('click').bind('click', function() {
 
         // General fields.
 
