@@ -9,7 +9,7 @@
  *
  * @param array $payment_method
  *   The current payment method.
- * @param $order
+ * @param object $order
  *   The current order.
  *
  * @return array
@@ -124,7 +124,7 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
  *
  * @param array $payment_method
  *   The current payment method.
- * @param $order
+ * @param object $order
  *   The current order.
  *
  * @return array
@@ -200,7 +200,7 @@ function commerce_iats_direct_post_credit_card_form($payment_method, $order) {
  *
  * @param array $payment_method
  *   The current payment method.
- * @param $order
+ * @param object $order
  *   The current order.
  *
  * @return array
@@ -224,7 +224,7 @@ function commerce_iats_direct_post_credit_card_customer_code_form($payment_metho
  *
  * @param array $payment_method
  *   The current payment method.
- * @param $order
+ * @param object  $order
  *   The current order.
  *
  * @return array
@@ -252,6 +252,7 @@ function commerce_iats_direct_post_ach_eft_form($payment_method, $order) {
       $default_form = commerce_iats_ach_eft_payment_form($fields);
       $default_form['bank_account']['routing_number']['#name'] = 'internal_iats_dpm_routing_number';
       break;
+
     case 'CAD':
       $fields['bank_number'] = '';
       $fields['transit_number'] = '';
@@ -260,11 +261,13 @@ function commerce_iats_direct_post_ach_eft_form($payment_method, $order) {
       $default_form['bank_account']['bank_number']['#name'] = 'internal_iats_dpm_bank_number';
       $default_form['bank_account']['transit_number']['#name'] = 'internal_iats_dpm_transit_number';
       break;
+
     case 'GBP':
       $fields['sort_code'] = '';
       $default_form = commerce_iats_ach_eft_payment_form($fields);
       $default_form['bank_account']['sort_code']['#name'] = 'internal_iats_dpm_sort_code';
       break;
+
     default:
       $default_form = commerce_iats_ach_eft_payment_form($fields);
   }
@@ -306,7 +309,7 @@ function commerce_iats_direct_post_ach_eft_form($payment_method, $order) {
  *
  * @param array $payment_method
  *   The current payment method.
- * @param $order
+ * @param object $order
  *   The current order.
  *
  * @return array

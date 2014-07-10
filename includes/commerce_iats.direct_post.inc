@@ -6,6 +6,7 @@
 
 /**
  * Relay page for iATS Direct Post response.
+ *
  * This function creates the page that receives Direct Post payment
  * responses from the iATS API.
  *
@@ -19,7 +20,7 @@ function commerce_iats_direct_post_relay() {
   if (isset($_POST['IATS_Comment'])) {
     $comment = $_POST['IATS_Comment'];
   }
-  else if (isset($_POST['IATS_comment'])) {
+  elseif (isset($_POST['IATS_comment'])) {
     $comment = $_POST['IATS_comment'];
   }
 
@@ -49,13 +50,16 @@ function commerce_iats_direct_post_relay() {
     . "</html>\n";
 
   echo $markup;
+  exit();
 }
 
 /**
  * Processes a Direct Post response.
+ *
  * Creates payment transaction and completes order on payment success.
  *
  * @param array $response
+ *   Associative array as described below:
  *
  * $response['IATS_AccountNumber'] = '2220';
  * $response['IATS_MOP'] = 'VISA';
@@ -85,7 +89,7 @@ function commerce_iats_direct_post_relay() {
  * @param string $payment_method_instance_id
  *   The instance ID of the payment method used in this transaction.
  *
- * @return boolean
+ * @return bool
  *   TRUE if the transaction was successful.
  */
 function commerce_iats_direct_post_process_response($response, $order_id, $payment_method_instance_id) {
@@ -186,11 +190,11 @@ function commerce_iats_direct_post_process_response($response, $order_id, $payme
  *
  * @param array $response
  *   The Direct Post response.
- * @param $order
+ * @param object $order
  *   The order being processed.
- * @param $payment_method
+ * @param string $payment_method
  *   The payment method used in this transaction.
- * @param $customer_code
+ * @param string $customer_code
  *   The iATS customer code created by this transaction.
  */
 function commerce_iats_direct_post_create_cardonfile($response, $order, $payment_method, $customer_code) {
