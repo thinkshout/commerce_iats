@@ -71,7 +71,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
   // If the user has opted to create a recurring payment during the checkout
   // process, create an iATS customer code with the recurring schedule
   // before processing the checkout purchase.
-  if (isset($order->data['recurring'])) {
+  if (isset($order->data['recurring']) && !empty($order->data['recurring']['schedule_type'])) {
     module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card_customer_code');
 
     $cc_payment_methods = commerce_iats_get_all_payment_methods('iats_credit_card_customer_code');
