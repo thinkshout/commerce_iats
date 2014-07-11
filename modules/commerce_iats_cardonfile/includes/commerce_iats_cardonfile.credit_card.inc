@@ -86,11 +86,13 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
     if ($recurring_payment_method != NULL) {
       if (!commerce_iats_process_payment($recurring_payment_method, $payment_data, $order,
         NULL, 'commerce_iats_cardonfile_credit_card_create_customer_code')) {
+        drupal_set_message(t('We were unable to process your recurring payment at this time.'), 'error');
         return FALSE;
       }
     }
     else {
       watchdog('commerce_iats', 'Cannot create recurring payment. No valid payment method.', array(), WATCHDOG_WARNING);
+      drupal_set_message(t('We were unable to process your recurring payment at this time.'), 'error');
       return FALSE;
     }
   }
