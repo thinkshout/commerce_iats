@@ -68,6 +68,33 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
 
   $payment_data = $pane_values;
 
+  // If the user has opted to create a recurring payment during the checkout
+  // process, create an iATS customer code with the recurring schedule
+  // before processing the checkout purchase.
+  if (isset($order->data['recurring'])) {
+    module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.credit_card_customer_code');
+
+    $cc_payment_methods = commerce_iats_get_all_payment_methods('iats_credit_card_customer_code');
+
+    $recurring_payment_method = NULL;
+    foreach ($cc_payment_methods as $cc_payment_method) {
+      if (isset($cc_payment_method['settings']['allow_recurring']) && ($cc_payment_method['settings']['allow_recurring'] == 1)) {
+        $recurring_payment_method = $cc_payment_method;
+      }
+    }
+
+    if ($recurring_payment_method != NULL) {
+      if (!commerce_iats_process_payment($recurring_payment_method, $payment_data, $order,
+        NULL, 'commerce_iats_cardonfile_credit_card_create_customer_code')) {
+        return FALSE;
+      }
+    }
+    else {
+      watchdog('commerce_iats', 'Cannot create recurring payment. No valid payment method.', array(), WATCHDOG_WARNING);
+      return FALSE;
+    }
+  }
+
   if (isset($pane_values['cardonfile'])) {
     if ($pane_values['cardonfile'] === 'new') {
       if ($pane_values['credit_card']['cardonfile_store']) {

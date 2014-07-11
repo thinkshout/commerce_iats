@@ -1155,3 +1155,38 @@ function commerce_iats_get_service($service_name, array $payment_method) {
   }
   return NULL;
 }
+
+/**
+ * Loads all payment method instances for a given payment method ID.
+ *
+ * @param string $method_id
+ *   The payment method ID to load payment method instances for.
+ *
+ * @return array
+ *   Array of matching payment method instances.
+ */
+function commerce_iats_get_all_payment_methods($method_id) {
+  $payment_methods = array();
+
+  $rules = rules_config_load_multiple(FALSE);
+
+  foreach ($rules as $rule_name => $rule) {
+    if ($rule->active) {
+      foreach ($rule->actions() as $action) {
+        $action_settings = $action->settings;
+        continue;
+      }
+      if (isset($action_settings['payment_method'])) {
+        $method_id = $action_settings['payment_method']['method_id'];
+
+        $payment_method = commerce_payment_method_instance_load($method_id . '|' . $rule_name);
+
+        if ($payment_method) {
+          $payment_methods[] = $payment_method;
+        }
+      }
+    }
+  }
+
+  return $payment_methods;
+}
