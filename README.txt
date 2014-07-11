@@ -69,14 +69,19 @@ https://drupal.org/project/dc_co_pages
 iATS Payments can provide recurring payments. To leverage this on your website:
 
 1) Enable the Commerce iATS Card on File module.
-2) Enable any of the compatible payment methods:
+
+2) Enable and configure any of the compatible payment methods:
+
     * iATS Payments: Credit card customer code creation
     * iATS Payments: ACH/EFT customer code creation
+
 3) In the payment method settings, check the box labeled:
    "Allow recurring payments through iATS Payments"
+
 4) Under "Administration / Store / Configuration / Checkout settings /
    Checkout pages", add a new page named "Recurring"
    Move the page to the top of the pages list.
+
 5) Under "Administration / Store / Configuration / Checkout settings /
    Checkout form," move the "Recurring Payment" pane into the
    "Recurring" page. This will make it the first page the user sees at checkout.
@@ -90,6 +95,46 @@ transactions, you will need to implement the Commerce Payment API hook:
 
 Documentation on the Commerce Payment API can be found here:
 http://api.drupalcommerce.org/api/Drupal%20Commerce/sites!all!modules!commerce!modules!payment!commerce_payment.api.php/DC
+
+## Recurring Payment Inline Checkout
+
+Commerce iATS allows for recurring payments to be created at the same time
+as a regular purchase.
+
+To use this feature:
+
+1) Enable the Commerce iATS Card on File module.
+
+2) Enable and configure any combination of the compatible payment methods:
+
+    * iATS Payments: Credit card payment
+    * iATS Payments: Credit card customer code creation
+
+    * iATS Payments: ACH/EFT payment
+    * iATS Payments: ACH/EFT customer code creation
+
+    Note that both the payment and customer code creation payment methods
+    for your choice of payment type (credit card or ACH/EFT) must be enabled
+    and configured.
+
+3) In the payment method settings of the customer code creation methods,
+    check the box labeled: "Allow recurring payments through iATS Payments"
+
+4) Under "Administration / Store / Configuration / Checkout settings /
+   Checkout pages"
+
+     * Add a new page named "Recurring"
+
+5) Arrange the Checkout pages in the following order:
+
+     1) Checkout
+     2) Recurring
+     3) Review Order
+     4) Payment
+     5) Checkout Complete
+
+The checkout process is now configured to allow users to create recurring
+payments during a regular purchase.
 
 ## Direct Debit Checkout
 
