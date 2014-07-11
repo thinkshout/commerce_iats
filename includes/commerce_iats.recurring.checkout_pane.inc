@@ -43,14 +43,12 @@ function commerce_iats_recurring_pane_checkout_form($form, &$form_state, $checko
     '#type' => 'textfield',
     '#title' => t('Amount (@currency)',
     array('@currency' => $currency_code)),
-    '#required' => TRUE,
     '#default_value' => isset($default_values['amount']) ? $default_values['amount'] : '',
   );
 
   $pane_form['schedule_type'] = array(
     '#type' => 'select',
     '#title' => t('Payment schedule type'),
-    '#required' => TRUE,
     '#options' => commerce_iats_recurring_pane_schedule_types(),
     '#default_value' => $schedule_type,
     '#ajax' => array(
@@ -92,11 +90,6 @@ function commerce_iats_recurring_pane_checkout_form_validate($form, &$form_state
 
   if (isset($form_state['values']['checkout_recurring']['schedule_date'])) {
     $schedule_date = $form_state['values']['checkout_recurring']['schedule_date'];
-  }
-
-  if ($amount <= 0) {
-    form_error($form['checkout_recurring']['amount'], t('Amount must be greater than zero.'));
-    $valid = FALSE;
   }
 
   $valid_schedule_types = commerce_iats_recurring_pane_schedule_types();
