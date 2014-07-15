@@ -30,15 +30,8 @@ function commerce_iats_direct_post_relay() {
 
     $order_id = $comment_parts[0];
     $payment_method_instance_id = $comment_parts[1] . '|' . $comment_parts[2];
-    $process_key = $comment_parts[3];
 
-    // Security check. Received process key must match payment method.
-    $payment_method = commerce_payment_method_instance_load($payment_method_instance_id);
-    if (substr($payment_method['settings']['process_key'], 0, 8) != $process_key) {
-      exit();
-    }
-
-    $success = commerce_iats_direct_post_process_response($_POST, $order_id, $payment_method);
+    $success = commerce_iats_direct_post_process_response($_POST, $order_id, $payment_method_instance_id);
 
     $target_url = $base_url . '/checkout/' . $order_id;
     // Send the user to the appropriate checkout page,
@@ -100,11 +93,13 @@ function commerce_iats_direct_post_relay() {
  * @return bool
  *   TRUE if the transaction was successful.
  */
-function commerce_iats_direct_post_process_response($response, $order_id, $payment_method) {
+function commerce_iats_direct_post_process_response($response, $order_id, $payment_method_instance_id) {
   if (!empty($response['IATS_Result'])) {
     $order = commerce_order_load($order_id);
 
     $currency_code = $order->commerce_order_total['und'][0]['currency_code'];
+
+    $payment_method = commerce_payment_method_instance_load($payment_method_instance_id);
 
     if ($payment_method['settings']['log']['response'] === 'response') {
       commerce_iats_log_response($payment_method, $response);
