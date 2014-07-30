@@ -193,7 +193,6 @@ function commerce_iats_direct_post_relay_access() {
   }
 
   if (isset($comment)) {
-    unset($_POST['IATS_comment']);
     $comment_parts = explode('|', $comment);
 
     $payment_method_instance_id = $comment_parts[1] . '|' . $comment_parts[2];
