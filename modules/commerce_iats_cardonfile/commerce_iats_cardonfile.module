@@ -104,11 +104,13 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
   }
 
   $payment_method = $form_state['order']->payment_methods[$payment_method_id];
-  if (isset($payment_method['settings']['allow_recurring'])
-    && $payment_method['settings']['allow_recurring'] == 1) {
 
+  $allow_recurring = (isset($payment_method['settings']['allow_recurring']) && ($payment_method['settings']['allow_recurring'] == 1));
+  $direct_post = (isset($payment_method['settings']['direct_post']) && ($payment_method['settings']['direct_post'] == 1));
+
+  if ($allow_recurring || $direct_post) {
     // Hide stored cards.
-    // Cannot used stored cards to create a new recurring payment.
+    // Cannot used stored cards to create a new recurring payment / Direct Post.
     $form['commerce_payment']['payment_details']['cardonfile'] = array(
       '#type' => 'value',
       '#value' => 'new',
@@ -116,7 +118,9 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
 
     $form['commerce_payment']['payment_details']['credit_card']['#access'] = TRUE;
 
-    // Disable Card on File options. If recurring is enabled, card is stored.
+    // Disable Card on File options. Card is automatically stored when:
+    // Recurring is enabled.
+    // Using Direct Post to create a customer code.
     $form['commerce_payment']['payment_details']['credit_card']['cardonfile_store']['#access'] = FALSE;
     $form['commerce_payment']['payment_details']['cardonfile_instance_default']['#access'] = FALSE;
   }
@@ -169,7 +173,7 @@ function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$for
       $form['credit_card']['recurring']['schedule_date'] = array(
         '#type' => 'item',
         '#title' => t('Recurring payment date'),
-        '#default_value' => $recurring->schedule_date,
+        '#markup' => $recurring->schedule_date,
       );
     }
   }
@@ -418,6 +422,44 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
 function commerce_iats_cardonfile_customer_code_settings_form_base(array $settings = NULL) {
   $form = commerce_iats_credit_card_settings_form_base($settings);
 
+  $payment_methods = commerce_payment_methods();
+
+  $rules = rules_config_load_multiple(FALSE);
+
+  $rules_map = array();
+
+  foreach ($rules as $rule_name => $rule) {
+    if ($rule->active) {
+      foreach ($rule->actions() as $action) {
+        $action_settings = $action->settings;
+        continue;
+      }
+      if (isset($action_settings['payment_method'])) {
+        $method_id = $action_settings['payment_method']['method_id'];
+        $rules_map[$method_id] = $method_id . '|' . $rule_name;
+      }
+    }
+  }
+
+  $payment_method_options = array(
+    '' => 'N/A',
+  );
+
+  foreach ($payment_methods as $method_id => $method) {
+    if (isset($rules_map[$method_id])) {
+      $payment_method_options[$rules_map[$method_id]] = $method['title'];
+    }
+  }
+
+  $form['cardonfile_payment_method'] = array(
+    '#type' => 'select',
+    '#title' => t('Card on File payment method instance ID'),
+    '#description' => 'Specify an alternative payment method to use to process Card on File transactions for cards created by this payment method.',
+    '#options' => $payment_method_options,
+    '#default_value' => (isset($settings['cardonfile_payment_method'])) ?
+        $settings['cardonfile_payment_method'] : '',
+  );
+
   $form['allow_recurring'] = array(
     '#type' => 'checkbox',
     '#title' => t('Allow recurring payments through iATS Payments'),
@@ -469,10 +511,20 @@ function commerce_iats_cardonfile_can_create_cardonfile($customer_code) {
  *   TRUE or FALSE indicating success of saving card on file.
  */
 function commerce_iats_cardonfile_create_cardonfile($order, array $payment_method, array $card_data, $customer_code, $card_type) {
+  if (!empty($payment_method['settings']['cardonfile_payment_method'])) {
+    $payment_method_parts = explode('|', $payment_method['settings']['cardonfile_payment_method']);
+    $payment_method_id = $payment_method_parts[0];
+    $payment_method_instance_id = $payment_method['settings']['cardonfile_payment_method'];
+  }
+  else {
+    $payment_method_id = $payment_method['method_id'];
+    $payment_method_instance_id = $payment_method['instance_id'];
+  }
+
   $card_on_file = commerce_cardonfile_new();
   $card_on_file->uid = $order->uid;
-  $card_on_file->payment_method = $payment_method['method_id'];
-  $card_on_file->instance_id = $payment_method['instance_id'];
+  $card_on_file->payment_method = $payment_method_id;
+  $card_on_file->instance_id = $payment_method_instance_id;
   $card_on_file->remote_id = $customer_code;
   $card_on_file->card_type = !empty($card_type) ? strtolower($card_type) : 'card';
   $card_on_file->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';

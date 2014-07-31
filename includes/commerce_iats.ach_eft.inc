@@ -17,26 +17,32 @@ function commerce_iats_ach_eft_settings_form($settings = NULL) {
  * Payment method callback: checkout form.
  */
 function commerce_iats_ach_eft_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
-  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
+  if (isset($payment_method['settings']['direct_post']) && $payment_method['settings']['direct_post'] == 1) {
+    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.direct_post.forms');
+    return commerce_iats_direct_post_ach_eft_form($payment_method, $order);
+  }
+  else {
+    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
 
-  $fields = array(
-    'number' => '',
-  );
+    $fields = array(
+      'number' => '',
+    );
 
-  $currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
+    $currency_code = $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code'];
 
-  switch ($currency_code) {
-    case 'USD':
-      return commerce_iats_ach_eft_payment_form_usd($fields);
-      break;
-    case 'CAD':
-      return commerce_iats_ach_eft_payment_form_cad($fields);
-      break;
-    case 'GBP':
-      return commerce_iats_ach_eft_payment_form_gbp($fields);
-      break;
-    default:
-      return commerce_iats_ach_eft_payment_form($fields);
+    switch ($currency_code) {
+      case 'USD':
+        return commerce_iats_ach_eft_payment_form_usd($fields);
+        break;
+      case 'CAD':
+        return commerce_iats_ach_eft_payment_form_cad($fields);
+        break;
+      case 'GBP':
+        return commerce_iats_ach_eft_payment_form_gbp($fields);
+        break;
+      default:
+        return commerce_iats_ach_eft_payment_form($fields);
+    }
   }
 }
 

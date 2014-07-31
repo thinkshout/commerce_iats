@@ -20,6 +20,10 @@ function commerce_iats_direct_debit_customer_code_settings_form($settings = NULL
     '#weight' => -1,
   );
 
+  // Direct Post Method is not available for Direct Debit.
+  unset($form['direct_post']);
+  unset($form['process_key']);
+
   // No invoice in Direct Debit customer code creation.
   unset($form['invoice_prefix']);
 

@@ -7,6 +7,8 @@
 
 // iATS response code definitions.
 define('COMMERCE_IATS_TXN_OK', 'OK');
+define('COMMERCE_IATS_TOKEN_CREATED', 'TokenCreated');
+define('COMMERCE_IATS_TOKEN_FAILED', 'TokenFailed');
 
 // iATS server ID definitions.
 define('COMMERCE_IATS_NA_SERVER_ID', 'NA');
@@ -23,6 +25,9 @@ define('COMMERCE_IATS_DIRECT_DEBIT_LEAD_DAYS', 12);
 define('COMMERCE_IATS_RECURRING_PAYMENT_DURATION', 18250);
 
 define('COMMERCE_IATS_TRANSACTIONS_CRON', 'commerce_iats_transactions_cron');
+
+// The URL used to submit payments via the Direct Post Method.
+define('COMMERCE_IATS_DIRECT_POST_URL', 'https://www.iatspayments.com/netgate/IATSDPMProcess.aspx');
 
 /**
  * Implements hook_libraries_info().
@@ -110,6 +115,15 @@ function commerce_iats_menu() {
     'file' => 'includes/commerce_iats.ach_eft.admin.inc',
   );
 
+  // Add a callback URL for iATS Direct Post payments.
+  $items['commerce_iats/direct_post_relay'] = array(
+    'title' => 'Commerce iATS Direct Post Relay URL',
+    'page callback' => 'commerce_iats_direct_post_relay',
+    'access callback' => 'commerce_iats_direct_post_relay_access',
+    'type' => MENU_CALLBACK,
+    'file' => 'includes/commerce_iats.direct_post.inc',
+  );
+
   return $items;
 }
 
@@ -161,6 +175,39 @@ function commerce_iats_ach_eft_refund_access($transaction) {
 
   // Allow access if the user can update this transaction.
   return commerce_payment_transaction_access('update', $transaction);
+}
+
+/**
+ * Determines access to the Direct Post relay URL using values from
+ * the POST request sent by the iATS API.
+ *
+ * @return bool
+ *   TRUE or FALSE indicating relay URL access.
+ */
+function commerce_iats_direct_post_relay_access() {
+  if (isset($_POST['IATS_Comment'])) {
+    $comment = $_POST['IATS_Comment'];
+  }
+  elseif (isset($_POST['IATS_comment'])) {
+    $comment = $_POST['IATS_comment'];
+  }
+
+  if (isset($comment)) {
+    $comment_parts = explode('|', $comment);
+
+    $payment_method_instance_id = $comment_parts[1] . '|' . $comment_parts[2];
+    $process_key = $comment_parts[3];
+
+    $payment_method = commerce_payment_method_instance_load($payment_method_instance_id);
+    if ($payment_method) {
+      // Received process key must match payment method's process key
+      $payment_method = commerce_payment_method_instance_load($payment_method_instance_id);
+      if (substr($payment_method['settings']['process_key'], 0, 8) == $process_key) {
+        return TRUE;
+      }
+    }
+  }
+  return FALSE;
 }
 
 /**
@@ -414,6 +461,46 @@ function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Overrides the action URL of the checkout form when Direct Post is enabled.
+ */
+function commerce_iats_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
+  $form['#id'] = 'commerce-checkout-form-review';
+
+  $payment_method_name = $form['commerce_payment']['payment_method']['#default_value'];
+  $payment_method = $form_state['order']->payment_methods[$payment_method_name];
+
+  if (isset($payment_method['settings']['direct_post']) && $payment_method['settings']['direct_post'] == 1) {
+    $form['#action'] = url(COMMERCE_IATS_DIRECT_POST_URL, array('external' => TRUE));
+  }
+  else {
+    $form['#action'] = '/checkout/' . $form_state['order']->order_id . '/review';
+  }
+
+  // Override payment method AJAX to allow for entire form to be refreshed.
+  // Allows for form action changes required by Direct Post payment methods.
+  $form['commerce_payment']['payment_method']['#ajax']['callback'] = 'commerce_iats_pane_checkout_form_details_refresh';
+  $form['commerce_payment']['payment_method']['#ajax']['wrapper'] = 'commerce-checkout-form-review';
+
+  // Display any error message received during the last Direct Post.
+  if (isset($form_state['order']->data['iats_error'])) {
+    drupal_set_message($form_state['order']->data['iats_error'], 'error');
+    unset($form_state['order']->data['iats_error']);
+    commerce_order_save($form_state['order']);
+  }
+}
+
+/**
+ * Callback to refresh form on payment method change.
+ * Full form refresh required to account for form action change
+ * by Direct Post payment methods.
+ */
+function commerce_iats_pane_checkout_form_details_refresh($form, $form_state) {
+  return $form;
+}
+
+/**
  * Implements hook_cron_queue_info().
  */
 function commerce_iats_cron_queue_info() {
@@ -628,6 +715,24 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     '#default_value' => (isset($settings['agent_password'])) ?
     $settings['agent_password'] : '',
     '#required' => TRUE,
+  );
+  $form['direct_post'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Enable Direct Post Method',
+    '#description' => 'Enable to submit the user\'s payment information directly to iATS Payments\' servers.',
+    '#default_value' => isset($settings['direct_post']) ? $settings['direct_post'] : FALSE,
+  );
+  $form['process_key'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Direct Post Process Key'),
+    '#description' => t('Process Key is required to process payments using the Direct Post Method.'),
+    '#default_value' => (isset($settings['process_key'])) ?
+        $settings['process_key'] : '',
+    '#states' => array(
+      'visible' => array(
+        ':input[name="parameter[payment_method][settings][payment_method][settings][direct_post]"]' => array('checked' => TRUE),
+      ),
+    ),
   );
   $form['server'] = array(
     '#type' => 'radios',

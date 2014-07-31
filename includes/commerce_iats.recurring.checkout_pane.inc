@@ -64,6 +64,7 @@ function commerce_iats_recurring_pane_checkout_form($form, &$form_state, $checko
     $pane_form['schedule_date'] = array(
       '#type' => 'select',
       '#title' => t('Payment date'),
+      '#required' => TRUE,
       '#options' => $payment_dates,
       '#default_value' => isset($default_values['schedule_date']) ?
       $default_values['schedule_date'] : 1,
@@ -114,14 +115,14 @@ function commerce_iats_recurring_pane_checkout_form_validate($form, &$form_state
  */
 function commerce_iats_recurring_pane_checkout_form_submit($form, &$form_state, $checkout_pane, &$order) {
   if (isset($form_state['values']['checkout_recurring'])) {
-  $order->data['recurring'] = $form_state['values']['checkout_recurring'];
-  $order->data['recurring']['begin_date'] = commerce_iats_get_formatted_date(time());
+    $order->data['recurring'] = $form_state['values']['checkout_recurring'];
+    $order->data['recurring']['begin_date'] = commerce_iats_get_formatted_date(time());
 
-  $payment_duration = variable_get('commerce_iats_recurring_payment_duration',
-    COMMERCE_IATS_RECURRING_PAYMENT_DURATION);
-  $end_time = mktime(0, 0, 0, date('n'), date('j') + $payment_duration, date('y'));
+    $payment_duration = variable_get('commerce_iats_recurring_payment_duration',
+      COMMERCE_IATS_RECURRING_PAYMENT_DURATION);
+    $end_time = mktime(0, 0, 0, date('n'), date('j') + $payment_duration, date('y'));
 
-  $order->data['recurring']['end_date'] = commerce_iats_get_formatted_date($end_time);
+    $order->data['recurring']['end_date'] = commerce_iats_get_formatted_date($end_time);
   }
   else {
     $order->data['recurring'] = array();
@@ -182,10 +183,27 @@ function commerce_iats_recurring_pane_schedule_dates($payment_type) {
       }
       break;
 
+    case 'Annually':
+      $payment_dates = array(
+        1 => 'January',
+        2 => 'February',
+        3 => 'March',
+        4 => 'April',
+        5 => 'May',
+        6 => 'June',
+        7 => 'July',
+        8 => 'August',
+        9 => 'September',
+        10 => 'October',
+        11 => 'November',
+        12 => 'December',
+      );
+      break;
+
     default:
       // Payment types that do not require schedule dates.
       $payment_dates = array(
-        '' => $payment_type,
+        '0' => $payment_type,
       );
   }
   return $payment_dates;
