@@ -150,11 +150,11 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
  * Implements hook_form_FORM_ID_alter().
  */
 function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$form, &$form_state, $form_id) {
-  if ($form_state['card_data']->recurring) {
+  if ($form_state['card']->recurring) {
     $form['credit_card']['cardonfile_instance_default']['#access'] = FALSE;
 
     if ($form_state['op'] == 'update') {
-      $recurring = commerce_iats_cardonfile_recurring_load($form_state['card_data']->card_id);
+      $recurring = commerce_iats_cardonfile_recurring_load($form_state['card']->card_id);
       $form_state['recurring'] = $recurring;
 
       $form['credit_card']['recurring'] = array();
@@ -188,8 +188,8 @@ function commerce_iats_cardonfile_form_alter(&$form, &$form_state, $form_id) {
   if ((substr($form_id, -20) == 'cardonfile_card_form')
     || (substr($form_id, -22) == 'cardonfile_delete_form')) {
     $default_payment_method = TRUE;
-    if (isset($form_state['card_data'])) {
-      if (substr($form_state['card_data']->payment_method, 0, 12) == 'iats_ach_eft') {
+    if (isset($form_state['card'])) {
+      if (substr($form_state['card']->payment_method, 0, 12) == 'iats_ach_eft') {
         module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.ach_eft');
         $default_payment_method = FALSE;
       }

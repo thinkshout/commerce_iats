@@ -305,7 +305,7 @@ function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_m
     'firstName' => $first_name,
     'lastName' => $last_name,
     'accountCustomerName' => $card_data->card_name,
-    'accountType' => $card_data->type,
+    'accountType' => $card_data->card_type,
     'updateAccountNum' => 0,
     'recurring' => 0,
     'beginDate' => commerce_iats_get_formatted_date(time()),

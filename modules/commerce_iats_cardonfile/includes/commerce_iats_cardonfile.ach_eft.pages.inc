@@ -59,7 +59,7 @@ function commerce_iats_cardonfile_ach_eft_card_form($form, &$form_state, $op, $c
   module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
 
   // Pass along information to the validate and submit handlers.
-  $form_state['card_data'] = $card_data;
+  $form_state['card'] = $card_data;
   $form_state['op'] = $op;
 
   $account_types = commerce_iats_ach_eft_account_types();
@@ -145,13 +145,14 @@ function commerce_iats_cardonfile_ach_eft_card_form_validate($form, &$form_state
  */
 function commerce_iats_cardonfile_ach_eft_card_form_submit($form, &$form_state) {
   $op = $form_state['op'];
-  $card_data = $form_state['card_data'];
+  $card_data = $form_state['card'];
 
   $card_data->card_name = $form_state['values']['bank_account']['owner'];
   if ($op == 'create') {
     $card_data->card_number = substr($form_state['values']['bank_account']['number'], -4);
-    $card_data->card_type = $form_state['values']['bank_account']['type'];
   }
+
+  $card_data->card_type = $form_state['values']['bank_account']['type'];
 
   // Invoke the payment method's card create/update callback.
   $payment_method = commerce_payment_method_instance_load($card_data->instance_id);
@@ -216,7 +217,7 @@ function commerce_iats_cardonfile_ach_eft_delete_form($form, &$form_state, $card
     '#markup' => $card_data->card_name,
   );
 
-  $form_state['card_data'] = $card_data;
+  $form_state['card'] = $card_data;
 
   return confirm_form(
     $form,
@@ -231,7 +232,7 @@ function commerce_iats_cardonfile_ach_eft_delete_form($form, &$form_state, $card
  * @see commerce_cardonfile_delete_form_submit()
  */
 function commerce_iats_cardonfile_ach_eft_delete_form_submit($form, &$form_state) {
-  $card_data = $form_state['card_data'];
+  $card_data = $form_state['card'];
 
   // Invoke the payment method's card delete callback.
   $payment_method = commerce_payment_method_instance_load($card_data->instance_id);
