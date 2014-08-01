@@ -14,12 +14,14 @@ http://iatspayments.com/
 
 ## Requirements
 
+* Drupal Commerce - https://www.drupal.org/project/commerce
 * iATS PHP API Wrapper - https://github.com/iATSPayments/PHP/
 * SOAP enabled in your PHP installation
 
 ### Optional
 
-* Commerce Card on File - https://drupal.org/project/commerce_cardonfile
+* Commerce Card on File (2.0-beta5 or greater) - https://drupal.org/project/commerce_cardonfile
+    * Commerce Card on File patch in this ticket: https://www.drupal.org/node/2314063
 * Commerce Checkout Pages - https://drupal.org/project/dc_co_pages
     Used to customize the checkout process
 
