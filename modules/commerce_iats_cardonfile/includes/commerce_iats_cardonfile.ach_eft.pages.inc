@@ -16,16 +16,6 @@ function commerce_iats_cardonfile_ach_eft_card_title($card_data) {
 }
 
 /**
- * Displays details of a card on file.
- *
- * @see commerce_cardonfile_card_view()
- */
-function commerce_iats_cardonfile_ach_eft_card_view($card_data, $view_mode) {
-  return entity_view('commerce_cardonfile',
-    array($card_data->card_id => $card_data), $view_mode, NULL, TRUE);
-}
-
-/**
  * Displays form elements for a card on file.
  *
  * @see commerce_cardonfile_card_form_page()

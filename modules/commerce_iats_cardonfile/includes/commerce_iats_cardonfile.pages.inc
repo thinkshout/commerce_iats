@@ -23,22 +23,6 @@ function commerce_iats_cardonfile_card_title($card_data) {
 }
 
 /**
- * Displays details of a card on file.
- *
- * @see commerce_cardonfile_card_view()
- */
-function commerce_iats_cardonfile_card_view($card_data, $view_mode) {
-  if ($card_data->payment_method == 'iats_ach_eft') {
-    module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.ach_eft.pages');
-    return commerce_iats_cardonfile_ach_eft_card_view($card_data, $view_mode);
-  }
-  else {
-    module_load_include('inc', 'commerce_cardonfile', 'includes/commerce_cardonfile.pages');
-    return commerce_cardonfile_card_view($card_data, $view_mode);
-  }
-}
-
-/**
  * Displays form elements for a card on file.
  *
  * @see commerce_cardonfile_card_form_page()
