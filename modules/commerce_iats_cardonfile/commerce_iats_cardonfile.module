@@ -220,6 +220,7 @@ function commerce_iats_cardonfile_menu_alter(&$items) {
   $items['user/%user/cards/%commerce_cardonfile/view']['access callback'] = 'commerce_iats_cardonfile_view_access';
 
   $items['user/%user/cards/%commerce_cardonfile/edit']['page callback'] = 'commerce_iats_cardonfile_card_form_page';
+  $items['user/%user/cards/%commerce_cardonfile/edit']['page arguments'] = array('update', 3, 1);
   $items['user/%user/cards/%commerce_cardonfile/edit']['file'] = 'includes/commerce_iats_cardonfile.pages.inc';
   $items['user/%user/cards/%commerce_cardonfile/edit']['module'] = 'commerce_iats_cardonfile';
 
