@@ -221,6 +221,20 @@ function commerce_iats_cardonfile_menu_alter(&$items) {
 }
 
 /**
+ * Implements hook_views_default_views_alter().
+ */
+function commerce_iats_cardonfile_views_default_views_alter(&$views) {
+  $handler =& $views['commerce_card_on_file_user_cards']->display['default']->handler;
+
+  /* Field: Commerce Card on File: Recurring */
+  $handler->display->display_options['fields']['instance_default']['id'] = 'recurring';
+  $handler->display->display_options['fields']['instance_default']['table'] = 'commerce_cardonfile';
+  $handler->display->display_options['fields']['instance_default']['field'] = 'recurring';
+  $handler->display->display_options['fields']['instance_default']['label'] = 'Recurring';
+  $handler->display->display_options['fields']['instance_default']['not'] = 0;
+}
+
+/**
  * Implements hook_cron_queue_info().
  */
 function commerce_iats_cardonfile_cron_queue_info() {
