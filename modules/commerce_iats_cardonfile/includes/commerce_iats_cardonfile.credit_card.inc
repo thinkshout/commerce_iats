@@ -295,7 +295,7 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
 
   if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
     watchdog('commerce_iats_cardonfile',
-      'iATS error when deleting customer code: @error',
+      'iATS error when updating customer code: @error',
       array(
         '@error' => $auth_result,
       )
