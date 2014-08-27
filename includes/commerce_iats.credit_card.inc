@@ -30,7 +30,15 @@ function commerce_iats_credit_card_submit_form($payment_method, $pane_values, $c
       'type' => commerce_iats_enabled_credit_card_types($payment_method),
     );
 
-    return commerce_payment_credit_card_form($fields);
+    $form = commerce_payment_credit_card_form($fields);
+
+    if (strstr($_SERVER['HTTP_REFERER'], '/admin/'))
+    {
+      // If the form is requested via the admin panel, CVV is optional.
+      $form['credit_card']['code']['#required'] = FALSE;
+    }
+
+    return $form;
   }
 }
 
@@ -49,6 +57,11 @@ function commerce_iats_credit_card_submit_form_validate($payment_method, $pane_f
   $settings = array(
     'form_parents' => array_merge($form_parents, array('credit_card')),
   );
+
+  if (empty($pane_values['credit_card']['code']))
+  {
+    unset($pane_values['credit_card']['code']);
+  }
 
   if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
     return FALSE;
