@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * @file
+ * Adds support for an encrypted USB card reader to Commerce iATS.
+ */
+
+/**
+ * Implements hook_commerce_payment_method_info_alter().
+ *
+ * Overrides payment methods for use with Card on File.
+ */
+function commerce_iats_usb_reader_commerce_payment_method_info_alter(&$payment_methods) {
+  $payment_methods['iats_credit_card']['base'] = 'commerce_iats_usb_reader_credit_card';
+  $payment_methods['iats_credit_card']['file'] = 'modules/commerce_iats_usb_reader/includes/commerce_iats_usb_reader.credit_card.inc';
+}
