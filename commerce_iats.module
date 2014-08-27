@@ -709,6 +709,7 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     '#default_value' => (isset($settings['agent_code'])) ?
     $settings['agent_code'] : '',
     '#required' => TRUE,
+    '#weight' => 0,
   );
   $form['agent_password'] = array(
     '#type' => 'textfield',
@@ -717,12 +718,14 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     '#default_value' => (isset($settings['agent_password'])) ?
     $settings['agent_password'] : '',
     '#required' => TRUE,
+    '#weight' => 1,
   );
   $form['direct_post'] = array(
     '#type' => 'checkbox',
     '#title' => 'Enable Direct Post Method',
     '#description' => 'Enable to submit the user\'s payment information directly to iATS Payments\' servers.',
     '#default_value' => isset($settings['direct_post']) ? $settings['direct_post'] : FALSE,
+    '#weight' => 3,
   );
   $form['process_key'] = array(
     '#type' => 'textfield',
@@ -730,6 +733,7 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     '#description' => t('Process Key is required to process payments using the Direct Post Method.'),
     '#default_value' => (isset($settings['process_key'])) ?
         $settings['process_key'] : '',
+    '#weight' => 4,
     '#states' => array(
       'visible' => array(
         ':input[name="parameter[payment_method][settings][payment_method][settings][direct_post]"]' => array('checked' => TRUE),
@@ -747,6 +751,7 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     ),
     '#default_value' => (isset($settings['server'])) ?
     $settings['server'] : COMMERCE_IATS_NA_SERVER_ID,
+    '#weight' => 5,
   );
   $form['log'] = array(
     '#type' => 'checkboxes',
@@ -756,12 +761,14 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
       'response' => t('API response messages'),
     ),
     '#default_value' => (isset($settings['log'])) ? $settings['log'] : array(),
+    '#weight' => 6,
   );
   $form['detailed_failure_message'] = array(
     '#type' => 'checkbox',
     '#title' => 'Enable detailed failure messages',
     '#description' => 'Enable to attach a detailed message to a payment when the transaction fails.',
     '#default_value' => isset($settings['detailed_failure_message']) ? $settings['detailed_failure_message'] : FALSE,
+    '#weight' => 7,
   );
   $form['invoice_prefix'] = array(
     '#type' => 'textfield',
@@ -770,6 +777,7 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     '#default_value' => (isset($settings['invoice_prefix'])) ?
     $settings['invoice_prefix'] : 'INVOICE-',
     '#required' => TRUE,
+    '#weight' => 8,
   );
 
   return $form;
@@ -787,11 +795,19 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
 function commerce_iats_credit_card_settings_form_base(array $settings = NULL) {
   $form = commerce_iats_settings_form_base($settings);
 
+  $form['usb_reader'] = array(
+    '#type' => 'checkbox',
+    '#title' => 'Enable encrypted USB card reader',
+    '#description' => 'Enable to optionally submit card data using an encrypted USB card reader (admin only.)',
+    '#default_value' => isset($settings['usb_reader']) ? $settings['usb_reader'] : FALSE,
+    '#weight' => 3,
+  );
   $form['credit_card'] = array(
     '#type' => 'fieldset',
     '#title' => t('Credit card service settings'),
     '#collapsible' => TRUE,
     '#collapsed' => TRUE,
+    '#weight' => 10,
   );
   $form['credit_card']['card_types'] = array(
     '#type' => 'checkboxes',
