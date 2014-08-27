@@ -43,6 +43,9 @@ function commerce_iats_usb_reader_credit_card_submit_form($payment_method, $pane
       $form['credit_card']['#type'] = 'fieldset';
       $form['credit_card']['#weight'] = 1;
 
+      $form['credit_card']['number']['#required'] = FALSE;
+      $form['credit_card']['exp_month']['#required'] = FALSE;
+
       $form['credit_card']['#states'] = array(
         'visible' => array(
           ':input[name="payment_details[usb_reader]"]' => array('checked' => FALSE),
@@ -103,4 +106,73 @@ function commerce_iats_usb_reader_credit_card_submit_form_validate($payment_meth
   }
 
   return $valid;
+}
+
+/**
+ * Payment method callback: checkout form submission.
+ */
+function commerce_iats_usb_reader_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+  // Validate credit card charge.
+  if (empty($charge['amount'])) {
+    watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
+      '@charge' => '<pre>' . check_plain(print_r($charge, TRUE)) . '</pre>',
+      '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>',
+    ), WATCHDOG_DEBUG);
+    return FALSE;
+  }
+
+  $payment_data = $pane_values;
+
+  return commerce_iats_process_payment($payment_method, $payment_data, $order,
+    $charge, 'commerce_iats_usb_reader_process_credit_card_payment');
+}
+
+/**
+ * Processes a credit card payment via the iATS Payments API using
+ * an encrypted USB card reader.
+ *
+ * @param array $payment_method
+ *   The payment method used during this transaction.
+ * @param array $payment_data
+ *   Payment data retrieved from the submit form.
+ * @param object $order
+ *   The order processed during this transaction.
+ * @param array $charge
+ *   The transaction charge.
+ *
+ * @return Mixed
+ *   API response array or error string.
+ */
+function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $payment_data, $order, $charge) {
+  // Create and populate the API request.
+  $request = array(
+    'customerIPAddress' => ip_address(),
+    'invoiceNum' => t('@prefix@number', array(
+      '@prefix' => $payment_method['settings']['invoice_prefix'],
+      '@number' => $order->order_number,
+    )),
+    'creditCardNum' => $payment_data['encrypted_credit_card']['encrypted_number'],
+    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
+    'currency' => $charge['currency_code'],
+  );
+
+  // Add the billing information.
+  commerce_iats_address($request, $order, 'commerce_customer_billing');
+
+  // Get the API service.
+  $iats = commerce_iats_get_service('ProcessLink', $payment_method);
+  if ($iats == NULL) {
+    drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
+    return NULL;
+  }
+
+  // Log the request.
+  if ($payment_method['settings']['log']['request'] === 'request') {
+    commerce_iats_log_request($payment_method, 'commerce_iats_process_credit_card_payment', $request);
+  }
+
+  // Process the credit card payment.
+  $response = $iats->processCreditCard($request);
+
+  return $response;
 }
