@@ -94,8 +94,17 @@ function commerce_iats_usb_reader_credit_card_submit_form_validate($payment_meth
 
   if ($pane_values['usb_reader']) {
     // Validate the USB card reader input.
-    if (empty($pane_values['encrypted_credit_card']['encrypted_number'])) {
+    $encrypted_string = $pane_values['encrypted_credit_card']['encrypted_number'];
+
+    if (empty($encrypted_string)) {
       form_set_error($prefix . 'encrypted_number', t('There was a problem processing the card via the USB card reader.'));
+      $valid = FALSE;
+    }
+
+    $type = commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypted_string, $pane_values['credit_card']['valid_types']);
+
+    if ($type === FALSE) {
+      form_set_error($prefix . 'encrypted_number', t('The credit card does not appear to be a valid card type.'));
       $valid = FALSE;
     }
   }
@@ -154,6 +163,8 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
     'creditCardNum' => $payment_data['encrypted_credit_card']['encrypted_number'],
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
+    'mop' => strtoupper(commerce_iats_usb_reader_parse_card_type_from_encrypted_string(
+      $payment_data['encrypted_credit_card']['encrypted_number'], $payment_data['credit_card']['valid_types'])),
   );
 
   // Add the billing information.
@@ -175,4 +186,30 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
   $response = $iats->processCreditCard($request);
 
   return $response;
+}
+
+/**
+ * Parses a card type from the obfuscated card number contained in
+ * an encrypted string.
+ *
+ * @param string $encrypted_string
+ *   The encrypted string from a USB card reader.
+ * @param array $valid_types
+ *   An array of valid credit card types.
+ *
+ * @return Mixed
+ *   The credit card type as a string or boolean FALSE.
+ */
+function commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypted_string, $valid_types)
+{
+  module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
+
+  // Match pattern:
+  // ;4941********5889
+  $matches = NULL;
+  preg_match("/;\d{4}\*+\d{4}/", $encrypted_string, $matches);
+
+  $card_number = substr($matches[0], 1);
+
+  return commerce_payment_validate_credit_card_type($card_number, $valid_types);
 }
