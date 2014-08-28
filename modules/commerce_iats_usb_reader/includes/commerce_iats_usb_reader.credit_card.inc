@@ -173,6 +173,12 @@ function commerce_iats_usb_reader_credit_card_submit_form_submit($payment_method
  *   API response array or error string.
  */
 function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $payment_data, $order, $charge) {
+  // Format the encrypted card data in the way iATS expects to receive it.
+  // {Swiper type}|@|{Encrypted card data}
+  $formatted_card_data = $payment_method['settings']['usb_reader_type']
+    . COMMERCE_IATS_CARD_READER_DELIMITER
+    . $payment_data['encrypted_credit_card']['encrypted_number'];
+
   // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
@@ -180,7 +186,7 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
       '@prefix' => $payment_method['settings']['invoice_prefix'],
       '@number' => $order->order_number,
     )),
-    'creditCardNum' => $payment_data['encrypted_credit_card']['encrypted_number'],
+    'creditCardNum' => $formatted_card_data,
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
     'mop' => strtoupper(commerce_iats_usb_reader_parse_card_type_from_encrypted_string(
