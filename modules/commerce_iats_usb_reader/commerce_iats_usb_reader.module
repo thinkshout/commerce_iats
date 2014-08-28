@@ -5,6 +5,8 @@
  * Adds support for an encrypted USB card reader to Commerce iATS.
  */
 
+define('COMMERCE_IATS_CARD_READER_DELIMITER', '|@|');
+
 /**
  * Implements hook_commerce_payment_method_info_alter().
  *
@@ -13,4 +15,19 @@
 function commerce_iats_usb_reader_commerce_payment_method_info_alter(&$payment_methods) {
   $payment_methods['iats_credit_card']['base'] = 'commerce_iats_usb_reader_credit_card';
   $payment_methods['iats_credit_card']['file'] = 'modules/commerce_iats_usb_reader/includes/commerce_iats_usb_reader.credit_card.inc';
+}
+
+/**
+ * Returns an array of USB card reader types.
+ *
+ * @return array
+ *   Array of USB card reader IDs mapped to names.
+ */
+function commerce_iats_usb_reader_types() {
+  $types = array(
+    '00' => 'IDTech SecureMag USB swiper',
+    '02' => 'MagTek Dynamag USB swiper',
+  );
+
+  return $types;
 }

@@ -21,6 +21,22 @@ function commerce_iats_usb_reader_credit_card_settings_form($settings = NULL) {
     '#weight' => 3,
   );
 
+  $form['usb_reader_type'] = array(
+    '#type' => 'select',
+    '#title' => t('USB card reader type'),
+    '#options' => commerce_iats_usb_reader_types(),
+    '#default_value' => isset($default['usb_reader_type']) ? $default['usb_reader_type'] : NULL,
+    '#weight' => 4,
+    '#states' => array(
+      'visible' => array(
+        ':input[name="parameter[payment_method][settings][payment_method][settings][usb_reader]"]' => array('checked' => TRUE),
+      ),
+    ),
+  );
+
+  $form['direct_post']['#weight'] = 4;
+  $form['process_key']['#weight'] = 5;
+
   return $form;
 }
 
@@ -68,6 +84,10 @@ function commerce_iats_usb_reader_credit_card_submit_form($payment_method, $pane
 
       $form['encrypted_credit_card']['encrypted_number'] = array(
         '#type' => 'textarea',
+      );
+
+      $form['#attached']['js'] = array(
+        drupal_get_path('module', 'commerce_iats_usb_reader') . '/js/commerce_iats_usb_reader.credit_card.js',
       );
     }
   }
@@ -165,6 +185,7 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
     'currency' => $charge['currency_code'],
     'mop' => strtoupper(commerce_iats_usb_reader_parse_card_type_from_encrypted_string(
       $payment_data['encrypted_credit_card']['encrypted_number'], $payment_data['credit_card']['valid_types'])),
+    'comment' => '',
   );
 
   // Add the billing information.
