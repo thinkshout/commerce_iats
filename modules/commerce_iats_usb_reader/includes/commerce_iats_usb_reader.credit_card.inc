@@ -231,13 +231,16 @@ function commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypt
 {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
-  // Match pattern:
-  // ;4941********5889
   $matches = NULL;
+
+  // Match pattern:
+  // ;4222********2220=
   preg_match("/;\d{4}\*+\d{4}\=/", $encrypted_string, $matches);
 
   if (empty($matches))
   {
+    // Match pattern:
+    // ;4222222222222220=
     preg_match("/;\d{16}\=/", $encrypted_string, $matches);
   }
 
