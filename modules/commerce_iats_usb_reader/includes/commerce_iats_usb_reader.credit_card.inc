@@ -234,9 +234,14 @@ function commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypt
   // Match pattern:
   // ;4941********5889
   $matches = NULL;
-  preg_match("/;\d{4}\*+\d{4}/", $encrypted_string, $matches);
+  preg_match("/;\d{4}\*+\d{4}\=/", $encrypted_string, $matches);
 
-  $card_number = substr($matches[0], 1);
+  if (empty($matches))
+  {
+    preg_match("/;\d{16}\=/", $encrypted_string, $matches);
+  }
+
+  $card_number = substr(substr($matches[0], 1), 0, -1);
 
   return commerce_payment_validate_credit_card_type($card_number, $valid_types);
 }
