@@ -472,7 +472,7 @@ function commerce_iats_form_commerce_checkout_form_review_alter(&$form, &$form_s
     $payment_method_name = $form['commerce_payment']['payment_method']['#default_value'];
     $payment_method = $form_state['order']->payment_methods[$payment_method_name];
 
-    if (isset($payment_method['settings']['direct_post']) && $payment_method['settings']['direct_post'] == 1) {
+    if (isset($payment_method['settings']['direct_post']['enable_direct_post']) && $payment_method['settings']['direct_post']['enable_direct_post'] == 1) {
       $form['#action'] = url(COMMERCE_IATS_DIRECT_POST_URL, array('external' => TRUE));
     }
     else {
@@ -720,27 +720,27 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     '#required' => TRUE,
     '#weight' => 1,
   );
-  $form['direct_post_fields'] = array(
+  $form['direct_post'] = array(
     '#type' => 'fieldset',
     '#title' => 'Direct Post',
     '#collapsible' => FALSE,
     '#weight' => 5,
   );
-  $form['direct_post_fields']['direct_post'] = array(
+  $form['direct_post']['enable_direct_post'] = array(
     '#type' => 'checkbox',
     '#title' => 'Enable Direct Post Method',
     '#description' => 'Enable to submit the user\'s payment information directly to iATS Payments\' servers.',
-    '#default_value' => isset($settings['direct_post']) ? $settings['direct_post'] : FALSE,
+    '#default_value' => isset($settings['direct_post']['enable_direct_post']) ? $settings['direct_post']['enable_direct_post'] : FALSE,
   );
-  $form['direct_post_fields']['process_key'] = array(
+  $form['direct_post']['process_key'] = array(
     '#type' => 'textfield',
     '#title' => t('Direct Post Process Key'),
     '#description' => t('Process Key is required to process payments using the Direct Post Method.'),
-    '#default_value' => (isset($settings['process_key'])) ?
-        $settings['process_key'] : '',
+    '#default_value' => (isset($settings['direct_post']['process_key'])) ?
+        $settings['direct_post']['process_key'] : '',
     '#states' => array(
       'visible' => array(
-        ':input[name="parameter[payment_method][settings][payment_method][settings][direct_post_fields][direct_post]"]' => array('checked' => TRUE),
+        ':input[name="parameter[payment_method][settings][payment_method][settings][direct_post][enable_direct_post]"]' => array('checked' => TRUE),
       ),
     ),
   );
