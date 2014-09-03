@@ -17,23 +17,26 @@
 function commerce_iats_usb_reader_credit_card_settings_form_base(array $settings = NULL) {
   $form = commerce_iats_credit_card_settings_form_base($settings);
 
-  $form['usb_reader'] = array(
+  $form['usb_reader_fields'] = array(
+    '#type' => 'fieldset',
+    '#title' => 'USB card reader',
+    '#collapsible' => FALSE,
+    '#weight' => 5,
+  );
+  $form['usb_reader_fields']['usb_reader'] = array(
     '#type' => 'checkbox',
     '#title' => 'Enable encrypted USB card reader',
     '#description' => 'Enable to optionally submit card data using an encrypted USB card reader (admin only.)',
     '#default_value' => isset($settings['usb_reader']) ? $settings['usb_reader'] : FALSE,
-    '#weight' => 3,
   );
-
-  $form['usb_reader_type'] = array(
+  $form['usb_reader_fields']['usb_reader_type'] = array(
     '#type' => 'select',
     '#title' => t('USB card reader type'),
     '#options' => commerce_iats_usb_reader_types(),
     '#default_value' => isset($settings['usb_reader_type']) ? $settings['usb_reader_type'] : NULL,
-    '#weight' => 4,
     '#states' => array(
       'visible' => array(
-        ':input[name="parameter[payment_method][settings][payment_method][settings][usb_reader]"]' => array('checked' => TRUE),
+        ':input[name="parameter[payment_method][settings][payment_method][settings][usb_reader_fields][usb_reader]"]' => array('checked' => TRUE),
       ),
     ),
   );
