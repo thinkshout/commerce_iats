@@ -24,7 +24,7 @@ function commerce_iats_cardonfile_ach_eft_customer_code_settings_form($settings 
  * Payment method callback: checkout form.
  */
 function commerce_iats_cardonfile_ach_eft_customer_code_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
-  if (isset($payment_method['settings']['direct_post']) && $payment_method['settings']['direct_post'] == 1) {
+  if (isset($payment_method['settings']['direct_post']['enable_direct_post']) && $payment_method['settings']['direct_post']['enable_direct_post'] == 1) {
     module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.direct_post.forms');
     module_load_include('inc', 'commerce_iats_cardonfile', 'includes/commerce_iats_cardonfile.direct_post.forms');
     return commerce_iats_cardonfile_direct_post_ach_eft_customer_code_form($payment_method, $order);
