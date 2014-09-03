@@ -724,7 +724,7 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     '#type' => 'fieldset',
     '#title' => 'Direct Post',
     '#collapsible' => FALSE,
-    '#weight' => 6,
+    '#weight' => 5,
   );
   $form['direct_post_fields']['direct_post'] = array(
     '#type' => 'checkbox',

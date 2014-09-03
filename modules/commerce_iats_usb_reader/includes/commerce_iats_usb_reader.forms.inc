@@ -41,8 +41,8 @@ function commerce_iats_usb_reader_credit_card_settings_form_base(array $settings
     ),
   );
 
-  $form['direct_post']['#weight'] = 4;
-  $form['process_key']['#weight'] = 5;
+  $form['direct_post_fields']['#weight'] = 6;
+  $form['log']['#weight'] = 7;
 
   return $form;
 }
