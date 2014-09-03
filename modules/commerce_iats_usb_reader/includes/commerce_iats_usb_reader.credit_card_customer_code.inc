@@ -2,13 +2,13 @@
 /**
  * @file
  * Enables use of an encrypted USB card reader with the
- * iATS credit card payment method.
+ * iATS credit card customer code payment method.
  */
 
 /**
  * Payment method callback: settings form.
  */
-function commerce_iats_usb_reader_credit_card_settings_form($settings = NULL) {
+function commerce_iats_usb_reader_credit_card_customer_code_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_iats_usb_reader', 'includes/commerce_iats_usb_reader.forms');
   $form = commerce_iats_usb_reader_credit_card_settings_form_base($settings);
   return $form;
@@ -17,7 +17,7 @@ function commerce_iats_usb_reader_credit_card_settings_form($settings = NULL) {
 /**
  * Payment method callback: checkout form.
  */
-function commerce_iats_usb_reader_credit_card_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
+function commerce_iats_usb_reader_credit_card_customer_code_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
   module_load_include('inc', 'commerce_iats_usb_reader', 'includes/commerce_iats_usb_reader.forms');
   $form = commerce_iats_usb_reader_credit_card_form_base($payment_method, $pane_values, $checkout_pane, $order);
   return $form;
@@ -26,7 +26,7 @@ function commerce_iats_usb_reader_credit_card_submit_form($payment_method, $pane
 /**
  * Payment method callback: checkout form validation.
  */
-function commerce_iats_usb_reader_credit_card_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
+function commerce_iats_usb_reader_credit_card_customer_code_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents = array()) {
   if (!commerce_iats_validate_payment_method($payment_method)) {
     drupal_set_message(t('Unable to process payment. Please contact the site administrator.'), 'error');
     return FALSE;
@@ -68,7 +68,7 @@ function commerce_iats_usb_reader_credit_card_submit_form_validate($payment_meth
 /**
  * Payment method callback: checkout form submission.
  */
-function commerce_iats_usb_reader_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
+function commerce_iats_usb_reader_credit_card_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
   // Validate credit card charge.
   if (empty($charge['amount'])) {
     watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
@@ -79,11 +79,11 @@ function commerce_iats_usb_reader_credit_card_submit_form_submit($payment_method
   }
 
   return commerce_iats_process_payment($payment_method, $pane_values, $order,
-    $charge, 'commerce_iats_usb_reader_process_credit_card_payment');
+    $charge, 'commerce_iats_usb_reader_process_credit_card_customer_code_payment');
 }
 
 /**
- * Processes a credit card payment via the iATS Payments API using
+ * Creates a customer code via the iATS Payments API using
  * an encrypted USB card reader.
  *
  * @param array $payment_method
@@ -98,7 +98,7 @@ function commerce_iats_usb_reader_credit_card_submit_form_submit($payment_method
  * @return Mixed
  *   API response array or error string.
  */
-function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $payment_data, $order, $charge) {
+function commerce_iats_usb_reader_process_credit_card_customer_code_payment($payment_method, $payment_data, $order, $charge) {
   // Format the encrypted card data in the way iATS expects to receive it.
   // {Swiper type}|@|{Encrypted card data}
   $formatted_card_data = $payment_method['settings']['usb_reader_type']
@@ -108,15 +108,14 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
   // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
-    'invoiceNum' => t('@prefix@number', array(
-      '@prefix' => $payment_method['settings']['invoice_prefix'],
-      '@number' => $order->order_number,
-    )),
     'creditCardNum' => $formatted_card_data,
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
     'mop' => strtoupper(commerce_iats_usb_reader_parse_card_type_from_encrypted_string(
       $payment_data['encrypted_credit_card']['encrypted_number'], $payment_data['credit_card']['valid_types'])),
+    'recurring' => 0,
+    'beginDate' => commerce_iats_get_formatted_date(time()),
+    'endDate' => commerce_iats_get_formatted_date(time()),
     'comment' => '',
   );
 
@@ -124,7 +123,7 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
   commerce_iats_address($request, $order, 'commerce_customer_billing');
 
   // Get the API service.
-  $iats = commerce_iats_get_service('ProcessLink', $payment_method);
+  $iats = commerce_iats_get_service('CustomerLink', $payment_method);
   if ($iats == NULL) {
     drupal_set_message(t('Unable to load iATS Payments library.'), 'error');
     return NULL;
@@ -136,7 +135,7 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
   }
 
   // Process the credit card payment.
-  $response = $iats->processCreditCard($request);
+  $response = $iats->createCreditCardCustomerCode($request);
 
   return $response;
 }
