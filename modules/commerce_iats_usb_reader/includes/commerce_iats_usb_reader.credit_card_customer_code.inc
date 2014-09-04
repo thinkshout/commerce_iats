@@ -66,6 +66,7 @@ function commerce_iats_usb_reader_credit_card_customer_code_submit_form_validate
     }
   }
   else {
+    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card');
     if (!commerce_iats_credit_card_submit_form_validate($payment_method, $pane_form, $pane_values, $order, $form_parents)) {
       $valid = FALSE;
     }
@@ -78,8 +79,15 @@ function commerce_iats_usb_reader_credit_card_customer_code_submit_form_validate
  * Payment method callback: checkout form submission.
  */
 function commerce_iats_usb_reader_credit_card_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
-  return commerce_iats_process_payment($payment_method, $pane_values, $order,
-    $charge, 'commerce_iats_usb_reader_process_credit_card_customer_code_payment');
+  if ($pane_values['usb_reader']) {
+    return commerce_iats_process_payment($payment_method, $pane_values, $order,
+      $charge, 'commerce_iats_usb_reader_process_credit_card_customer_code_payment');
+  }
+  else {
+    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card_customer_code');
+    return commerce_iats_process_payment($payment_method, $pane_values, $order,
+      $charge, 'commerce_iats_create_customer_code');
+  }
 }
 
 /**
