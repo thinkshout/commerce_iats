@@ -78,15 +78,6 @@ function commerce_iats_usb_reader_credit_card_customer_code_submit_form_validate
  * Payment method callback: checkout form submission.
  */
 function commerce_iats_usb_reader_credit_card_customer_code_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
-  // Validate credit card charge.
-  if (empty($charge['amount'])) {
-    watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
-      '@charge' => '<pre>' . check_plain(print_r($charge, TRUE)) . '</pre>',
-      '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>',
-    ), WATCHDOG_DEBUG);
-    return FALSE;
-  }
-
   return commerce_iats_process_payment($payment_method, $pane_values, $order,
     $charge, 'commerce_iats_usb_reader_process_credit_card_customer_code_payment');
 }
@@ -118,7 +109,6 @@ function commerce_iats_usb_reader_process_credit_card_customer_code_payment($pay
   $request = array(
     'customerIPAddress' => ip_address(),
     'creditCardNum' => $formatted_card_data,
-    'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
     'mop' => strtoupper(commerce_iats_usb_reader_parse_card_type_from_encrypted_string(
       $payment_data['encrypted_credit_card']['encrypted_number'], $payment_data['credit_card']['valid_types'])),

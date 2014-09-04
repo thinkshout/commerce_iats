@@ -117,7 +117,7 @@ function commerce_iats_usb_reader_process_credit_card_customer_code_process_paym
   // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
-    'creditCardNum' => $formatted_card_data,
+    'ccNum' => $formatted_card_data,
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
     'mop' => strtoupper(commerce_iats_usb_reader_parse_card_type_from_encrypted_string(
