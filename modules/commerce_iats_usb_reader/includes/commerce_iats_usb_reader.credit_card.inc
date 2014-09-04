@@ -18,9 +18,14 @@ function commerce_iats_usb_reader_credit_card_settings_form($settings = NULL) {
  * Payment method callback: checkout form.
  */
 function commerce_iats_usb_reader_credit_card_submit_form($payment_method, $pane_values, $checkout_pane, $order) {
-  module_load_include('inc', 'commerce_iats_usb_reader', 'includes/commerce_iats_usb_reader.forms');
-  $form = commerce_iats_usb_reader_credit_card_form_base($payment_method, $pane_values, $checkout_pane, $order);
-  return $form;
+  if (isset($payment_method['settings']['direct_post']['enable_direct_post']) && $payment_method['settings']['direct_post']['enable_direct_post'] == 1) {
+    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.direct_post.forms');
+    return commerce_iats_direct_post_credit_card_form($payment_method, $order);
+  }
+  else {
+    module_load_include('inc', 'commerce_iats_usb_reader', 'includes/commerce_iats_usb_reader.forms');
+    return commerce_iats_usb_reader_credit_card_form_base($payment_method, $pane_values, $checkout_pane, $order);
+  }
 }
 
 /**
@@ -101,7 +106,7 @@ function commerce_iats_usb_reader_credit_card_submit_form_submit($payment_method
 function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $payment_data, $order, $charge) {
   // Format the encrypted card data in the way iATS expects to receive it.
   // {Swiper type}|@|{Encrypted card data}
-  $formatted_card_data = $payment_method['settings']['usb_reader_type']
+  $formatted_card_data = $payment_method['settings']['usb_reader']['usb_reader_type']
     . COMMERCE_IATS_CARD_READER_DELIMITER
     . $payment_data['encrypted_credit_card']['encrypted_number'];
 
