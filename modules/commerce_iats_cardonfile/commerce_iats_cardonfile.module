@@ -106,7 +106,7 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
   $payment_method = $form_state['order']->payment_methods[$payment_method_id];
 
   $allow_recurring = (isset($payment_method['settings']['allow_recurring']) && ($payment_method['settings']['allow_recurring'] == 1));
-  $direct_post = (isset($payment_method['settings']['direct_post']) && ($payment_method['settings']['direct_post'] == 1));
+  $direct_post = (isset($payment_method['settings']['direct_post']['enable_direct_post']) && ($payment_method['settings']['direct_post']['enable_direct_post'] == 1));
 
   if ($allow_recurring || $direct_post) {
     // Hide stored cards.
