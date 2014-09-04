@@ -7,6 +7,17 @@
 
 define('COMMERCE_IATS_CARD_READER_DELIMITER', '|@|');
 
+/**
+ * Implements hook_form_FORM_ID_alter().
+ *
+ * Removes amount field from customer code payment method.
+ */
+function commerce_iats_usb_reader_form_commerce_payment_order_transaction_add_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form_state['payment_method']) && ($form_state['payment_method']['method_id'] == 'iats_credit_card_customer_code')) {
+    $form['payment_terminal']['amount']['#access'] = FALSE;
+    $form['payment_terminal']['currency_code']['#access'] = FALSE;
+  }
+}
 
 /**
  * Implements hook_commerce_payment_method_info().
