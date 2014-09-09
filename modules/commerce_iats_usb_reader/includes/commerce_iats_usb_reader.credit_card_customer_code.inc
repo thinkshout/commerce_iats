@@ -91,8 +91,9 @@ function commerce_iats_usb_reader_credit_card_customer_code_submit_form_submit($
 }
 
 /**
- * Creates a customer code via the iATS Payments API using
- * an encrypted USB card reader.
+ * Creates a customer code via the iATS Payments API.
+ *
+ * Using an encrypted USB card reader.
  *
  * @param array $payment_method
  *   The payment method used during this transaction.
@@ -110,7 +111,7 @@ function commerce_iats_usb_reader_process_credit_card_customer_code_payment($pay
   // Format the encrypted card data in the way iATS expects to receive it.
   // {Swiper type}|@|{Encrypted card data}
   $formatted_card_data = $payment_method['settings']['usb_reader']['usb_reader_type']
-    . COMMERCE_IATS_CARD_READER_DELIMITER
+    . COMMERCE_IATS_USB_READER_DELIMITER
     . $payment_data['encrypted_credit_card']['encrypted_number'];
 
   // Create and populate the API request.

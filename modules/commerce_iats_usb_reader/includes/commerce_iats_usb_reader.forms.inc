@@ -5,8 +5,7 @@
  */
 
 /**
- * Gets base settings form fields for credit card based payment methods
- * using a USB card reader.
+ * Base form fields for USB reader credit card based payment methods.
  *
  * @param array $settings
  *   Form field default values array.

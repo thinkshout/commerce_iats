@@ -85,8 +85,8 @@ function commerce_iats_usb_reader_credit_card_submit_form_submit($payment_method
   }
 
   if ($pane_values['usb_reader']) {
-  return commerce_iats_process_payment($payment_method, $pane_values, $order,
-    $charge, 'commerce_iats_usb_reader_process_credit_card_payment');
+    return commerce_iats_process_payment($payment_method, $pane_values, $order,
+      $charge, 'commerce_iats_usb_reader_process_credit_card_payment');
   }
   else {
     module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card');
@@ -96,8 +96,9 @@ function commerce_iats_usb_reader_credit_card_submit_form_submit($payment_method
 }
 
 /**
- * Processes a credit card payment via the iATS Payments API using
- * an encrypted USB card reader.
+ * Processes a credit card payment via the iATS Payments API.
+ *
+ * Using an encrypted USB card reader.
  *
  * @param array $payment_method
  *   The payment method used during this transaction.
@@ -115,7 +116,7 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
   // Format the encrypted card data in the way iATS expects to receive it.
   // {Swiper type}|@|{Encrypted card data}
   $formatted_card_data = $payment_method['settings']['usb_reader']['usb_reader_type']
-    . COMMERCE_IATS_CARD_READER_DELIMITER
+    . COMMERCE_IATS_USB_READER_DELIMITER
     . $payment_data['encrypted_credit_card']['encrypted_number'];
 
   // Create and populate the API request.

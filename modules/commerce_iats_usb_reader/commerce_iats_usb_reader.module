@@ -5,7 +5,7 @@
  * Adds support for an encrypted USB card reader to Commerce iATS.
  */
 
-define('COMMERCE_IATS_CARD_READER_DELIMITER', '|@|');
+define('COMMERCE_IATS_USB_READER_DELIMITER', '|@|');
 
 /**
  * Implements hook_form_FORM_ID_alter().
@@ -71,8 +71,7 @@ function commerce_iats_usb_reader_types() {
 }
 
 /**
- * Parses a card type from the obfuscated card number contained in
- * an encrypted string.
+ * Extract the card type from the card number contained in an encrypted string.
  *
  * @param string $encrypted_string
  *   The encrypted string from a USB card reader.
@@ -82,8 +81,7 @@ function commerce_iats_usb_reader_types() {
  * @return Mixed
  *   The credit card type as a string or boolean FALSE.
  */
-function commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypted_string, $valid_types)
-{
+function commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypted_string, $valid_types) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
   $matches = NULL;
@@ -92,8 +90,7 @@ function commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypt
   // ;4222********2220=
   preg_match("/;\d{4}\*+\d{4}\=/", $encrypted_string, $matches);
 
-  if (empty($matches))
-  {
+  if (empty($matches)) {
     // Match pattern:
     // ;4222222222222220=
     preg_match("/;\d{16}\=/", $encrypted_string, $matches);
