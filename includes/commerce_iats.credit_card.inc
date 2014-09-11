@@ -63,10 +63,7 @@ function commerce_iats_credit_card_submit_form_validate($payment_method, $pane_f
     unset($pane_values['credit_card']['code']);
   }
 
-  if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
-    return FALSE;
-  }
-  return TRUE;
+  return commerce_payment_credit_card_validate($pane_values['credit_card'], $settings);
 }
 
 /**
