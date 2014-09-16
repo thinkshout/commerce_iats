@@ -80,7 +80,7 @@ function commerce_iats_ach_eft_refund_form_submit($form, &$form_state) {
   $charge = array(
     // Charge must be negative for refunds.
     'amount' => ($amount * -1),
-    'currency_code' => NULL,
+    'currency_code' => $payment_data['transaction']->currency_code,
   );
 
   commerce_iats_process_payment($form_state['payment_method'], $payment_data,
