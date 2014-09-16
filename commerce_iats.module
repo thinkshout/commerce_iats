@@ -202,7 +202,7 @@ function commerce_iats_direct_post_relay_access() {
     if ($payment_method) {
       // Received process key must match payment method's process key
       $payment_method = commerce_payment_method_instance_load($payment_method_instance_id);
-      if (substr($payment_method['settings']['direct_post']['process_key'], 0, 8) == $process_key) {
+      if (substr($payment_method['settings']['process_key'], 0, 8) == $process_key) {
         return TRUE;
       }
     }

@@ -34,7 +34,7 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
   $form['iats_dpm_process_key'] = array(
     '#type' => 'hidden',
     '#name' => 'IATS_DPM_ProcessID',
-    '#default_value' => $payment_method['settings']['direct_post']['process_key'],
+    '#default_value' => $payment_method['settings']['process_key'],
   );
 
   // Total processed amount.
@@ -61,7 +61,7 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
     $payment_method_instance_id,
     // Process key used to verify response from iATS.
     // Trimmed to avoid IATS_DPM_Comment length limit (110 chars.)
-    substr($payment_method['settings']['direct_post']['process_key'], 0, 8),
+    substr($payment_method['settings']['process_key'], 0, 8),
   );
 
   $form['iats_dpm_comment'] = array(
