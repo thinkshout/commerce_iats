@@ -109,11 +109,6 @@ function commerce_iats_process_credit_card_refund($payment_method, $payment_data
   // Get the original transaction ID.
   $remote_id_parts = explode('|', $payment_data['transaction']->remote_id);
 
-  // Currency not automatically converted to DB-friendly amount when
-  // processing refund. Do it here manually.
-  $charge['amount'] = commerce_currency_decimal_to_amount($charge['amount'],
-    $payment_data['transaction']->currency_code);
-
   // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
@@ -136,6 +131,11 @@ function commerce_iats_process_credit_card_refund($payment_method, $payment_data
 
   // Process the credit card refund.
   $response = $iats->processCreditCardRefundWithTransactionId($request);
+
+  // Currency not automatically converted to DB-friendly amount when
+  // processing refund. Do it here manually.
+  $charge['amount'] = commerce_currency_decimal_to_amount($charge['amount'],
+    $payment_data['transaction']->currency_code);
 
   return $response;
 }
