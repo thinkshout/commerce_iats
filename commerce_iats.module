@@ -710,12 +710,13 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     $settings['agent_code'] : '',
     '#required' => TRUE,
   );
+  $password = (isset($settings['agent_password'])) ?
+    $settings['agent_password'] : '';
   $form['agent_password'] = array(
-    '#type' => 'textfield',
+    '#type' => 'password',
     '#title' => t('Password'),
     '#description' => t('Enter the corresponding password for this agent code.'),
-    '#default_value' => (isset($settings['agent_password'])) ?
-    $settings['agent_password'] : '',
+    '#attributes' => array('value' => $password),
     '#required' => TRUE,
   );
   $form['direct_post'] = array(
