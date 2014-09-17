@@ -56,10 +56,12 @@ function commerce_iats_credit_card_customer_code_submit_form_validate($payment_m
     'form_parents' => array_merge($form_parents, array('credit_card')),
   );
 
-  if (!commerce_payment_credit_card_validate($pane_values['credit_card'], $settings)) {
-    return FALSE;
+  if (empty($pane_values['credit_card']['code']))
+  {
+    unset($pane_values['credit_card']['code']);
   }
-  return TRUE;
+
+  return commerce_payment_credit_card_validate($pane_values['credit_card'], $settings);
 }
 
 /**
