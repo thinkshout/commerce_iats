@@ -14,7 +14,7 @@
  *   Base fields for settings form.
  */
 function commerce_iats_usb_reader_credit_card_settings_form_base(array $settings = NULL) {
-  $form = commerce_iats_credit_card_settings_form_base($settings);
+  $form = commerce_iats_cardonfile_customer_code_settings_form_base($settings);
 
   $form['usb_reader'] = array(
     '#type' => 'fieldset',
@@ -111,8 +111,9 @@ function commerce_iats_usb_reader_credit_card_form_base($payment_method, $pane_v
 
         $form['user']['user_type'] = array(
           '#type' => 'radios',
-          '#default_value' => 'new',
+          '#default_value' => 'none',
           '#options' => array(
+            'none' => 'No user',
             'new' => 'New user',
             'existing' => 'Existing user',
           ),
@@ -126,6 +127,16 @@ function commerce_iats_usb_reader_credit_card_form_base($payment_method, $pane_v
               ':input[name="payment_details[user][user_type]"]' => array('value' => 'new'),
             ),
           ),
+        );
+
+        $form['user']['new_user']['name'] = array(
+          '#type' => 'textfield',
+          '#title' => 'Username',
+        );
+
+        $form['user']['new_user']['mail'] = array(
+          '#type' => 'textfield',
+          '#title' => 'E-mail address',
         );
 
         $form['user']['existing_user'] = array(

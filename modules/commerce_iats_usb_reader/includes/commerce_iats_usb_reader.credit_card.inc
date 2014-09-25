@@ -11,6 +11,11 @@
 function commerce_iats_usb_reader_credit_card_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_iats_usb_reader', 'includes/commerce_iats_usb_reader.forms');
   $form = commerce_iats_usb_reader_credit_card_settings_form_base($settings);
+
+  // Unset fields reserved for customer code creation.
+  unset($form['cardonfile_payment_method']);
+  unset($form['allow_recurring']);
+
   return $form;
 }
 
@@ -54,9 +59,9 @@ function commerce_iats_usb_reader_credit_card_submit_form_validate($payment_meth
       $valid = FALSE;
     }
 
-    $type = commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypted_string, $pane_values['credit_card']['valid_types']);
+    $card_data = commerce_iats_usb_reader_parse_card_data_from_encrypted_string($encrypted_string, $pane_values['credit_card']['valid_types']);
 
-    if ($type === FALSE) {
+    if ($card_data['type'] === FALSE) {
       form_set_error($prefix . 'encrypted_number', t('The credit card does not appear to be a valid card type.'));
       $valid = FALSE;
     }
@@ -119,6 +124,9 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
     . COMMERCE_IATS_USB_READER_DELIMITER
     . $payment_data['encrypted_credit_card']['encrypted_number'];
 
+  $card_data = commerce_iats_usb_reader_parse_card_data_from_encrypted_string(
+    $payment_data['encrypted_credit_card']['encrypted_number'], $payment_data['credit_card']['valid_types']);
+
   // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
@@ -129,8 +137,7 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
     'creditCardNum' => $formatted_card_data,
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
-    'mop' => strtoupper(commerce_iats_usb_reader_parse_card_type_from_encrypted_string(
-      $payment_data['encrypted_credit_card']['encrypted_number'], $payment_data['credit_card']['valid_types'])),
+    'mop' => strtoupper($card_data['type']),
     'comment' => '',
   );
 

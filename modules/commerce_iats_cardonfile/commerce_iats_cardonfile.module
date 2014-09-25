@@ -440,7 +440,7 @@ function commerce_iats_cardonfile_customer_code_settings_form_base(array $settin
         $action_settings = $action->settings;
         continue;
       }
-      if (isset($action_settings['payment_method'])) {
+      if (isset($action_settings['payment_method']['method_id'])) {
         $method_id = $action_settings['payment_method']['method_id'];
         $rules_map[$method_id] = $method_id . '|' . $rule_name;
       }

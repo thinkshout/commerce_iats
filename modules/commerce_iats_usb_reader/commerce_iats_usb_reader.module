@@ -86,17 +86,17 @@ function commerce_iats_usb_reader_types() {
 }
 
 /**
- * Extract the card type from the card number contained in an encrypted string.
+ * Extract the card type and partial number from an encrypted string.
  *
  * @param string $encrypted_string
  *   The encrypted string from a USB card reader.
  * @param array $valid_types
  *   An array of valid credit card types.
  *
- * @return Mixed
- *   The credit card type as a string or boolean FALSE.
+ * @return array
+ *   The extracted credit card data.
  */
-function commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypted_string, $valid_types) {
+function commerce_iats_usb_reader_parse_card_data_from_encrypted_string($encrypted_string, $valid_types) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
   $matches = NULL;
@@ -113,7 +113,41 @@ function commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypt
 
   $card_number = substr(substr($matches[0], 1), 0, -1);
 
-  return commerce_payment_validate_credit_card_type($card_number, $valid_types);
+  $card_data = array(
+    'type' => commerce_payment_validate_credit_card_type($card_number, $valid_types),
+    'number' => $card_number,
+  );
+
+  return $card_data;
+}
+
+function commerce_iats_usb_reader_create_new_user_cardonfile($order, $payment_method, $card_data, $customer_code, $user_data) {
+  $user_data['pass'] = user_password(8);
+  $user_data['status'] = 1;
+  $user_data['init'] = $user_data['mail'];
+  $user_data['roles'] = array(
+    DRUPAL_AUTHENTICATED_RID => 'authenticated user',
+  );
+
+  $user = user_save('', $user_data);
+
+  if ($user !== FALSE) {
+    commerce_iats_usb_reader_create_existing_user_cardonfile($order, $payment_method, $card_data, $customer_code, $user->uid);
+  }
+}
+
+function commerce_iats_usb_reader_create_existing_user_cardonfile($order, $payment_method, $card_data, $customer_code, $user_id) {
+  $order->uid = $user_id;
+
+  // Expiration date cannot be extracted from the encrypted data, so the next
+  // best option is to set it to the end of the current year.
+  $card_data['exp_month'] = 12;
+  $card_data['exp_year'] = date('Y');
+
+  // Don't set as default card. This option should be left to the user.
+  $card_data['default'] = 0;
+
+  commerce_iats_cardonfile_create_cardonfile($order, $payment_method, $card_data, $customer_code, $card_data['type']);
 }
 
 /**
@@ -147,4 +181,21 @@ function commerce_iats_usb_reader_users_autocomplete($string) {
   }
 
   drupal_json_output($users);
+}
+
+/**
+ * Parses the entity ID from an autocomplete result retrieved from this module.
+ *
+ * @param string $result
+ *   The autocomplete result in the format: "string [entity ID]"
+ *
+ * @return mixed
+ *   The entity ID or NULL if not found.
+ */
+function commerce_iats_usb_reader_parse_entity_id_from_autocomplete_result($result) {
+  $matches = NULL;
+
+  preg_match("/\[(\d+)\]$/", $result, $matches);
+
+  return (isset($matches[1])) ? $matches[1] : NULL;
 }

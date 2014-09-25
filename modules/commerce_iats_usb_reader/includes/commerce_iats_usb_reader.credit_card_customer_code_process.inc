@@ -58,9 +58,9 @@ function commerce_iats_usb_reader_credit_card_customer_code_process_submit_form_
       $valid = FALSE;
     }
 
-    $type = commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypted_string, $pane_values['credit_card']['valid_types']);
+    $card_data = commerce_iats_usb_reader_parse_card_data_from_encrypted_string($encrypted_string, $pane_values['credit_card']['valid_types']);
 
-    if ($type === FALSE) {
+    if ($card_data['type'] === FALSE) {
       form_set_error($prefix . 'encrypted_number', t('The credit card does not appear to be a valid card type.'));
       $valid = FALSE;
     }
@@ -89,8 +89,21 @@ function commerce_iats_usb_reader_credit_card_customer_code_process_submit_form_
   }
 
   if ($pane_values['usb_reader']) {
-    return commerce_iats_process_payment($payment_method, $pane_values, $order,
+    $response = commerce_iats_process_payment($payment_method, $pane_values, $order,
       $charge, 'commerce_iats_usb_reader_process_credit_card_customer_code_process_payment');
+
+    $card_data = commerce_iats_usb_reader_parse_card_data_from_encrypted_string($pane_values['encrypted_credit_card']['encrypted_number'], $pane_values['credit_card']['valid_types']);
+
+    if (isset($response['CUSTOMERCODE']) && !empty($response['CUSTOMERCODE'])) {
+      if ($pane_values['user']['user_type'] == 'new') {
+        commerce_iats_usb_reader_create_new_user_cardonfile($order, $payment_method, $card_data, $response['CUSTOMERCODE'], $pane_values['user']['new_user']);
+      }
+      else if ($pane_values['user']['user_type'] == 'existing') {
+        $user_id = commerce_iats_usb_reader_parse_entity_id_from_autocomplete_result($pane_values['user']['existing_user']['user_lookup']);
+        commerce_iats_usb_reader_create_existing_user_cardonfile($order, $payment_method, $card_data, $response['CUSTOMERCODE'], $user_id);
+      }
+    }
+
   }
   else {
     module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card_customer_code');
@@ -123,14 +136,16 @@ function commerce_iats_usb_reader_process_credit_card_customer_code_process_paym
     . COMMERCE_IATS_USB_READER_DELIMITER
     . $payment_data['encrypted_credit_card']['encrypted_number'];
 
+  $card_data = commerce_iats_usb_reader_parse_card_data_from_encrypted_string(
+    $payment_data['encrypted_credit_card']['encrypted_number'], $payment_data['credit_card']['valid_types']);
+
   // Create and populate the API request.
   $request = array(
     'customerIPAddress' => ip_address(),
     'ccNum' => $formatted_card_data,
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
-    'mop' => strtoupper(commerce_iats_usb_reader_parse_card_type_from_encrypted_string(
-      $payment_data['encrypted_credit_card']['encrypted_number'], $payment_data['credit_card']['valid_types'])),
+    'mop' => strtoupper($card_data['type']),
     'recurring' => 0,
     'beginDate' => commerce_iats_get_formatted_date(time()),
     'endDate' => commerce_iats_get_formatted_date(time()),
