@@ -8,6 +8,21 @@
 define('COMMERCE_IATS_USB_READER_DELIMITER', '|@|');
 
 /**
+ * Implements hook_menu().
+ */
+function commerce_iats_usb_reader_menu() {
+  $items = array();
+
+  $items['admin/commerce/iats/users'] = array(
+    'page callback' => 'commerce_iats_usb_reader_users_autocomplete',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
  * Implements hook_form_FORM_ID_alter().
  *
  * Removes amount field from customer code payment method.
@@ -99,4 +114,37 @@ function commerce_iats_usb_reader_parse_card_type_from_encrypted_string($encrypt
   $card_number = substr(substr($matches[0], 1), 0, -1);
 
   return commerce_payment_validate_credit_card_type($card_number, $valid_types);
+}
+
+/**
+ * Callback used to look up users by email address.
+ *
+ * @param string $string
+ *   The email address to look up. May be a partial email address.
+ *
+ * @return array
+ *   Email addresses and user IDs matching the given string.
+ *   Provided in the format: "test@example.org [1]"
+ */
+function commerce_iats_usb_reader_users_autocomplete($string) {
+  $query = new EntityFieldQuery();
+  $query->entityCondition('entity_type', 'user')
+    ->propertyCondition('mail', $string, 'CONTAINS')
+    ->range(0, 10);
+
+  $users = array();
+
+  $result = $query->execute();
+  if (isset($result['user'])) {
+    $entity_ids = array_keys($result['user']);
+    $entities_data = entity_load('user', $entity_ids);
+
+    if (!empty($entities_data)) {
+      foreach ($entities_data as $id => $entity) {
+        $users[$entity->mail . ' [' . $id . ']'] = $entity->mail;
+      }
+    }
+  }
+
+  drupal_json_output($users);
 }

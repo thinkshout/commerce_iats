@@ -100,6 +100,51 @@ function commerce_iats_usb_reader_credit_card_form_base($payment_method, $pane_v
         '#type' => 'textarea',
       );
 
+      if (($payment_method['method_id'] == 'iats_credit_card_customer_code')
+        || ($payment_method['method_id'] == 'iats_credit_card_customer_code_process')
+      ) {
+
+        $form['user'] = array(
+          '#type' => 'fieldset',
+          '#title' => 'Link credit card to user',
+        );
+
+        $form['user']['user_type'] = array(
+          '#type' => 'radios',
+          '#default_value' => 'new',
+          '#options' => array(
+            'new' => 'New user',
+            'existing' => 'Existing user',
+          ),
+        );
+
+        $form['user']['new_user'] = array(
+          '#type' => 'container',
+          '#tree' => TRUE,
+          '#states' => array(
+            'visible' => array(
+              ':input[name="payment_details[user][user_type]"]' => array('value' => 'new'),
+            ),
+          ),
+        );
+
+        $form['user']['existing_user'] = array(
+          '#type' => 'container',
+          '#tree' => TRUE,
+          '#states' => array(
+            'visible' => array(
+              ':input[name="payment_details[user][user_type]"]' => array('value' => 'existing'),
+            ),
+          ),
+        );
+
+        $form['user']['existing_user']['user_lookup'] = array(
+          '#type' => 'textfield',
+          '#title' => 'Email address',
+          '#autocomplete_path' => 'admin/commerce/iats/users',
+        );
+      }
+
       $form['#attached']['js'] = array(
         drupal_get_path('module', 'commerce_iats_usb_reader') . '/js/commerce_iats_usb_reader.credit_card.js',
       );
