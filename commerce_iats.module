@@ -435,7 +435,7 @@ function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
         );
       }
 
-      if ($form_id != 'commerce_checkout_form_validation') {
+      if ($form_id != 'commerce_checkout_form_confirmation') {
         $footer_fields = commerce_iats_direct_debit_checkout_pane_footer_fields();
         $form += $footer_fields;
       }

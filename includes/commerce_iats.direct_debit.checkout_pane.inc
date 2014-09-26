@@ -401,11 +401,6 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
   $settings = $order->data['payment_method_instance']['settings'];
   $pane_form = array();
 
-  $confirmation = t('These are the details that you have entered to set up
-    Direct Debit Instruction. Important: In order to complete the Direct Debit
-    set-up, please check the following details and click the "Continue" button
-    lower down this page.');
-
   $pane_form['confirmation'] = array(
     '#type' => 'fieldset',
     '#title' => t('Confirmation'),
@@ -413,68 +408,67 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
 
   $pane_form['confirmation']['text'] = array(
     '#type' => 'item',
-    '#markup' => $confirmation,
+    '#markup' => '<p>' . t('These are the details that you have entered to
+      set up the Direct Debit Instruction:') . '<br />'
+      . t('Important: In order to complete the Direct Debit set-up, please
+      check the following details and then click the \'Confirm\' button lower
+      down this page.') . '</p>',
   );
 
-  $pane_form['title'] = array(
-    '#type' => 'item',
-    '#markup' => t('Instruction to your Bank or Building Society to pay by Direct Debit'),
-  );
-
-  $pane_form['company'] = array(
+  $pane_form['review'] = array(
     '#type' => 'fieldset',
   );
 
-  $pane_form['company']['name'] = array(
+  $pane_form['review']['dd_logo'] = array(
+    '#type' => 'markup',
+    '#markup' => '<div class="direct_debit_logo_header"><img src="/' . drupal_get_path('module', 'commerce_iats') . '/images/logos/dd_logo_landscape.png"></div>',
+  );
+
+  $pane_form['review']['account'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'direct_debit_pane_left'
+      ),
+    ),
+  );
+
+  $pane_form['review']['account']['company'] = array(
+    '#type' => 'container',
+  );
+
+  $pane_form['review']['account']['company']['title'] = array(
     '#type' => 'item',
-    '#markup' => $settings['direct_debit']['company_name'],
+    '#markup' => '<span class="direct_debit_header">' . strtoupper($settings['direct_debit']['company_name']) . '</span>',
   );
 
-  $pane_form['company']['address'] = array(
+  $combined_address = strtoupper($settings['direct_debit']['company_address']) . '</br >'
+    . strtoupper($settings['direct_debit']['company_city']) . '<br />'
+    . strtoupper($settings['direct_debit']['company_state']) . '<br />'
+    . strtoupper($settings['direct_debit']['company_country']) . '<br />'
+    . strtoupper($settings['direct_debit']['company_postcode']);
+
+  $pane_form['review']['account']['company']['address'] = array(
     '#type' => 'item',
-    '#markup' => $settings['direct_debit']['company_address'],
+    '#markup' => $combined_address,
   );
 
-  $pane_form['company']['city'] = array(
-    '#type' => 'item',
-    '#markup' => $settings['direct_debit']['company_city'],
-  );
-
-  $pane_form['company']['state'] = array(
-    '#type' => 'item',
-    '#markup' => $settings['direct_debit']['company_state'],
-  );
-
-  $pane_form['company']['country'] = array(
-    '#type' => 'item',
-    '#markup' => $settings['direct_debit']['company_country'],
-  );
-
-  $pane_form['company']['postcode'] = array(
-    '#type' => 'item',
-    '#markup' => $settings['direct_debit']['company_postcode'],
-  );
-
-  $pane_form['details'] = array(
-    '#type' => 'fieldset',
-  );
-
-  $pane_form['details']['account_holder'] = array(
+  $pane_form['review']['account']['account_holder'] = array(
     '#type' => 'item',
     '#title' => t('Name of Account Holder'),
-    '#markup' => $order->data['account_payer']['account']['account_holder'],
+    '#markup' => '<span class="direct_debit_review_field">' . $order->data['account_payer']['account']['account_holder'] . '</span>',
   );
 
-  $pane_form['details']['account_number'] = array(
+  $pane_form['review']['account']['account_number'] = array(
     '#type' => 'item',
     '#title' => t('Bank / Building Society Account Number'),
-    '#markup' => $order->data['account_payer']['account']['number'],
+    '#markup' => '<span class="direct_debit_review_field">' . $order->data['account_payer']['account']['number'] . '</span>',
   );
 
-  $pane_form['details']['sort_code'] = array(
+  $pane_form['review']['account']['sort_code'] = array(
     '#type' => 'item',
     '#title' => t('Branch Sort Code'),
-    '#markup' => $order->data['account_payer']['account']['sort_code'],
+    '#markup' => '<span class="direct_debit_review_field">' . $order->data['account_payer']['account']['sort_code'] . '</span>',
   );
 
   $combined_address = '';
@@ -493,46 +487,62 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
     . $order->data['validation']['bank_branch'] . '<br />'
     . $combined_address;
 
-  $pane_form['details']['name_address'] = array(
+  $pane_form['review']['account']['name_address'] = array(
     '#type' => 'item',
     '#title' => t('Name and full postal address of your Bank or Building Society'),
-    '#markup' => $name_address,
+    '#markup' => '<span class="direct_debit_review_field">' . $name_address . '</span>',
   );
 
-  $pane_form['details']['service_user_number'] = array(
+  $pane_form['review']['instruction'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'direct_debit_pane_right'
+      ),
+    ),
+  );
+
+  $pane_form['review']['instruction']['title'] = array(
+    '#type' => 'item',
+    '#markup' => '<span class="direct_debit_header">Instruction to your Bank or Building Society to pay by Direct Debit</span>',
+  );
+
+  $pane_form['review']['instruction']['service_user_number'] = array(
     '#type' => 'item',
     '#title' => t('Service User Number'),
-    '#markup' => $settings['direct_debit']['service_user_number'],
+    '#markup' => '<span class="direct_debit_review_field">' . $settings['direct_debit']['service_user_number'] . '</span>',
   );
 
-  $pane_form['details']['reference_number'] = array(
+  $pane_form['review']['instruction']['reference_number'] = array(
     '#type' => 'item',
     '#title' => t('Reference'),
-    '#markup' => $order->data['validation']['reference_number'],
+    '#markup' => '<span class="direct_debit_review_field">' . $order->data['validation']['reference_number'] . '</span>',
   );
 
-  $pane_form['details']['instruction'] = array(
-    '#type' => 'fieldset',
-  );
-
-  $instruction_info = t('Instructions to your Bank or Building Society:
-    Please pay @company_name from the account detailed in this instruction
-    subject to the safeguards assured by the Direct Debit Guarantee.
+  $instruction_info = t('Instruction to your Bank or Building Society:
+    Please pay @company_name Direct Debits from the account detailed in
+    this instruction subject to the safeguards assured by the
+    Direct Debit Guarantee.
     I understand that this instruction may remain with @company_name and,
-    if so, details will be passed electronically to my Bank/Building Society.',
+    if so, details will be passed electronically to my Bank / Building Society.',
     array(
       '@company_name' => $settings['direct_debit']['company_name'],
     ));
 
-  $pane_form['details']['instruction']['info'] = array(
+  $pane_form['review']['instruction']['info'] = array(
     '#type' => 'item',
     '#markup' => $instruction_info,
   );
 
-  $pane_form['details']['instruction']['value'] = array(
+  $pane_form['review']['instruction']['value'] = array(
     '#type' => 'item',
-    '#markup' => 'Date: ' . date('d-m-Y',
-      strtotime($order->data['account_payer']['account']['first_collection_date'])),
+    '#markup' => '<span class="direct_debit_review_field">Date: ' . date('d/m/Y',
+      strtotime($order->data['account_payer']['account']['first_collection_date'])) . '</span>',
+  );
+
+  $pane_form['review']['notice'] = array(
+    '#type' => 'item',
+    '#markup' => '<div style="clear:both">Banks and Building Societies may not accept Direct Debit Instructions for some types of account.</div>',
   );
 
   return $pane_form;
