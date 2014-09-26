@@ -177,10 +177,12 @@ function commerce_iats_recurring_pane_schedule_dates($payment_type) {
       break;
 
     case 'Monthly':
-      $payment_dates = array();
-      for ($i = 1; $i <= 31; $i++) {
-        $payment_dates[$i] = $i;
-      }
+      // 1st and 15th provided as default options for easier batch processing.
+      // Add more dates using hook_form_alter if required.
+      $payment_dates = array(
+        1 => 1,
+        15 => 15,
+      );
       break;
 
     case 'Annually':

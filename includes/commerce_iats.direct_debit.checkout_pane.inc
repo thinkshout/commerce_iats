@@ -135,7 +135,7 @@ function commerce_iats_direct_debit_account_payer_pane_settings_form($checkout_p
     '#title' => t('First Collection Option Count'),
     '#description' => t('The number of first collection date options to offer the user.'),
     '#size' => 4,
-    '#default_value' => variable_get('commerce_iats_direct_debit_account_payer_first_collection_option_count', '5'),
+    '#default_value' => variable_get('commerce_iats_direct_debit_account_payer_first_collection_option_count', '3'),
   );
 
   return $form;
@@ -799,7 +799,7 @@ function commerce_iats_direct_debit_checkout_pane_footer_fields() {
  *   Array of first collection date options.
  */
 function commerce_iats_direct_debit_get_first_collection_options($schedule_type, $schedule_date) {
-  $option_count = (int) variable_get('commerce_iats_direct_debit_account_payer_first_collection_option_count', 5);
+  $option_count = (int) variable_get('commerce_iats_direct_debit_account_payer_first_collection_option_count', 3);
   $schedule_date = (int) $schedule_date;
 
   $dates = array();
