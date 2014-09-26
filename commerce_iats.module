@@ -395,6 +395,10 @@ function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form_state['order']) && isset($form_state['order']->data['payment_method'])) {
     if (substr($form_state['order']->data['payment_method'], 0, 12) == 'direct_debit') {
 
+      $form['#attached']['css'] = array(
+        drupal_get_path('module', 'commerce_iats') . '/css/commerce_iats.direct_debit.css',
+      );
+
       if ($form_id == 'commerce_checkout_form_declaration') {
         $form['buttons']['continue']['#value'] = 'Proceed';
         $form['buttons']['back']['#access'] = FALSE;
@@ -428,6 +432,11 @@ function commerce_iats_form_alter(&$form, &$form_state, $form_id) {
           '#submit' => array('commerce_iats_checkout_form_cancel_submit'),
           '#limit_validation_errors' => array(),
         );
+      }
+
+      if ($form_id != 'commerce_checkout_form_validation') {
+        $footer_fields = commerce_iats_direct_debit_checkout_pane_footer_fields();
+        $form += $footer_fields;
       }
     }
   }

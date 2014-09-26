@@ -50,9 +50,16 @@ function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form
   $settings = $order->data['payment_method_instance']['settings'];
   $pane_form = array();
 
+  $paper_url = variable_get('commerce_iats_direct_debit_declaration_pane_paper_url', '');
+
   $info = t('Note: If you are not the account holder or your account requires
-    more than one signature a paper Direct Debit Instruction will be required
-    to be completed and posted to us.');
+   more than one signature, a paper Direct Debit Instruction will be required
+   to be completed and posted to us. !paper_url to print off a paper
+   Direct Debit Instruction',
+    array(
+      '!paper_url' => l(t('Click here'), $paper_url)
+    )
+  );
 
   $terms = t('Note: All the normal Direct Debit safeguards and guarantees apply.
    No changes in the amount, date, frequency to be debited can be made without
@@ -64,15 +71,7 @@ function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form
 
   $pane_form['info'] = array(
     '#type' => 'item',
-    '#markup' => $info,
-  );
-
-  $paper_url = variable_get('commerce_iats_direct_debit_declaration_pane_paper_url', '');
-
-  $pane_form['paper_link'] = array(
-    '#type' => 'item',
-    '#markup' => l(t('Click here to print off a paper Direct Debit Instruction'),
-      $paper_url),
+    '#markup' => '<p>' . $info . '</p><p>' . t('OR') . '</p><p>' . t('Continue with the details below:') . '</p>',
   );
 
   $pane_form['declaration'] = array(
@@ -84,6 +83,11 @@ function commerce_iats_direct_debit_declaration_pane_checkout_form($form, &$form
     '#type' => 'checkbox',
     '#title' => t('I wish to start a Direct Debit'),
     '#required' => TRUE,
+  );
+
+  $pane_form['declaration']['required'] = array(
+    '#type' => 'markup',
+    '#markup' => '<span class="form-required">*</span> ' . t('required'),
   );
 
   $pane_form['terms'] = array(
@@ -745,6 +749,39 @@ function commerce_iats_direct_debit_complete_pane_checkout_form($form, &$form_st
   );
 
   return $pane_form;
+}
+
+function commerce_iats_direct_debit_checkout_pane_footer_fields() {
+  $path = drupal_get_path('module', 'commerce_iats');
+
+  $form = array();
+
+  $form['footer_logos'] = array(
+    '#type' => 'container',
+    '#attributes' => array(
+      'class' => array(
+        'direct_debit_logos',
+      ),
+    ),
+    '#weight' => 10,
+  );
+
+  $form['footer_logos']['bacs_logo'] = array(
+    '#type' => 'markup',
+    '#markup' => '<img src="/' . $path . '/images/logos/bacs_approved_logo.png">',
+  );
+
+  $form['footer_logos']['dd_logo'] = array(
+    '#type' => 'markup',
+    '#markup' => '<img src="/' . $path . '/images/logos/dd_logo_landscape.png">',
+  );
+
+  $form['footer_logos']['iats_payments_logo'] = array(
+    '#type' => 'markup',
+    '#markup' => '<img src="/' . $path . '/images/logos/iats_payments_logo.png">',
+  );
+
+  return $form;
 }
 
 /**
