@@ -743,6 +743,8 @@ function commerce_iats_direct_debit_summary_pane_checkout_form_submit($form, &$f
  * Checkout pane callback: Displays the direct debit set up complete page.
  */
 function commerce_iats_direct_debit_complete_pane_checkout_form($form, &$form_state, $checkout_pane, $order) {
+  $settings = $order->data['payment_method_instance']['settings'];
+
   $pane_form = array();
 
   $pane_form['complete'] = array(
@@ -750,12 +752,68 @@ function commerce_iats_direct_debit_complete_pane_checkout_form($form, &$form_st
     '#title' => t('Completed'),
   );
 
-  $pane_form['complete']['text'] = array(
+  $pane_form['complete']['reference_number'] = array(
     '#type' => 'item',
     '#markup' => t('Your Direct Debit Reference Number is @reference_number',
       array(
         '@reference_number' => $order->data['validation']['reference_number'],
       )),
+  );
+
+  $pane_form['complete']['info'] = array(
+    '#type' => 'item',
+    '#markup' => '<p>' . t('Should you have any queries regarding your Direct
+    Debit, please do not hesitate to contact us on @phone', array(
+        '@phone' => $settings['direct_debit']['company_phone'],
+      )) . '</p>'
+      . '<p>That completes the Direct Debit Instruction, thank you. An email
+    confirming the details will be sent within 3 working days or not later
+    than 10 working days before the first collection. Please find a copy of
+    the Direct Debit Guarantee below.</p>',
+  );
+
+  $pane_form['guarantee'] = array(
+    '#type' => 'fieldset',
+  );
+
+  $pane_form['guarantee']['dd_logo'] = array(
+    '#type' => 'markup',
+    '#markup' => '<img style="float:right" src="/' . drupal_get_path('module', 'commerce_iats') . '/images/logos/dd_logo_landscape.png">',
+  );
+
+  $pane_form['guarantee']['title'] = array(
+    '#type' => 'item',
+    '#markup' => '<span class="direct_debit_header">The Direct Debit Guarantee</span>',
+  );
+
+  $pane_form['guarantee']['text'] = array(
+    '#type' => 'item',
+    '#markup' => '<ul>'
+      . '<li>' . t('This Guarantee is offered by all banks and building societies
+    that accept instructions to pay Direct Debits.') . '</li>'
+      . '<li>' . t('If there are any changes to the amount, date or frequency of
+    your Direct Debit @company_name will notify you five (5) working days in
+    advance of your account being debited or as otherwise agreed. If you request
+    @company_name to collect a payment, confirmation of the amount and date will
+    be given to you at the time of the request.',
+        array(
+          '@company_name' => $settings['direct_debit']['company_name'],
+        )) . '</li>'
+      . '<li>' . t('If an error is made in the payment of your Direct Debit, by
+    @company_name or your bank or building society you are entitled to a full
+    and immediate refund of the amount paid from your bank or building society.',
+        array(
+          '@company_name' => $settings['direct_debit']['company_name'],
+        )) . '</li>'
+      . '<li>' . t('If you receive a refund you are not entitled to, you must pay
+    it back when @company_name asks you to.',
+        array(
+          '@company_name' => $settings['direct_debit']['company_name'],
+        )) . '</li>'
+      . '<li>' . t('You can cancel a Direct Debit at any time by simply contacting
+    your bank or building society. Written confirmation may be required.
+    Please also notify us.') . '</li>'
+      . '</ul>',
   );
 
   return $pane_form;
