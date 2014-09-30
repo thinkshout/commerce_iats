@@ -377,16 +377,9 @@ function commerce_iats_cardonfile_ach_eft_delete($form, &$form_state, $payment_m
     $auth_result = $response;
   }
 
-  if (substr($auth_result, 0, 2) == COMMERCE_IATS_TXN_OK) {
+  if ((substr($auth_result, 0, 2) == COMMERCE_IATS_TXN_OK) || strstr($auth_result, 'THE CUSTOMER CODE HAS BEEN USED')) {
     return TRUE;
   }
-  // Account for iATS retaining customer codes once used in a transaction.
-  elseif (strstr($auth_result, 'THE CUSTOMER CODE HAS BEEN USED')) {
-    drupal_set_message(
-      t('Account details successfully removed. iATS Payments maintains a record of all accounts used in payment transactions.'));
-    return TRUE;
-  }
-  // Account for other API errors.
   else {
     watchdog('commerce_iats_cardonfile',
       'iATS error when deleting customer code: @error',
