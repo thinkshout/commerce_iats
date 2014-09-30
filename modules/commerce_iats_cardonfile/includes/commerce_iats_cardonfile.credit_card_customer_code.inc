@@ -111,7 +111,8 @@ function commerce_iats_cardonfile_credit_card_create_customer_code($payment_meth
   );
 
   if (isset($payment_method['settings']['allow_recurring'])
-    && $payment_method['settings']['allow_recurring'] == 1) {
+    && ($payment_method['settings']['allow_recurring'] == 1)
+    && isset($order->data['recurring'])) {
     $request['recurring'] = 1;
     $request['beginDate'] = $order->data['recurring']['begin_date'];
     $request['endDate'] = $order->data['recurring']['end_date'];
