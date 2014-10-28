@@ -165,7 +165,7 @@ function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$for
   global $user;
 
   if ($form_state['card']->recurring) {
-    $form['#tree'] = TRUE;
+    $form['credit_card']['#tree'] = TRUE;
 
     $form['credit_card']['cardonfile_instance_default']['#access'] = FALSE;
 
@@ -258,6 +258,7 @@ function commerce_iats_cardonfile_recurring_schedule_type_callback($form, $form_
  * Validation callback for cardonfile form.
  */
 function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_validate($form, &$form_state) {
+  module_load_include('inc', 'commerce_cardonfile', 'includes/commerce_cardonfile.pages');
   module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.recurring.checkout_pane');
 
   $valid = TRUE;
