@@ -28,6 +28,18 @@ function commerce_iats_cardonfile_entity_info() {
 }
 
 /**
+ * Implements hook_permission().
+ */
+function commerce_iats_cardonfile_permission() {
+  return array(
+    'modify iats recurring payment' => array(
+      'title' => t('Modify a recurring payment'),
+      'description' => (t('Modify a recurring payment amount and schedule.')),
+    ),
+  );
+}
+
+/**
  * Implements hook_entity_property_info_alter().
  */
 function commerce_iats_cardonfile_entity_property_info_alter(&$info) {
@@ -150,7 +162,11 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
  * Implements hook_form_FORM_ID_alter().
  */
 function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
+
   if ($form_state['card']->recurring) {
+    $form['#tree'] = TRUE;
+
     $form['credit_card']['cardonfile_instance_default']['#access'] = FALSE;
 
     if ($form_state['op'] == 'update') {
@@ -158,25 +174,127 @@ function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$for
       $form_state['recurring'] = $recurring;
 
       $form['credit_card']['recurring'] = array();
-      $form['credit_card']['recurring']['amount'] = array(
-        '#type' => 'item',
-        '#title' => t('Recurring payment amount'),
-        '#markup' => $recurring->amount,
-      );
 
-      $form['credit_card']['recurring']['schedule_type'] = array(
-        '#type' => 'item',
-        '#title' => t('Recurring payment schedule type'),
-        '#markup' => $recurring->schedule_type,
-      );
+      if (user_access('modify iats recurring payment', $user)) {
+        module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.recurring.checkout_pane');
 
-      $form['credit_card']['recurring']['schedule_date'] = array(
-        '#type' => 'item',
-        '#title' => t('Recurring payment date'),
-        '#markup' => $recurring->schedule_date,
-      );
+        $schedule_type = (isset($form_state['values']['credit_card']['recurring']['schedule_type'])) ?
+          $form_state['values']['credit_card']['recurring']['schedule_type'] : $recurring->schedule_type;
+
+        $schedule_date = (isset($form_state['values']['credit_card']['recurring']['schedule_date'])) ?
+          $form_state['values']['credit_card']['recurring']['schedule_date'] : $recurring->schedule_date;
+
+        $form['credit_card']['recurring']['amount'] = array(
+          '#type' => 'textfield',
+          '#title' => t('Recurring payment amount'),
+          '#size' => 8,
+          '#default_value' => $recurring->amount,
+        );
+
+        $form['credit_card']['recurring']['schedule_type'] = array(
+          '#type' => 'select',
+          '#title' => t('Recurring payment schedule type'),
+          '#options' => commerce_iats_recurring_pane_schedule_types(),
+          '#default_value' => $schedule_type,
+          '#ajax' => array(
+            'callback' => 'commerce_iats_cardonfile_recurring_schedule_type_callback',
+            'method' => 'replace',
+            'wrapper' => 'payment-date-wrapper',
+          ),
+        );
+
+        if (!empty($schedule_type)) {
+          $form['credit_card']['recurring']['schedule_date'] = array(
+            '#type' => 'select',
+            '#title' => t('Recurring payment date'),
+            '#options' => commerce_iats_recurring_pane_schedule_dates($schedule_type),
+          );
+
+          if ($schedule_date != NULL) {
+            $form['credit_card']['recurring']['schedule_date']['#default_value'] = $schedule_date;
+          }
+        }
+        else {
+          $form['credit_card']['recurring']['schedule_date'] = array();
+        }
+
+        $form['credit_card']['recurring']['schedule_date']['#prefix'] = '<div id="payment-date-wrapper">';
+        $form['credit_card']['recurring']['schedule_date']['#suffix'] = '</div>';
+      }
+      else {
+        $form['credit_card']['recurring']['amount'] = array(
+          '#type' => 'item',
+          '#title' => t('Recurring payment amount'),
+          '#markup' => $recurring->amount,
+        );
+
+        $form['credit_card']['recurring']['schedule_type'] = array(
+          '#type' => 'item',
+          '#title' => t('Recurring payment schedule type'),
+          '#markup' => $recurring->schedule_type,
+        );
+
+        $form['credit_card']['recurring']['schedule_date'] = array(
+          '#type' => 'item',
+          '#title' => t('Recurring payment date'),
+          '#markup' => $recurring->schedule_date,
+        );
+      }
     }
   }
+
+  // Overwrite form validation.
+  $form['#validate'] = array('commerce_iats_cardonfile_form_commerce_cardonfile_card_form_validate');
+}
+
+/**
+ * Form callback when selecting a schedule type.
+ */
+function commerce_iats_cardonfile_recurring_schedule_type_callback($form, $form_state) {
+  return $form['credit_card']['recurring']['schedule_date'];
+}
+
+/**
+ * Validation callback for cardonfile form.
+ */
+function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_validate($form, &$form_state) {
+  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.recurring.checkout_pane');
+
+  $valid = TRUE;
+
+  if (empty($form_state['values']['credit_card']['owner'])) {
+    form_error($form['credit_card']['owner'], t('Please enter a card owner name.'));
+    $valid = FALSE;
+  }
+
+  if ($valid && isset($form_state['values']['credit_card']['recurring'])) {
+    if (empty($form_state['values']['credit_card']['recurring']['amount'])) {
+      form_error($form['credit_card']['recurring']['amount'], t('Please enter a valid amount.'));
+      $valid = FALSE;
+    }
+
+    $schedule_type = $form_state['values']['credit_card']['recurring']['schedule_type'];
+
+    if (isset($form_state['values']['credit_card']['recurring']['schedule_date'])) {
+      $schedule_date = $form_state['values']['credit_card']['recurring']['schedule_date'];
+    }
+
+    $valid_schedule_types = commerce_iats_recurring_pane_schedule_types();
+    if (!isset($valid_schedule_types[$schedule_type])) {
+      form_error($form['credit_card']['recurring']['schedule_type'], t('Please select a valid schedule type.'));
+      $valid = FALSE;
+    }
+
+    if (isset($schedule_date)) {
+      $valid_schedule_dates = commerce_iats_recurring_pane_schedule_dates($schedule_type);
+      if (!isset($valid_schedule_dates[$schedule_date])) {
+        form_error($form['credit_card']['recurring']['schedule_date'], t('Please select a valid schedule date.'));
+        $valid = FALSE;
+      }
+    }
+  }
+
+  return $valid;
 }
 
 /**
@@ -604,13 +722,6 @@ function commerce_iats_cardonfile_payment_method_callbacks($payment_method_type)
   );
 
   return $card_on_file_callbacks;
-}
-
-/**
- * Form callback when selecting a schedule type.
- */
-function commerce_iats_cardonfile_recurring_schedule_type_callback($form, $form_state) {
-  return $form['commerce_payment']['payment_details']['recurring']['schedule_date'];
 }
 
 /**
