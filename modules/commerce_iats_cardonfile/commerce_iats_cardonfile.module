@@ -103,6 +103,39 @@ function commerce_iats_cardonfile_form_commerce_payment_order_transaction_add_fo
  * details being used in place of credit card details.
  */
 function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$form, &$form_state, $form_id) {
+  // Disable non-recurring payment methods if recurring checkout pane exists.
+  if (isset($form_state['order']->data['recurring'])) {
+    $recurring_payment_methods = array(
+      'iats_credit_card_customer_code',
+      'iats_ach_eft_customer_code'
+    );
+
+    if (isset($form['commerce_payment']['payment_methods'])
+      && is_array($form['commerce_payment']['payment_methods']['#value'])) {
+      foreach ($form['commerce_payment']['payment_methods']['#value'] as $payment_method_name => $payment_method_data) {
+        $valid_payment_method = FALSE;
+        foreach ($recurring_payment_methods as $recurring_payment_method_name) {
+          if (strstr($payment_method_name, $recurring_payment_method_name . '|')) {
+            $valid_payment_method = TRUE;
+            continue;
+          }
+        }
+        if (!$valid_payment_method) {
+          unset($form['commerce_payment']['payment_methods']['#value'][$payment_method_name]);
+          unset($form['commerce_payment']['payment_method']['#options'][$payment_method_name]);
+        }
+      }
+
+      // Overwrite payment details to remove any stored cards.
+      if (empty($form_state['values'])) {
+        $form['commerce_payment']['payment_details'] = array(
+          '#type' => 'markup',
+          '#markup' => '<div id="payment-details"></div>',
+        );
+      }
+    }
+  }
+
   if (isset($form_state['values']['commerce_payment']['payment_method'])) {
     $payment_method_id = $form_state['values']['commerce_payment']['payment_method'];
   }
