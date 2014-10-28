@@ -157,7 +157,8 @@ function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, 
   $response = $iats->createACHEFTCustomerCode($request);
 
   if ($response != NULL) {
-    if ($payment_data['bank_account']['cardonfile_store']) {
+    // If the user has opted to store the card or created a recurring payment.
+    if ($payment_data['credit_card']['cardonfile_store'] || $request['recurring']) {
       $customer_code = trim($response['CUSTOMERCODE']);
       if (commerce_iats_cardonfile_can_create_cardonfile($customer_code)) {
         $payment_data['bank_account']['default'] = (isset($payment_data['cardonfile_instance_default'])) ?
