@@ -307,10 +307,33 @@ function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_m
     'accountCustomerName' => $card_data->card_name,
     'accountType' => $card_data->card_type,
     'updateAccountNum' => 0,
-    'recurring' => 0,
-    'beginDate' => commerce_iats_get_formatted_date(time()),
-    'endDate' => commerce_iats_get_formatted_date(time()),
   );
+
+  if (isset($form_state['values']['credit_card']['recurring'])
+    && !empty($form_state['values']['credit_card']['recurring']['schedule_type'])) {
+    // Updating a recurring payment.
+
+    // Get default recurring payment duration.
+    $payment_duration = variable_get('commerce_iats_recurring_payment_duration',
+      COMMERCE_IATS_RECURRING_PAYMENT_DURATION);
+    $end_time = mktime(0, 0, 0, date('n'), date('j') + $payment_duration, date('y'));
+
+    $request['recurring'] = 1;
+    $request['beginDate'] = commerce_iats_get_formatted_date(time());
+    $request['endDate'] = commerce_iats_get_formatted_date($end_time);
+    $request['amount'] = $form_state['values']['credit_card']['recurring']['amount'];
+    $request['scheduleType'] = $form_state['values']['credit_card']['recurring']['schedule_type'];
+    $request['scheduleDate'] = $form_state['values']['credit_card']['recurring']['schedule_date'];
+  }
+  else {
+    // Not a recurring payment or cancelling an existing recurring payment.
+    $request['recurring'] = 0;
+    $request['beginDate'] = commerce_iats_get_formatted_date(time());
+    $request['endDate'] = commerce_iats_get_formatted_date(time());
+    $request['amount'] = 0;
+    $request['scheduleType'] = '';
+    $request['scheduleDate'] = '';
+  }
 
   // Get the API service.
   $iats = commerce_iats_get_service('CustomerLink', $payment_method);
@@ -340,6 +363,14 @@ function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_m
     );
     return FALSE;
   }
+
+  // Update the recurring payment record.
+  $card_on_file_recurring = commerce_iats_cardonfile_recurring_load($card_data->card_id);
+
+  $card_on_file_recurring->amount = $request['amount'];
+  $card_on_file_recurring->schedule_type = $request['scheduleType'];
+  $card_on_file_recurring->schedule_date = $request['scheduleDate'];
+  commerce_iats_cardonfile_recurring_save($card_on_file_recurring);
 
   return TRUE;
 }
