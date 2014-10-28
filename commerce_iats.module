@@ -936,7 +936,7 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     }
 
     // If AUTHORIZATIONRESULT or AUTHRESULT are not set, then the API returned
-    // an error string. Assign it here for logging purposes.
+    // an error. Assign it here for logging purposes.
     if ($auth_result == NULL) {
       $auth_result = $response;
     }
@@ -962,13 +962,13 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     $transaction->amount = $charge['amount'];
     $transaction->currency_code = $charge['currency_code'];
 
-    if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
+    if (isset($auth_result['code'])) {
       // Create a failed transaction with the error message.
       $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
 
       if (isset($payment_method['settings']['detailed_failure_message'])
         && $payment_method['settings']['detailed_failure_message'] == 1) {
-        $message = array($auth_result);
+        $message = array($auth_result['message']);
       }
       else {
         $message = array('Transaction failed.');
@@ -991,8 +991,8 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     commerce_payment_transaction_save($transaction);
 
     // If the payment failed, display an error and rebuild the form.
-    if (substr($auth_result, 0, 2) != COMMERCE_IATS_TXN_OK) {
-      $error_reason = $auth_result;
+    if (isset($auth_result['code'])) {
+      $error_reason = $auth_result['message'];
       if (isset($response['AUTHRESULT']['BANKERROR'])) {
         $error_reason .= ': ' . $response['AUTHRESULT']['BANKERROR'];
       }
