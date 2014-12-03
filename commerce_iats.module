@@ -962,7 +962,7 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     $transaction->amount = $charge['amount'];
     $transaction->currency_code = $charge['currency_code'];
 
-    if (isset($auth_result['code'])) {
+    if (is_array($auth_result) && isset($auth_result['code'])) {
       // Create a failed transaction with the error message.
       $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
 
@@ -991,7 +991,7 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     commerce_payment_transaction_save($transaction);
 
     // If the payment failed, display an error and rebuild the form.
-    if (isset($auth_result['code'])) {
+    if (is_array($auth_result) && isset($auth_result['code'])) {
       $error_reason = $auth_result['message'];
       if (isset($response['AUTHRESULT']['BANKERROR'])) {
         $error_reason .= ': ' . $response['AUTHRESULT']['BANKERROR'];
