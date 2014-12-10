@@ -962,6 +962,17 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     $transaction->amount = $charge['amount'];
     $transaction->currency_code = $charge['currency_code'];
 
+    if (is_a($payment_data, 'CommerceCardOnFile')) {
+      $type = $payment_data->card_type;
+    }
+    else {
+      $type = $payment_data['credit_card']['type'];
+    }
+
+    $transaction->payload = array(
+      'type' => $type,
+    );
+
     if (is_array($auth_result) && isset($auth_result['code'])) {
       // Create a failed transaction with the error message.
       $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
