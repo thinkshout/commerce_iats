@@ -816,9 +816,12 @@ function commerce_iats_cardonfile_recurring_save($recurring_data) {
  * @param array $charge
  *   The transaction charge.
  *
- * @return Mixed
- *   API response array or boolean FALSE on failure.
+ * @return boolean
+ *   TRUE on successful transaction.
  */
 function commerce_iats_cardonfile_credit_card_charge_callback($payment_method, $card_data, $order, $charge = NULL) {
-  return commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
+  $result = commerce_iats_process_payment($payment_method, $card_data, $order, $charge, 'commerce_iats_cardonfile_credit_card_charge');
+
+  // Result will be an array on success and FALSE on failure. Convert to bool.
+  return ($result !== FALSE);
 }
