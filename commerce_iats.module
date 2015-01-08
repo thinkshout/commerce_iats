@@ -973,27 +973,33 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
       'type' => $type,
     );
 
-    if (is_array($auth_result) && isset($auth_result['code'])) {
-      // Create a failed transaction with the error message.
-      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+    if (is_array($auth_result)) {
+      if (isset($auth_result['code'])) {
+        // Create a failed transaction with the error message.
+        $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
 
-      if (isset($payment_method['settings']['detailed_failure_message'])
-        && $payment_method['settings']['detailed_failure_message'] == 1) {
-        $message = array($auth_result['message']);
+        if (isset($payment_method['settings']['detailed_failure_message'])
+          && $payment_method['settings']['detailed_failure_message'] == 1) {
+          $message = array($auth_result['message']);
+        }
+        else {
+          $message = array('Transaction failed.');
+        }
       }
       else {
-        $message = array('Transaction failed.');
+        $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+        $message = array('Transaction successful.');
+        if (!is_null($customer_code)) {
+          $message[] = 'Customer code created: ' . $customer_code;
+        }
+        if ($payment_method['method_id'] == 'iats_ach_eft') {
+          $message[] = 'ACH/EFT payment pending.';
+        }
       }
     }
     else {
-      $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
-      $message = array('Transaction successful.');
-      if (!is_null($customer_code)) {
-        $message[] = 'Customer code created: ' . $customer_code;
-      }
-      if ($payment_method['method_id'] == 'iats_ach_eft') {
-        $message[] = 'ACH/EFT payment pending.';
-      }
+      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+      $message = array('Transaction failed.') . $auth_result;
     }
 
     $transaction->message = implode('<br />', $message);
@@ -1002,10 +1008,15 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
     commerce_payment_transaction_save($transaction);
 
     // If the payment failed, display an error and rebuild the form.
-    if (is_array($auth_result) && isset($auth_result['code'])) {
-      $error_reason = $auth_result['message'];
-      if (isset($response['AUTHRESULT']['BANKERROR'])) {
-        $error_reason .= ': ' . $response['AUTHRESULT']['BANKERROR'];
+    if ($transaction->status != COMMERCE_PAYMENT_STATUS_SUCCESS) {
+      if (is_array($auth_result)) {
+        $error_reason = $auth_result['message'];
+        if (isset($response['AUTHRESULT']['BANKERROR'])) {
+          $error_reason .= ': ' . $response['AUTHRESULT']['BANKERROR'];
+        }
+      }
+      else {
+       $error_reason = $auth_result;
       }
 
       drupal_set_message(
