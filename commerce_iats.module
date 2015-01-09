@@ -612,7 +612,7 @@ function commerce_iats_update_ach_eft_order($data) {
     $transaction_status = COMMERCE_PAYMENT_STATUS_FAILURE;
   }
   else {
-    $transaction_status = (substr($result_code, 0, 2) == 'OK') ?
+    $transaction_status = (substr($result_code, 0, 2) == COMMERCE_IATS_TXN_OK) ?
       COMMERCE_PAYMENT_STATUS_SUCCESS : COMMERCE_PAYMENT_STATUS_FAILURE;
   }
 
@@ -998,7 +998,7 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
       }
     }
     else {
-      if (strpos($auth_result, 'OK') === 0) {
+      if (strpos($auth_result, COMMERCE_IATS_TXN_OK) === 0) {
         $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
         $message = array('Transaction successful.');
         if (!is_null($customer_code)) {
