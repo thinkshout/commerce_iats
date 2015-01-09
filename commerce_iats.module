@@ -998,8 +998,20 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
       }
     }
     else {
-      $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
-      $message = array('Transaction failed.') . $auth_result;
+      if (strpos($auth_result, 'OK') === 0) {
+        $transaction->status = COMMERCE_PAYMENT_STATUS_SUCCESS;
+        $message = array('Transaction successful.');
+        if (!is_null($customer_code)) {
+          $message[] = 'Customer code created: ' . $customer_code;
+        }
+        if ($payment_method['method_id'] == 'iats_ach_eft') {
+          $message[] = 'ACH/EFT payment pending.';
+        }
+      }
+      else {
+        $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
+        $message = array('Transaction failed.') . $auth_result;
+      }
     }
 
     $transaction->message = implode('<br />', $message);
