@@ -74,6 +74,10 @@ function commerce_iats_ach_eft_submit_form_validate($payment_method, $pane_form,
 function commerce_iats_ach_eft_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
   // Validate charge.
   if (empty($charge['amount'])) {
+    $order->revision = TRUE;
+    $order->log = 'Order charge amount is empty.';
+    commerce_order_save($order);
+
     watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
       '@charge' => '<pre>' . check_plain(print_r($charge, TRUE)) . '</pre>',
       '@order' => '<pre>' . check_plain(print_r($order, TRUE)) . '</pre>',

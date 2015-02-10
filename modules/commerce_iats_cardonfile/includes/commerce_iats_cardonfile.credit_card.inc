@@ -70,6 +70,10 @@ function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_meth
 function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method, $pane_form, $pane_values, $order, $charge) {
   // Validate credit card charge.
   if (empty($charge['amount'])) {
+    $order->revision = TRUE;
+    $order->log = 'Order charge amount is empty.';
+    commerce_order_save($order);
+
     watchdog('commerce_iats', 'Empty charge amount: @charge for order @order', array(
       '@charge' => '<pre>' . print_r($charge, TRUE) . '</pre>',
       '@order' => '<pre>' . print_r($order, TRUE) . '</pre>',
