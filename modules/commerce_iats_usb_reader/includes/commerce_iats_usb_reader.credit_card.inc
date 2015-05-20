@@ -128,11 +128,14 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
     $payment_data['encrypted_credit_card']['encrypted_number'], $payment_data['credit_card']['valid_types']);
 
   // Create and populate the API request.
+  $invoice_number = $order->order_number;
+  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+
   $request = array(
     'customerIPAddress' => ip_address(),
     'invoiceNum' => t('@prefix@number', array(
       '@prefix' => $payment_method['settings']['invoice_prefix'],
-      '@number' => $order->order_number,
+      '@number' => $invoice_number,
     )),
     'creditCardNum' => $formatted_card_data,
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),

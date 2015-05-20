@@ -157,12 +157,15 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
  */
 function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data, $order, $charge = NULL) {
   // Create and populate the API request.
+  $invoice_number = $order->order_number;
+  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+
   $request = array(
     'customerIPAddress' => ip_address(),
     'customerCode' => $card_data->remote_id,
     'invoiceNum' => t('@prefix@number', array(
       '@prefix' => $payment_method['settings']['invoice_prefix'],
-      '@number' => $order->order_number,
+      '@number' => $invoice_number,
     )),
     'mop' => commerce_iats_credit_card_mop($card_data->card_type),
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
@@ -203,11 +206,14 @@ function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method,
   $formatted_card_data = commerce_iats_format_credit_card_data($payment_data['credit_card']);
 
   // Create and populate the API request.
+  $invoice_number = $order->order_number;
+  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+
   $request = array(
     'customerIPAddress' => ip_address(),
     'invoiceNum' => t('@prefix@number', array(
       '@prefix' => $payment_method['settings']['invoice_prefix'],
-      '@number' => $order->order_number,
+      '@number' => $invoice_number,
     )),
     'ccNum' => $formatted_card_data['number'],
     'ccExp' => $formatted_card_data['expiry'],

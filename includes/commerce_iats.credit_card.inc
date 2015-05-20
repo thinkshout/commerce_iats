@@ -109,11 +109,14 @@ function commerce_iats_process_credit_card_payment($payment_method, $payment_dat
   $formatted_card_data = commerce_iats_format_credit_card_data($payment_data['credit_card']);
 
   // Create and populate the API request.
+  $invoice_number = $order->order_number;
+  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+
   $request = array(
     'customerIPAddress' => ip_address(),
     'invoiceNum' => t('@prefix@number', array(
       '@prefix' => $payment_method['settings']['invoice_prefix'],
-      '@number' => $order->order_number,
+      '@number' => $invoice_number,
     )),
     'creditCardNum' => $formatted_card_data['number'],
     'creditCardExpiry' => $formatted_card_data['expiry'],

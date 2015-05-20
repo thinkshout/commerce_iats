@@ -182,12 +182,15 @@ function commerce_iats_cardonfile_ach_eft_charge_callback($payment_method, $card
  */
 function commerce_iats_cardonfile_ach_eft_charge($payment_method, $card_data, $order, $charge = NULL) {
   // Create and populate the API request.
+  $invoice_number = $order->order_number;
+  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+
   $request = array(
     'customerIPAddress' => ip_address(),
     'customerCode' => $card_data->remote_id,
     'invoiceNum' => t('@prefix@number', array(
       '@prefix' => $payment_method['settings']['invoice_prefix'],
-      '@number' => $order->order_number,
+      '@number' => $invoice_number,
     )),
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
   );
@@ -240,11 +243,14 @@ function commerce_iats_cardonfile_ach_eft_create_and_charge($payment_method, $pa
   $account_num .= $payment_data['bank_account']['number'];
 
   // Create and populate the API request.
+  $invoice_number = $order->order_number;
+  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+
   $request = array(
     'customerIPAddress' => ip_address(),
     'invoiceNum' => t('@prefix@number', array(
       '@prefix' => $payment_method['settings']['invoice_prefix'],
-      '@number' => $order->order_number,
+      '@number' => $invoice_number,
     )),
     'accountNum' => $account_num,
     'accountType' => isset($payment_data['bank_account']['type']) ? $payment_data['bank_account']['type'] : '',
