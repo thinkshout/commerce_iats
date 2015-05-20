@@ -635,29 +635,14 @@ function commerce_iats_update_ach_eft_order($data) {
     $order_id = $initial_transaction->order_id;
   }
   else {
-    // No initial transaction found. Attempt to match transaction to an
-    // existing order using the invoice number.
-    $invoice_number = $data['INV'];
-
-    // Parse the order number from the invoice number.
-    if (isset($payment_method['settings']['invoice_prefix'])) {
-      $order_number = str_replace($payment_method['settings']['invoice_prefix'], '', $invoice_number);
-
-      // Look order from the order ID.
-      $query = new EntityFieldQuery();
-      $order_result = $query
-        ->entityCondition('entity_type', 'commerce_order')
-        ->propertyCondition('order_number', $order_number)
-        ->execute();
-      if (isset($order_result['commerce_order'])) {
-        $order_entity_ids = array_keys($order_result['commerce_order']);
-        $order_entities = entity_load('commerce_order', $order_entity_ids);
-        $order = current($order_entities);
-
-        $uid = $order->uid;
-        $order_id = $order->order_id;
-      }
-    }
+    // Log an error if no initial transacton can be found for the remote ID.
+    // This should only happen if the original order was deleted.
+    watchdog('commerce_iats', 'Unable to update ACH/EFT transaction with result code: @result_code - No initial transaction found for remote ID: @remote_id',
+      array(
+        '@result_code' => $result_code,
+        '@remote_id' => $remote_id,
+      ),
+      WATCHDOG_ERROR);
   }
 
   // Found a matching order. Add a new transaction.
