@@ -183,7 +183,7 @@ function commerce_iats_cardonfile_ach_eft_charge_callback($payment_method, $card
 function commerce_iats_cardonfile_ach_eft_charge($payment_method, $card_data, $order, $charge = NULL) {
   // Create and populate the API request.
   $invoice_number = $order->order_number;
-  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+  drupal_alter('commerce_iats_invoice_number', $invoice_number, $order);
 
   $request = array(
     'customerIPAddress' => ip_address(),
@@ -244,7 +244,7 @@ function commerce_iats_cardonfile_ach_eft_create_and_charge($payment_method, $pa
 
   // Create and populate the API request.
   $invoice_number = $order->order_number;
-  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+  drupal_alter('commerce_iats_invoice_number', $invoice_number, $order);
 
   $request = array(
     'customerIPAddress' => ip_address(),

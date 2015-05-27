@@ -158,7 +158,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_submit($payment_method
 function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data, $order, $charge = NULL) {
   // Create and populate the API request.
   $invoice_number = $order->order_number;
-  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+  drupal_alter('commerce_iats_invoice_number', $invoice_number, $order);
 
   $request = array(
     'customerIPAddress' => ip_address(),
@@ -207,7 +207,7 @@ function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method,
 
   // Create and populate the API request.
   $invoice_number = $order->order_number;
-  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+  drupal_alter('commerce_iats_invoice_number', $invoice_number, $order);
 
   $request = array(
     'customerIPAddress' => ip_address(),

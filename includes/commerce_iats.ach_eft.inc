@@ -126,7 +126,7 @@ function commerce_iats_process_ach_eft_payment($payment_method, $payment_data, $
 
   // Create and populate the API request.
   $invoice_number = $order->order_number;
-  drupal_alter('commerce_iats_invoice_number', $invoice_number);
+  drupal_alter('commerce_iats_invoice_number', $invoice_number, $order);
 
   $request = array(
     'customerIPAddress' => ip_address(),
