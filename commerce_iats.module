@@ -30,6 +30,9 @@ define('COMMERCE_IATS_TRANSACTIONS_CRON', 'commerce_iats_transactions_cron');
 // The URL used to submit payments via the Direct Post Method.
 define('COMMERCE_IATS_DIRECT_POST_URL', 'https://www.iatspayments.com/netgate/IATSDPMProcess.aspx');
 
+// Prefix for the comment property in requests to iATS. Identifies the source.
+define('COMMERCE_IATS_COMMENT_PREFIX', 'DrupalModule|');
+
 /**
  * Implements hook_libraries_info().
  */
@@ -196,8 +199,11 @@ function commerce_iats_direct_post_relay_access() {
   if (isset($comment)) {
     $comment_parts = explode('|', $comment);
 
-    $payment_method_instance_id = $comment_parts[1] . '|' . $comment_parts[2];
-    $process_key = $comment_parts[3];
+    // Parse the payment method instance ID and process key from the comment
+    // property. Indexes 0 and 1 are the comment prefix and order ID, which
+    // are not used here.
+    $payment_method_instance_id = $comment_parts[2] . '|' . $comment_parts[3];
+    $process_key = $comment_parts[4];
 
     $payment_method = commerce_payment_method_instance_load($payment_method_instance_id);
     if ($payment_method) {

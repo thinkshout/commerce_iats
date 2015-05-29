@@ -108,6 +108,7 @@ function commerce_iats_cardonfile_credit_card_create_customer_code($payment_meth
     'creditCardExpiry' => $formatted_card_data['expiry'],
     'cvv2' => $payment_data['credit_card']['code'],
     'currency' => 'USD',
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   if (isset($payment_method['settings']['allow_recurring'])

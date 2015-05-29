@@ -105,6 +105,7 @@ function commerce_iats_create_customer_code($payment_method, $payment_data, $ord
     'beginDate' => commerce_iats_get_formatted_date(time()),
     'endDate' => commerce_iats_get_formatted_date(time()),
     'currency' => 'USD',
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Add the billing information.

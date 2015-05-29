@@ -137,6 +137,7 @@ function commerce_iats_process_ach_eft_payment($payment_method, $payment_data, $
     'accountNum' => $account_num,
     'accountType' => isset($payment_data['bank_account']['type']) ? $payment_data['bank_account']['type'] : '',
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Add the billing information.

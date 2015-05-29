@@ -92,6 +92,7 @@ function commerce_iats_direct_debit_create_customer_code($payment_method, $payme
     'scheduleDate' => $payment_data['recurring']['schedule_date'],
     'accountCustomerName' => $payment_data['account_payer']['account']['account_holder'],
     'accountNum' => $account_num,
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Get the API service.

@@ -170,6 +170,7 @@ function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data
     'mop' => commerce_iats_credit_card_mop($card_data->card_type),
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Get the API service.
@@ -221,6 +222,7 @@ function commerce_iats_cardonfile_credit_card_create_and_charge($payment_method,
     'mop' => $formatted_card_data['type'],
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Add the billing information.
@@ -284,6 +286,7 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
     'creditCardExpiry' => $formatted_card_data['expiry'],
     'mop' => commerce_iats_credit_card_mop($card_data->card_type),
     'updateCreditCardNum' => 0,
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   if (isset($form_state['values']['credit_card']['recurring'])
@@ -364,6 +367,7 @@ function commerce_iats_cardonfile_credit_card_delete($form, &$form_state, $payme
   $request = array(
     'customerIPAddress' => ip_address(),
     'customerCode' => $card_data->remote_id,
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Get the API service.

@@ -125,6 +125,7 @@ function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, 
     'customerIPAddress' => ip_address(),
     'accountNum' => $account_num,
     'accountType' => isset($payment_data['bank_account']['type']) ? $payment_data['bank_account']['type'] : '',
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   if (isset($payment_method['settings']['allow_recurring'])

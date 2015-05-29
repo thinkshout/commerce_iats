@@ -149,7 +149,7 @@ function commerce_iats_usb_reader_process_credit_card_customer_code_process_paym
     'recurring' => 0,
     'beginDate' => commerce_iats_get_formatted_date(time()),
     'endDate' => commerce_iats_get_formatted_date(time()),
-    'comment' => '',
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Add the billing information.

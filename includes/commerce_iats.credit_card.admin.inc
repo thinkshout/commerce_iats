@@ -114,7 +114,7 @@ function commerce_iats_process_credit_card_refund($payment_method, $payment_data
     'customerIPAddress' => ip_address(),
     'transactionId' => $remote_id_parts[0],
     'total' => $charge['amount'],
-    'comment' => t('Refund on order') . ' ' . $order->order_number,
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX . t('Refund on order') . ' ' . $order->order_number,
   );
 
   // Get the API service.

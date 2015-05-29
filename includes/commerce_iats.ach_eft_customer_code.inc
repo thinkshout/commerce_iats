@@ -124,6 +124,7 @@ function commerce_iats_create_customer_code($payment_method, $payment_data, $ord
     'recurring' => 0,
     'beginDate' => commerce_iats_get_formatted_date(time()),
     'endDate' => commerce_iats_get_formatted_date(time()),
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Add the billing information.

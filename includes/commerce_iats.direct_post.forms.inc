@@ -57,6 +57,7 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
   }
 
   $comment_parts = array(
+    COMMERCE_IATS_COMMENT_PREFIX,
     $order->order_id,
     $payment_method_instance_id,
     // Process key used to verify response from iATS.

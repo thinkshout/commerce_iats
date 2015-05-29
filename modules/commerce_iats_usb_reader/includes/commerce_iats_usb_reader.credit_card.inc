@@ -141,7 +141,7 @@ function commerce_iats_usb_reader_process_credit_card_payment($payment_method, $
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'currency' => $charge['currency_code'],
     'mop' => strtoupper($card_data['type']),
-    'comment' => '',
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Add the billing information.

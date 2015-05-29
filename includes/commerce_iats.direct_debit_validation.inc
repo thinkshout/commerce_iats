@@ -173,6 +173,7 @@ function commerce_iats_validate_direct_debit_payment($payment_method, $payment_d
     'country' => 'UK',
     'email' => $payment_data['payer']['email'],
     'zipCode' => $payment_data['payer']['postcode'],
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Get the API service.

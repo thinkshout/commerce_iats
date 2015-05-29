@@ -27,8 +27,10 @@ function commerce_iats_direct_post_relay() {
   if (isset($comment)) {
     $comment_parts = explode('|', $comment);
 
-    $order_id = $comment_parts[0];
-    $payment_method_instance_id = $comment_parts[1] . '|' . $comment_parts[2];
+    // Parse the order ID and payment method instance ID from the comment
+    // property. Index 0 is the comment prefix, which is not needed here.
+    $order_id = $comment_parts[1];
+    $payment_method_instance_id = $comment_parts[2] . '|' . $comment_parts[3];
 
     $success = commerce_iats_direct_post_process_response($_POST, $order_id, $payment_method_instance_id);
 

@@ -193,6 +193,7 @@ function commerce_iats_cardonfile_ach_eft_charge($payment_method, $card_data, $o
       '@number' => $invoice_number,
     )),
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Get the API service.
@@ -255,6 +256,7 @@ function commerce_iats_cardonfile_ach_eft_create_and_charge($payment_method, $pa
     'accountNum' => $account_num,
     'accountType' => isset($payment_data['bank_account']['type']) ? $payment_data['bank_account']['type'] : '',
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Add the billing information.
@@ -317,6 +319,7 @@ function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_m
     'accountCustomerName' => $card_data->card_name,
     'accountType' => $card_data->card_type,
     'updateAccountNum' => 0,
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   if (isset($form_state['values']['credit_card']['recurring'])
@@ -397,6 +400,7 @@ function commerce_iats_cardonfile_ach_eft_delete($form, &$form_state, $payment_m
   $request = array(
     'customerIPAddress' => ip_address(),
     'customerCode' => $card_data->remote_id,
+    'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 
   // Get the API service.
