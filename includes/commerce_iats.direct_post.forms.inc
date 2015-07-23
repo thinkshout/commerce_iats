@@ -23,6 +23,8 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
   $address_data = $order_wrapper->commerce_customer_billing->commerce_customer_address->value();
 
+  commerce_iats_add_extra_address_fields($address_data);
+
   // Relay URL.
   $form['iats_dpm_relay_url'] = array(
     '#type' => 'hidden',
@@ -43,6 +45,16 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
     '#name' => 'IATS_DPM_Amount',
     '#default_value' => commerce_currency_amount_to_decimal($order->commerce_order_total[LANGUAGE_NONE][0]['amount'],
       $order->commerce_order_total[LANGUAGE_NONE][0]['currency_code']),
+  );
+
+  // Invoice number.
+  $invoice_number = $order->order_number;
+  drupal_alter('commerce_iats_invoice_number', $invoice_number, $order);
+
+  $form['iats_dpm_invoice'] = array(
+    '#type' => 'hidden',
+    '#name' => 'IATS_DPM_Invoice',
+    '#default_value' => $payment_method['settings']['invoice_prefix'] . $invoice_number,
   );
 
   // Store order information in comment for future reference.

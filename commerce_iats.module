@@ -1259,13 +1259,7 @@ function commerce_iats_address(array &$request, $order, $field_name) {
   $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
   $address_data = $order_wrapper->{$field_name}->commerce_customer_address->value();
 
-  // If the address is missing a first name, split the
-  // full name into two parts as a backup.
-  if (empty($address_data['first_name'])) {
-    $name_parts = explode(' ', $address_data['name_line']);
-    $address_data['first_name'] = array_shift($name_parts);
-    $address_data['last_name'] = implode(' ', $name_parts);
-  }
+  commerce_iats_add_extra_address_fields($address_data);
 
   // Add the basic address information to the request.
   $request['firstName'] = $address_data['first_name'];
@@ -1280,6 +1274,21 @@ function commerce_iats_address(array &$request, $order, $field_name) {
   }
 
   return TRUE;
+}
+
+/**
+ * Adds extra address fields if missing from Commerce customer profile.
+ *
+ * @param array $address_data
+ *   Array of Commerce customer profile address data.
+ */
+function commerce_iats_add_extra_address_fields(&$address_data) {
+  // If the address is missing a first name, split the full name into two parts.
+  if (empty($address_data['first_name'])) {
+    $name_parts = explode(' ', $address_data['name_line']);
+    $address_data['first_name'] = array_shift($name_parts);
+    $address_data['last_name'] = implode(' ', $name_parts);
+  }
 }
 
 /**
