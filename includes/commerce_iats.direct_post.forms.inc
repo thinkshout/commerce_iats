@@ -159,18 +159,24 @@ function commerce_iats_direct_post_credit_card_form($payment_method, $order) {
 
   $credit_card_types = commerce_iats_credit_card_types();
 
+  // Limit to the enabled card types
+  $enabled_cards = commerce_iats_enabled_credit_card_types($payment_method);
+
   $credit_card_mop = array();
   foreach ($credit_card_types as $type => $name) {
-    $credit_card_mop[commerce_iats_credit_card_mop($type)] = $name;
+    if (in_array($type, $enabled_cards)) {
+      $credit_card_mop[commerce_iats_credit_card_mop($type)] = $name;
+    }
   }
 
-  // Credit card type.
+  // Credit card type. #Validated prevents illegal choice error on AJAX call.
   $form['iats_dpm_mop'] = array(
     '#type' => 'select',
     '#title' => t('Card type'),
     '#name' => 'IATS_DPM_MOP',
     '#options' => $credit_card_mop,
     '#required' => TRUE,
+    '#validated' => TRUE,
   );
 
   // Credit card number.
