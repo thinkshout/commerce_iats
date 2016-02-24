@@ -694,8 +694,9 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
   $card_on_file->status = 1;
   $card_on_file->instance_default = $card_data['default'];
 
-  if ($payment_method['settings']['allow_recurring'] &&
-    isset($order->data['recurring']) && !empty($order->data['recurring']['amount'])) {
+  if (isset($payment_method['settings']['allow_recurring'])
+    && $payment_method['settings']['allow_recurring']
+    && isset($order->data['recurring']) && !empty($order->data['recurring']['amount'])) {
     $card_on_file->recurring = TRUE;
     // A recurring payment card cannot be used as the user's default card.
     $card_on_file->instance_default = FALSE;
