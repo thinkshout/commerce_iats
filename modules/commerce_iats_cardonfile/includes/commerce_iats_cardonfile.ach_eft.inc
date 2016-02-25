@@ -211,6 +211,14 @@ function commerce_iats_cardonfile_ach_eft_charge($payment_method, $card_data, $o
 }
 
 /**
+ * Creates a new card on file record.
+ */
+function commerce_iats_cardonfile_ach_eft_create($form, $form_state, $payment_method, $card) {
+  // TODO: Save bank account.
+  return $card;
+}
+
+/**
  * Processes an ACH/EFT charge and creates a card on file record.
  *
  * @param array $payment_method

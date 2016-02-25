@@ -188,6 +188,14 @@ function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data
 }
 
 /**
+ * Creates a new card on file record.
+ */
+function commerce_iats_cardonfile_credit_card_create($form, $form_state, $payment_method, $card) {
+  // TODO: Save credit card.
+  return $card;
+}
+
+/**
  * Processes a credit card charge and creates a card on file record.
  *
  * @param array $payment_method

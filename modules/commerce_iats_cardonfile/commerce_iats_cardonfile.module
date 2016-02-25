@@ -370,6 +370,20 @@ function commerce_iats_cardonfile_menu_alter(&$items) {
   $items['user/%user/cards/%commerce_cardonfile/delete']['page arguments'][0] = 'commerce_iats_cardonfile_delete_form';
   $items['user/%user/cards/%commerce_cardonfile/delete']['file'] = 'includes/commerce_iats_cardonfile.pages.inc';
   $items['user/%user/cards/%commerce_cardonfile/delete']['module'] = 'commerce_iats_cardonfile';
+
+  // Override "add card" paths for iATS payment methods.
+  $instance_ids = array_merge(
+    array_keys(_commerce_cardonfile_payment_method_instances('iats_credit_card')),
+    array_keys(_commerce_cardonfile_payment_method_instances('iats_ach_eft'))
+  );
+
+  foreach ($instance_ids as $instance_id) {
+    $add_card_path = 'user/%user/cards/add/' . drupal_hash_base64($instance_id);
+
+    $items[$add_card_path]['page callback'] = 'commerce_iats_cardonfile_card_form_page';
+    $items[$add_card_path]['file'] = 'includes/commerce_iats_cardonfile.pages.inc';
+    $items[$add_card_path]['module'] = 'commerce_iats_cardonfile';
+  }
 }
 
 /**
@@ -752,6 +766,8 @@ function commerce_iats_cardonfile_payment_method_callbacks($payment_method_type)
     // calls this method automatically. When using just the Commerce module,
     // we call this method manually via a form submit handler.
     'charge callback' => 'commerce_iats_cardonfile_' . $payment_method_type . '_charge_callback',
+    // Called when a card on file is created outside a checkout process.
+    'create callback' => 'commerce_iats_cardonfile_' . $payment_method_type . '_create',
     // Called when card on file is updated.
     'update callback' => 'commerce_iats_cardonfile_' . $payment_method_type . '_update',
     // Called when card on file is deleted.
