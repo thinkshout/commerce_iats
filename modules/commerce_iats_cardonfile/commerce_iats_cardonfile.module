@@ -197,7 +197,7 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
 function commerce_iats_cardonfile_form_commerce_cardonfile_card_form_alter(&$form, &$form_state, $form_id) {
   global $user;
 
-  if ($form_state['card']->recurring) {
+  if (isset($form_state['card']->recurring) && $form_state['card']->recurring) {
     $form['credit_card']['#tree'] = TRUE;
 
     $form['credit_card']['cardonfile_instance_default']['#access'] = FALSE;
