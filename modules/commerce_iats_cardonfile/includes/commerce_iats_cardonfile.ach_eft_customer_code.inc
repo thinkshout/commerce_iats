@@ -103,22 +103,9 @@ function commerce_iats_cardonfile_ach_eft_customer_code_submit_form_submit($paym
  *   API response array or error string.
  */
 function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, $payment_data, $order, $charge) {
-  // Create currency-specific account number string.
-  $account_num = '';
-  switch ($charge['currency_code']) {
-    case 'USD':
-      $account_num .= $payment_data['bank_account']['routing_number'];
-      break;
-    case 'CAD':
-      $account_num .= $payment_data['bank_account']['bank_number'];
-      $account_num .= $payment_data['bank_account']['transit_number'];
-      break;
-    case 'GBP':
-      $account_num .= commerce_iats_format_sort_code($payment_data['bank_account']['sort_code']);
-      break;
-  }
+  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft');
 
-  $account_num .= $payment_data['bank_account']['number'];
+  $account_num = commerce_iats_ach_eft_currency_specific_account_number($payment_data['bank_account'], $charge['currency_code']);
 
   // Create and populate the API request.
   $request = array(

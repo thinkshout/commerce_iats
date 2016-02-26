@@ -216,6 +216,8 @@ function commerce_iats_cardonfile_ach_eft_charge($payment_method, $card_data, $o
  * Creates a new card on file record.
  */
 function commerce_iats_cardonfile_ach_eft_create($form, $form_state, $payment_method, $card) {
+  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft');
+
   // Get the API service.
   $iats = commerce_iats_get_service('CustomerLink', $payment_method);
 
@@ -266,22 +268,9 @@ function commerce_iats_cardonfile_ach_eft_create($form, $form_state, $payment_me
  *   API response array or error string.
  */
 function commerce_iats_cardonfile_ach_eft_create_and_charge($payment_method, $payment_data, $order, $charge = NULL) {
-  // Create currency-specific account number string.
-  $account_num = '';
-  switch ($charge['currency_code']) {
-    case 'USD':
-      $account_num .= $payment_data['bank_account']['routing_number'];
-      break;
-    case 'CAD':
-      $account_num .= $payment_data['bank_account']['bank_number'];
-      $account_num .= $payment_data['bank_account']['transit_number'];
-      break;
-    case 'GBP':
-      $account_num .= commerce_iats_format_sort_code($payment_data['bank_account']['sort_code']);
-      break;
-  }
+  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft');
 
-  $account_num .= $payment_data['bank_account']['number'];
+  $account_num = commerce_iats_ach_eft_currency_specific_account_number($payment_data['bank_account'], $charge['currency_code']);
 
   // Create and populate the API request.
   $invoice_number = $order->order_number;
