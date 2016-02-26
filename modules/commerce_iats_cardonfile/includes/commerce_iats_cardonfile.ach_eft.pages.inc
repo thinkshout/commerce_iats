@@ -33,7 +33,7 @@ function commerce_iats_cardonfile_ach_eft_card_form_page($op, $card_data, $accou
   if ($op == 'create') {
     module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
 
-    drupal_set_title(t('Add new bank account'));
+    drupal_set_title(t('Add a bank account'));
 
     if ($op == 'create' && empty($currency)) {
       $content = array();
