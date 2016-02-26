@@ -111,7 +111,7 @@ function commerce_iats_cardonfile_ach_eft_create_customer_code($payment_method, 
   $request = array(
     'customerIPAddress' => ip_address(),
     'accountNum' => $account_num,
-    'accountType' => isset($payment_data['bank_account']['type']) ? $payment_data['bank_account']['type'] : '',
+    'accountType' => isset($payment_data['bank_account']['type']) ? strtoupper($payment_data['bank_account']['type']) : '',
     'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
 

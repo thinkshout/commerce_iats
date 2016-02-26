@@ -223,8 +223,8 @@ function commerce_iats_ach_eft_payment_form_validate($details, $settings) {
  */
 function commerce_iats_ach_eft_account_types() {
   $types = array(
-    'CHECKING' => 'Checking',
-    'SAVING' => 'Saving',
+    'checking' => 'Checking',
+    'saving' => 'Saving',
   );
   return $types;
 }

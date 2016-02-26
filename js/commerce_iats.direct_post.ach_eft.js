@@ -41,7 +41,7 @@
         }
 
         if (type) {
-          $("input[name=IATS_DPM_AccountType]").val(type);
+          $("input[name=IATS_DPM_AccountType]").val(type.toUpperCase());
         }
 
         return true;

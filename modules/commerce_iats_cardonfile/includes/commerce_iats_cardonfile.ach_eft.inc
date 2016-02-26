@@ -226,7 +226,7 @@ function commerce_iats_cardonfile_ach_eft_create($form, $form_state, $payment_me
   $request = array(
     'customerIPAddress' => ip_address(),
     'accountNum' => $account_num,
-    'accountType' => $form_state['values']['bank_account']['type'],
+    'accountType' => strtoupper($form_state['values']['bank_account']['type']),
     'recurring' => 0,
     'beginDate' => commerce_iats_get_formatted_date(time()),
     'endDate' => commerce_iats_get_formatted_date(time()),
@@ -288,7 +288,7 @@ function commerce_iats_cardonfile_ach_eft_create_and_charge($payment_method, $pa
       '@number' => $invoice_number,
     )),
     'accountNum' => $account_num,
-    'accountType' => isset($payment_data['bank_account']['type']) ? $payment_data['bank_account']['type'] : '',
+    'accountType' => isset($payment_data['bank_account']['type']) ? strtoupper($payment_data['bank_account']['type']) : '',
     'total' => commerce_currency_amount_to_decimal($charge['amount'], $charge['currency_code']),
     'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );
@@ -348,7 +348,7 @@ function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_m
     'firstName' => $first_name,
     'lastName' => $last_name,
     'accountCustomerName' => $card_data->card_name,
-    'accountType' => $card_data->card_type,
+    'accountType' => strtoupper($card_data->card_type),
     'updateAccountNum' => 0,
     'comment' => COMMERCE_IATS_COMMENT_PREFIX,
   );

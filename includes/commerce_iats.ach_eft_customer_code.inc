@@ -107,7 +107,7 @@ function commerce_iats_create_customer_code($payment_method, $payment_data, $ord
   $request = array(
     'customerIPAddress' => ip_address(),
     'accountNum' => $account_num,
-    'accountType' => isset($payment_data['bank_account']['type']) ? $payment_data['bank_account']['type'] : '',
+    'accountType' => isset($payment_data['bank_account']['type']) ? strtoupper($payment_data['bank_account']['type']) : '',
     'recurring' => 0,
     'beginDate' => commerce_iats_get_formatted_date(time()),
     'endDate' => commerce_iats_get_formatted_date(time()),
