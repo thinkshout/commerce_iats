@@ -166,6 +166,11 @@ function commerce_iats_cardonfile_ach_eft_card_form($form, &$form_state, $op, $c
   $form['bank_account']['#prefix'] = '<div id="ach-eft-create-form-wrapper">';
   $form['bank_account']['#suffix'] = '</div>';
 
+  $form['currency'] = array(
+    '#type' => 'hidden',
+    '#default_value' => $currency,
+  );
+
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => ($op == 'create') ? t('Add bank account') : t('Update bank account information'),
