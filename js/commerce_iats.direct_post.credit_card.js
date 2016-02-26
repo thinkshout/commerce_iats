@@ -8,7 +8,7 @@
   Drupal.behaviors.commerce_iats_direct_post_credit_card = {
     attach: function(context, settings) {
       // Attach click handler to populate Direct Post form elements on submit.
-      $('input.checkout-continue', context).unbind('click').bind('click', function() {
+      $('.checkout-continue', context).unbind('click').bind('click', function() {
         var expiry_month = $("select[name=internal_iats_dpm_exp_month]").val();
         var expiry_year = $("select[name=internal_iats_dpm_exp_year]").val();
 
