@@ -191,7 +191,38 @@ function commerce_iats_cardonfile_credit_card_charge($payment_method, $card_data
  * Creates a new card on file record.
  */
 function commerce_iats_cardonfile_credit_card_create($form, $form_state, $payment_method, $card) {
-  // TODO: Save credit card.
+  // Get the API service.
+  $iats = commerce_iats_get_service('CustomerLink', $payment_method);
+
+  $request = array(
+    'customerIPAddress' => ip_address(),
+    'mop' => $card->card_type,
+    'creditCardNum' => $form_state['values']['credit_card']['number'],
+    'creditCardExpiry' => $expiry = sprintf('%02d/%02d', $card->card_exp_month, $card->card_exp_year % 100),
+    'cvv2' => $form_state['values']['credit_card']['code'],
+    'currency' => 'USD',
+    'recurring' => 0,
+    'beginDate' => commerce_iats_get_formatted_date(time()),
+    'endDate' => commerce_iats_get_formatted_date(time()),
+  );
+
+  // Create the credit card remote ID (customer code) with iATS.
+  $response = $iats->createCreditCardCustomerCode($request);
+
+  if ($response === FALSE || empty($response['CUSTOMERCODE'])) {
+    drupal_set_message(t('Failed at the payment processor with message: !message.', array(
+      '!message' => $response['AUTHORIZATIONRESULT']
+    )), 'error');
+  }
+  else {
+    // Save the card on file record with new remote ID.
+    $card->remote_id = trim($response['CUSTOMERCODE']);
+
+    if (commerce_cardonfile_save($card) === FALSE) {
+      drupal_set_message(t('Your card details could not be stored.'), 'error');
+    }
+  }
+
   return $card;
 }
 
