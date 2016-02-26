@@ -706,13 +706,16 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
     $payment_method_instance_id = $payment_method['instance_id'];
   }
 
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $address_data = $order_wrapper->commerce_customer_billing->commerce_customer_address->value();
+
   $card_on_file = commerce_cardonfile_new();
   $card_on_file->uid = $order->uid;
   $card_on_file->payment_method = $payment_method_id;
   $card_on_file->instance_id = $payment_method_instance_id;
   $card_on_file->remote_id = $customer_code;
   $card_on_file->card_type = !empty($card_type) ? strtolower($card_type) : 'card';
-  $card_on_file->card_name = !empty($billing_address['name_line']) ? $billing_address['name_line'] : '';
+  $card_on_file->card_name = !empty($address_data['name_line']) ? $address_data['name_line'] : '';
   $card_on_file->card_number = substr($card_data['number'], -4);
   $card_on_file->card_exp_month = $card_data['exp_month'];
   $card_on_file->card_exp_year = $card_data['exp_year'];
