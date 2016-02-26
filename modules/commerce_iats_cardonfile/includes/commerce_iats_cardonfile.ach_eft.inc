@@ -411,10 +411,12 @@ function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_m
   // Update the recurring payment record.
   $card_on_file_recurring = commerce_iats_cardonfile_recurring_load($card_data->card_id);
 
-  $card_on_file_recurring->amount = $request['amount'];
-  $card_on_file_recurring->schedule_type = $request['scheduleType'];
-  $card_on_file_recurring->schedule_date = $request['scheduleDate'];
-  commerce_iats_cardonfile_recurring_save($card_on_file_recurring);
+  if (!empty($card_on_file_recurring)) {
+    $card_on_file_recurring->amount = $request['amount'];
+    $card_on_file_recurring->schedule_type = $request['scheduleType'];
+    $card_on_file_recurring->schedule_date = $request['scheduleDate'];
+    commerce_iats_cardonfile_recurring_save($card_on_file_recurring);
+  }
 
   return TRUE;
 }
