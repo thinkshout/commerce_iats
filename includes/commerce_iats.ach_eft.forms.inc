@@ -126,7 +126,7 @@ function commerce_iats_ach_eft_payment_form($fields = array(), $default = array(
       '#title' => t('Sort code'),
       '#attributes' => array('autocomplete' => 'off'),
       '#required' => TRUE,
-      '#maxlength' => 8,
+      '#maxlength' => 6,
       '#size' => 16,
     );
   }
