@@ -228,3 +228,18 @@ function commerce_iats_ach_eft_account_types() {
   );
   return $types;
 }
+
+/**
+ * Returns an associative array of supported countries for ACH/EFT payments.
+ *
+ * @return array
+ *   Array of valid countries indexed by currency code.
+ */
+function commerce_iats_ach_eft_countries() {
+  $countries = array(
+    'USD' => 'United States',
+    'CAD' => 'Canada',
+    'GBP' => 'United Kingdom',
+  );
+  return $countries;
+}

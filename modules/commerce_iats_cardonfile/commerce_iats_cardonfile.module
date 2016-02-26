@@ -371,18 +371,29 @@ function commerce_iats_cardonfile_menu_alter(&$items) {
   $items['user/%user/cards/%commerce_cardonfile/delete']['file'] = 'includes/commerce_iats_cardonfile.pages.inc';
   $items['user/%user/cards/%commerce_cardonfile/delete']['module'] = 'commerce_iats_cardonfile';
 
-  // Override "add card" paths for iATS payment methods.
-  $instance_ids = array_merge(
-    array_keys(_commerce_cardonfile_payment_method_instances('iats_credit_card')),
-    array_keys(_commerce_cardonfile_payment_method_instances('iats_ach_eft'))
-  );
+  // Override "add card" paths for iATS-specific payment methods.
+  $ach_eft_instance_ids = array_keys(_commerce_cardonfile_payment_method_instances('iats_ach_eft'));
 
-  foreach ($instance_ids as $instance_id) {
-    $add_card_path = 'user/%user/cards/add/' . drupal_hash_base64($instance_id);
+  if (!empty($ach_eft_instance_ids)) {
+    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
 
-    $items[$add_card_path]['page callback'] = 'commerce_iats_cardonfile_card_form_page';
-    $items[$add_card_path]['file'] = 'includes/commerce_iats_cardonfile.pages.inc';
-    $items[$add_card_path]['module'] = 'commerce_iats_cardonfile';
+    foreach ($ach_eft_instance_ids as $instance_id) {
+      $add_card_path = 'user/%user/cards/add/' . drupal_hash_base64($instance_id);
+
+      $items[$add_card_path]['page callback'] = 'commerce_iats_cardonfile_ach_eft_card_form_page';
+      $items[$add_card_path]['file'] = 'includes/commerce_iats_cardonfile.ach_eft.pages.inc';
+      $items[$add_card_path]['module'] = 'commerce_iats_cardonfile';
+
+      // Create paths used to add bank accounts for specific countries.
+      $countries = commerce_iats_ach_eft_countries();
+      foreach ($countries as $currency => $country) {
+        $add_card_currency_path = $add_card_path . '/' . $currency;
+        $items[$add_card_currency_path] = $items[$add_card_path];
+        $items[$add_card_currency_path]['title'] .= ' in !country';
+        $items[$add_card_currency_path]['title arguments']['!country'] = $country;
+        $items[$add_card_currency_path]['page arguments'][] = $currency;
+      }
+    }
   }
 }
 

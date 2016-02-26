@@ -146,6 +146,8 @@ function commerce_iats_cardonfile_ach_eft_submit_form_submit($payment_method, $p
   return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_process_ach_eft_payment');
 }
 
+
+
 /**
  * Card on File charge callback function.
  *
@@ -214,7 +216,37 @@ function commerce_iats_cardonfile_ach_eft_charge($payment_method, $card_data, $o
  * Creates a new card on file record.
  */
 function commerce_iats_cardonfile_ach_eft_create($form, $form_state, $payment_method, $card) {
-  // TODO: Save bank account.
+  // Get the API service.
+  $iats = commerce_iats_get_service('CustomerLink', $payment_method);
+
+  $account_num = commerce_iats_ach_eft_currency_specific_account_number($form_state['values']['bank_account'], $form_state['values']['currency']);
+
+  $request = array(
+    'customerIPAddress' => ip_address(),
+    'accountNum' => $account_num,
+    'accountType' => $form_state['values']['bank_account']['type'],
+    'recurring' => 0,
+    'beginDate' => commerce_iats_get_formatted_date(time()),
+    'endDate' => commerce_iats_get_formatted_date(time()),
+  );
+
+  // Create the ACH/EFT remote ID (customer code) with iATS.
+  $response = $iats->createACHEFTCustomerCode($request);
+
+  if ($response === FALSE || empty($response['CUSTOMERCODE'])) {
+    drupal_set_message(t('Failed at the payment processor with message: !message.', array(
+      '!message' => $response['AUTHORIZATIONRESULT']
+    )), 'error');
+  }
+  else {
+    // Save the card on file record with new remote ID.
+    $card->remote_id = trim($response['CUSTOMERCODE']);
+
+    if (commerce_cardonfile_save($card) === FALSE) {
+      drupal_set_message(t('Your card details could not be stored.'), 'error');
+    }
+  }
+
   return $card;
 }
 

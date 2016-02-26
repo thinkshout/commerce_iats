@@ -92,6 +92,37 @@ function commerce_iats_ach_eft_submit_form_submit($payment_method, $pane_form, $
 }
 
 /**
+ * Returns an account number formatted for a given currency.
+ *
+ * @param array $bank_details
+ *   Array of bank details from checkout form submission.
+ * @param string $currency
+ *   The currency code (USD, CAD, GBP.)
+ *
+ * @return string
+ *   Formatted account number.
+ */
+function commerce_iats_ach_eft_currency_specific_account_number($bank_details, $currency) {
+  $account_num = '';
+  switch ($currency) {
+    case 'USD':
+      $account_num .= $bank_details['routing_number'];
+      break;
+    case 'CAD':
+      $account_num .= $bank_details['bank_number'];
+      $account_num .= $bank_details['transit_number'];
+      break;
+    case 'GBP':
+      $account_num .= commerce_iats_format_sort_code($bank_details['sort_code']);
+      break;
+  }
+
+  $account_num .= $bank_details['number'];
+
+  return $account_num;
+}
+
+/**
  * Processes an ACH/EFT payment via the iATS Payments API.
  *
  * @param array $payment_method
@@ -107,22 +138,7 @@ function commerce_iats_ach_eft_submit_form_submit($payment_method, $pane_form, $
  *   API response array or error string.
  */
 function commerce_iats_process_ach_eft_payment($payment_method, $payment_data, $order, $charge) {
-  // Create currency-specific account number string.
-  $account_num = '';
-  switch ($charge['currency_code']) {
-    case 'USD':
-      $account_num .= $payment_data['bank_account']['routing_number'];
-      break;
-    case 'CAD':
-      $account_num .= $payment_data['bank_account']['bank_number'];
-      $account_num .= $payment_data['bank_account']['transit_number'];
-      break;
-    case 'GBP':
-      $account_num .= commerce_iats_format_sort_code($payment_data['bank_account']['sort_code']);
-      break;
-  }
-
-  $account_num .= $payment_data['bank_account']['number'];
+  $account_num = commerce_iats_ach_eft_currency_specific_account_number($payment_data['bank_account'], $charge['currency_code']);
 
   // Create and populate the API request.
   $invoice_number = $order->order_number;

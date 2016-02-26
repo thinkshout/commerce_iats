@@ -20,10 +20,45 @@ function commerce_iats_cardonfile_ach_eft_card_title($card_data) {
  *
  * @see commerce_cardonfile_card_form_page()
  */
-function commerce_iats_cardonfile_ach_eft_card_form_page($op, $card_data, $account) {
+function commerce_iats_cardonfile_ach_eft_card_form_page($op, $card_data, $account, $currency = NULL) {
   $payment_method = commerce_payment_method_instance_load($card_data->instance_id);
 
-  if ($op == 'update') {
+  if (empty($card_data->uid)) {
+    // Card data was initialized with the anonymous user as its owner. Set the
+    // owner here to the user from the menu item, so that the form will receive
+    // the complete information that is needed to save the card.
+    $card_data->uid = $account->uid;
+  }
+
+  if ($op == 'create') {
+    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
+
+    drupal_set_title(t('Add new bank account'));
+
+    if ($op == 'create' && empty($currency)) {
+      $content = array();
+
+      $ach_eft_instance_ids = array_keys(_commerce_cardonfile_payment_method_instances('iats_ach_eft'));
+
+      $countries = commerce_iats_ach_eft_countries();
+
+      foreach ($ach_eft_instance_ids as $instance_id) {
+        foreach (array_keys($countries) as $currency) {
+          $path = 'user/' . $account->uid . '/cards/add/' . drupal_hash_base64($instance_id) . '/' . $currency;
+          $item = menu_get_item($path);
+          if ($item['access']) {
+            $content[] = $item;
+          }
+        }
+      }
+
+      return theme('card_add_list', array('content' => $content));
+    }
+    else {
+      return drupal_get_form('commerce_iats_cardonfile_ach_eft_card_form', $op, $card_data, $currency);
+    }
+  }
+  else if ($op == 'update') {
     drupal_set_title(t('Update your @type bank account ending in @number', array('@type' => $card_data->card_type, '@number' => $card_data->card_number)));
 
     // This is not likely to happen, but if the payment method doesn't implement
@@ -33,13 +68,6 @@ function commerce_iats_cardonfile_ach_eft_card_form_page($op, $card_data, $accou
       drupal_set_message(t('We encountered an error attempting to update your bank account information. Please try again and contact us if this error persists.'), 'error');
       drupal_goto('user/' . $card_data->uid . '/cards');
     }
-  }
-  else {
-    drupal_set_title(t('Add new bank account'));
-    // Card data was initialized with the anonymous user as its owner. Set the
-    // owner here to the user from the menu item, so that the form will receive
-    // the complete information that is needed to save the card.
-    $card_data->uid = $account->uid;
   }
 
   if ($form_callback = commerce_cardonfile_payment_method_callback($payment_method, $op . ' form callback')) {
@@ -55,7 +83,7 @@ function commerce_iats_cardonfile_ach_eft_card_form_page($op, $card_data, $accou
  *
  * @see commerce_cardonfile_card_form()
  */
-function commerce_iats_cardonfile_ach_eft_card_form($form, &$form_state, $op, $card_data) {
+function commerce_iats_cardonfile_ach_eft_card_form($form, &$form_state, $op, $card_data, $currency = 'USD') {
   module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft.forms');
 
   // Pass along information to the validate and submit handlers.
@@ -68,16 +96,38 @@ function commerce_iats_cardonfile_ach_eft_card_form($form, &$form_state, $op, $c
     'owner' => '',
     'type' => array_keys($account_types),
   );
-  $defaults = array();
-  if ($op == 'update') {
+
+  if ($op == 'create') {
+    $fields['number'] = '';
+
+    switch ($currency) {
+      case 'USD':
+        $payment_form = array_merge($form, commerce_iats_ach_eft_payment_form_usd($fields));
+        break;
+      case 'CAD':
+        $payment_form = array_merge($form, commerce_iats_ach_eft_payment_form_cad($fields));
+        break;
+      case 'GBP':
+        $payment_form = array_merge($form, commerce_iats_ach_eft_payment_form_gbp($fields));
+        break;
+      default:
+        $payment_form = NULL;
+        // Disable form validation until form is loaded.
+        $form['#validate'] = array();
+    }
+  }
+  else if ($op == 'update') {
     $defaults = array(
       'type' => $card_data->card_type,
       'owner' => $card_data->card_name,
     );
+
+    $payment_form = commerce_iats_ach_eft_payment_form($fields, $defaults);
   }
 
-  $payment_form = commerce_iats_ach_eft_payment_form($fields, $defaults);
-  $form = array_merge($form, $payment_form);
+  if (!empty($payment_form)) {
+    $form = array_merge($form, $payment_form);
+  }
 
   if ($op == 'update') {
     $form['bank_account']['number']['#type'] = 'item';
@@ -112,6 +162,9 @@ function commerce_iats_cardonfile_ach_eft_card_form($form, &$form_state, $op, $c
     $form['bank_account']['cardonfile_instance_default']['#default_value'] = TRUE;
     $form['bank_account']['cardonfile_instance_default']['#disabled'] = TRUE;
   }
+
+  $form['bank_account']['#prefix'] = '<div id="ach-eft-create-form-wrapper">';
+  $form['bank_account']['#suffix'] = '</div>';
 
   $form['submit'] = array(
     '#type' => 'submit',
