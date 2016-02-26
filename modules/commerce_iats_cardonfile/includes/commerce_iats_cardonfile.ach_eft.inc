@@ -244,6 +244,11 @@ function commerce_iats_cardonfile_ach_eft_create($form, $form_state, $payment_me
     // Save the card on file record with new remote ID.
     $card->remote_id = trim($response['CUSTOMERCODE']);
 
+    // Create an expiration data.
+    $expiration = commerce_iats_cardonfile_ach_eft_get_expiration();
+    $card->card_exp_year = $expiration['exp_year'];
+    $card->card_exp_month = $expiration['exp_month'];
+
     if (commerce_cardonfile_save($card) === FALSE) {
       drupal_set_message(t('Your card details could not be stored.'), 'error');
     }
@@ -309,12 +314,9 @@ function commerce_iats_cardonfile_ach_eft_create_and_charge($payment_method, $pa
       $payment_data['bank_account']['default'] = (isset($payment_data['cardonfile_instance_default'])) ?
         $payment_data['cardonfile_instance_default'] : FALSE;
 
-      // Add fake expiration date to force card on file to accept
-      // this as a valid card. This is a hack because bank accounts
-      // do not have expiration dates.
-      // TODO: Review this expiration date hack.
-      $payment_data['bank_account']['exp_year'] = (int) date('Y') + 10;
-      $payment_data['bank_account']['exp_month'] = (int) date('m');
+      $expiration = commerce_iats_cardonfile_ach_eft_get_expiration();
+      $payment_data['bank_account']['exp_year'] = $expiration['exp_year'];
+      $payment_data['bank_account']['exp_month'] = $expiration['exp_month'];
 
       // Create a new card on file record for the new customer code.
       commerce_iats_cardonfile_create_cardonfile($order, $payment_method,
@@ -468,4 +470,19 @@ function commerce_iats_cardonfile_ach_eft_delete($form, &$form_state, $payment_m
   }
 
   return FALSE;
+}
+
+/**
+ * Creates an expiration date 10 years in the future.
+ *
+ * Bank accounts do not expire, but Commerce Card on File requires an
+ * expiration date to allow a bank account to be used.
+ */
+function commerce_iats_cardonfile_ach_eft_get_expiration() {
+  $expiration = array(
+    'exp_year' => (int) date('Y') + 10,
+    'exp_month' => (int) date('m'),
+  );
+
+  return $expiration;
 }
