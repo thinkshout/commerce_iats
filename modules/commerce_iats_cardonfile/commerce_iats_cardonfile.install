@@ -82,6 +82,17 @@ function commerce_iats_cardonfile_update_7200() {
 }
 
 /**
+ * Implements hook_update_N().
+ */
+function commerce_iats_cardonfile_update_7201() {
+  $schema = commerce_iats_cardonfile_schema();
+
+  if (!db_table_exists('commerce_iats_cardonfile_recurring')) {
+    db_create_table('commerce_iats_cardonfile_recurring', $schema['commerce_iats_cardonfile_recurring']);
+  }
+}
+
+/**
  * Adds a boolean field to commerce_cardonfile indicating a recurring payment.
  */
 function commerce_iats_cardonfile_add_recurring_field() {
