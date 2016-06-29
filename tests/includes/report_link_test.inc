@@ -96,6 +96,32 @@ class ReportLinkTestService {
           ),
         ),
       ),
+      5 => array(
+        'A0000005' => array(
+          array(
+            'TNTYP' => 'ACHEFT',
+            'TNID' => 'A0000005',
+            'AGT' => 'TEST88',
+            'CST' => array(
+              'CSTC' => 'Quick Client',
+              'FN' => 'Test',
+              'LN' => 'User',
+              'ADD' => '123 Any St.',
+              'CTY' => 'Anytown',
+              'ST' => 'AK',
+              'CNT' => 'US',
+              'ZC' => '11111',
+            ),
+            'ACH' => array(
+              'ACN' => '************0001',
+              'ACTYP' => 'Checking',
+            ),
+            'INV' => 'INVOICE-5',
+            'AMT' => '10.00',
+            'RST' => 'OK:BankAccept',
+          ),
+        ),
+      ),
     );
 
     return $this->convertTestTransactionDataToReportFormat($data);
