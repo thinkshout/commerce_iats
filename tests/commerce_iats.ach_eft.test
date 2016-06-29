@@ -57,6 +57,7 @@ class CommerceiATSACHEFTTestCase extends DrupalWebTestCase {
       'commerce_order',
       'commerce_product_reference',
       'commerce_payment',
+      'commerce_payment_ui',
       'commerce_tax',
       'commerce_product_pricing',
       'commerce_iats',
