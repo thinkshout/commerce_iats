@@ -322,7 +322,7 @@ class CommerceiATSACHEFTTestCase extends DrupalWebTestCase {
 
     $order = commerce_order_load_by_number($initial_order_number);
 
-    // Create transaction ID with a customer code.
+    // Create transaction ID with no customer code.
     $remote_id = 'A0000005';
 
     // Create ACH/EFT recurring payment transaction.
