@@ -10,6 +10,9 @@ define('COMMERCE_IATS_TXN_OK', 'OK');
 define('COMMERCE_IATS_TOKEN_CREATED', 'TokenCreated');
 define('COMMERCE_IATS_TOKEN_FAILED', 'TokenFailed');
 
+// iATS placeholder customer code.
+define('COMMERCE_IATS_PLACEHOLDER_CUSTOMER_CODE', 'Quick Client');
+
 // iATS server ID definitions.
 define('COMMERCE_IATS_NA_SERVER_ID', 'NA');
 define('COMMERCE_IATS_UK_SERVER_ID', 'UK');
@@ -620,6 +623,11 @@ function commerce_iats_update_ach_eft_order($data) {
   else {
     $transaction_status = (substr($result_code, 0, 2) == COMMERCE_IATS_TXN_OK) ?
       COMMERCE_PAYMENT_STATUS_SUCCESS : COMMERCE_PAYMENT_STATUS_FAILURE;
+  }
+
+  // Do not use placeholder customer code in remote ID.
+  if (isset($customer_code) && ($customer_code == COMMERCE_IATS_PLACEHOLDER_CUSTOMER_CODE)) {
+    unset($customer_code);
   }
 
   $remote_id = (isset($customer_code)) ? $transaction_id . '|' . $customer_code : $transaction_id;
