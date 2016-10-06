@@ -62,3 +62,38 @@ function commerce_iats_requirements($phase) {
 
   return $requirements;
 }
+
+/**
+ * Implements hook_install().
+ */
+function commerce_iats_install() {
+  _commerce_iats_initialize_line_item_property();
+}
+
+/**
+ * Add Line Item property to transactions for close tracking of refunds.
+ */
+function commerce_iats_update_7000() {
+  _commerce_iats_initialize_line_item_property();
+}
+
+/**
+ * Helper function to initialize the line_item ID field on transactions.
+ */
+function _commerce_iats_initialize_line_item_property() {
+  // Add a line_item field to transactions.
+  $line_item_field = array(
+    'description' => 'The id of the primary commerce_line_item entity.',
+    'type' => 'int',
+    'not null' => FALSE,
+    'default' => NULL,
+  );
+  db_add_field('commerce_payment_transaction', 'line_item_id', $line_item_field);
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function commerce_iats_uninstall() {
+  db_drop_field('commerce_payment_transaction', 'line_item_id');
+}
