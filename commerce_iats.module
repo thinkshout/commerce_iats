@@ -964,11 +964,18 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
       $transaction->line_item_id = $payment_data['line_item'];
     }
 
+    $type = NULL;
     if (is_a($payment_data, 'CommerceCardOnFile')) {
       $type = $payment_data->card_type;
     }
-    else {
+    elseif (isset($payment_data['bank_account'])) {
+      $type = $payment_data['bank_account']['type'];
+    }
+    elseif (isset($payment_data['credit_card'])) {
       $type = $payment_data['credit_card']['type'];
+    }
+    elseif (isset($payment_data['transaction'])) {
+      $type = $payment_data['transaction']->payload['type'];
     }
 
     $transaction->payload = array(
