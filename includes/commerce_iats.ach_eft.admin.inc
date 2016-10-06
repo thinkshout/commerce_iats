@@ -21,6 +21,24 @@ function commerce_iats_ach_eft_refund_form($form, &$form_state, $order, $transac
     commerce_currency_amount_to_decimal($transaction->amount,
       $transaction->currency_code), 2, '.', '');
 
+  $order_wrapper = entity_metadata_wrapper('commerce_order', $order);
+  $line_item_options = array(0 => 'N/A');
+  foreach ($order_wrapper->commerce_line_items->getIterator() as $line_item_wrapper) {
+    $price = $line_item_wrapper->commerce_total->amount->value();
+    $currency = $line_item_wrapper->commerce_total->currency_code->value();
+    $price_display = commerce_currency_format($price, $currency);
+    $title = commerce_line_item_title($line_item_wrapper->value());
+    $line_item_options[$line_item_wrapper->getIdentifier()] = $title . ' (' . $price_display . ')';
+  }
+  $form['line_item'] = array(
+    '#type' => 'radios',
+    '#title' => t('Line Item'),
+    '#options' => $line_item_options,
+    '#description' => t('Select the refunded line item.'),
+    '#default_value' => isset($_GET['line_item']) ? $_GET['line_item'] : NULL,
+    '#size' => 16,
+  );
+
   $form['amount'] = array(
     '#type' => 'textfield',
     '#title' => t('Refund amount'),
@@ -75,6 +93,9 @@ function commerce_iats_ach_eft_refund_form_submit($form, &$form_state) {
     'transaction' => $form_state['transaction'],
   );
 
+  if ($form_state['values']['line_item']) {
+    $payment_data['line_item'] = $form_state['values']['line_item'];
+  }
   $amount = number_format($form_state['values']['amount'], 2, '.', '');
 
   $charge = array(
