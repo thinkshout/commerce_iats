@@ -128,7 +128,10 @@ function commerce_iats_process_credit_card_payment($payment_method, $payment_dat
   );
 
   // Add the billing information.
-  commerce_iats_address($request, $order, 'commerce_customer_billing');
+  if(commerce_iats_address($request, $order, 'commerce_customer_billing') === FALSE) {
+    drupal_set_message(t('Unable to load order address.'), 'error');
+    return NULL;
+  }
 
   // Get the API service.
   $iats = commerce_iats_get_service('ProcessLink', $payment_method);
