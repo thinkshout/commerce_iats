@@ -1336,12 +1336,13 @@ function commerce_iats_get_formatted_date($timestamp) {
 function commerce_iats_get_service($service_name, array $payment_method) {
   if (libraries_load('iatspayments')) {
     $service_name = 'iATS\\' . $service_name . variable_get('commerce_iats_service_name_suffix', '');
-    $service = new $service_name(
-      $payment_method['settings']['agent_code'],
-      $payment_method['settings']['agent_password'],
-      $payment_method['settings']['server']
-    );
-    return $service;
+
+    // Use the settings from the payment method configuration, unless variables (like iats_credit_card_agent_code) have been added in settings.php
+    $agent_code = variable_get($payment_method['method_id'] . '_agent_code', $payment_method['settings']['agent_code']);
+    $agent_password = variable_get($payment_method['method_id'] . '_agent_password', $payment_method['settings']['agent_password']);
+    $server = variable_get($payment_method['method_id'] . '_server', $payment_method['settings']['server']);
+
+    return new $service_name($agent_code, $agent_password, $server);
   }
   return NULL;
 }
