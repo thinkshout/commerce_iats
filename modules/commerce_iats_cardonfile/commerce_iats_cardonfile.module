@@ -614,13 +614,13 @@ function commerce_iats_cardonfile_customer_code_settings_form_base(array $settin
   $rules_map = array();
 
   foreach ($rules as $rule_name => $rule) {
-    if ($rule->active) {
+    if ($rule->active && ($rule->module == 'commerce_payment')) {
       foreach ($rule->actions() as $action) {
         $action_settings = $action->settings;
         continue;
       }
-      if (isset($action_settings['payment_method']['method_id'])) {
-        $method_id = $action_settings['payment_method']['method_id'];
+      if (isset($action_settings['payment_method'])) {
+        $method_id = $action_settings['payment_method'];
         $rules_map[$method_id] = $method_id . '|' . $rule_name;
       }
     }
