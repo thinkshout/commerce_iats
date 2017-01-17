@@ -600,39 +600,57 @@ function commerce_iats_cardonfile_process_queued_transaction($data) {
  *
  * @param array $settings
  *   Form field default values array.
+ * @param string $method_id
+ *   The required method id to charge users using the customer code.
  *
  * @return array
  *   Base fields for settings form.
  */
-function commerce_iats_cardonfile_customer_code_settings_form_base(array $settings = NULL) {
+function commerce_iats_cardonfile_customer_code_settings_form_base(array $settings = NULL, $method_id = NULL) {
   $form = commerce_iats_credit_card_settings_form_base($settings);
 
-  $payment_methods = commerce_payment_methods();
+  $event = rules_get_cache('event_commerce_payment_methods');
 
-  $rules = rules_config_load_multiple(FALSE);
-
-  $rules_map = array();
-
-  foreach ($rules as $rule_name => $rule) {
-    if ($rule->active && ($rule->module == 'commerce_payment')) {
-      foreach ($rule->actions() as $action) {
-        $action_settings = $action->settings;
-        continue;
-      }
-      if (isset($action_settings['payment_method'])) {
-        $method_id = $action_settings['payment_method'];
-        $rules_map[$method_id] = $method_id . '|' . $rule_name;
-      }
-    }
-  }
-
+  // Build an options array of all available payment methods that can run
+  // process transactions using this customer code.
+  $instances = array();
+  $optgroups = FALSE;
   $payment_method_options = array(
     '' => 'N/A',
   );
 
-  foreach ($payment_methods as $method_id => $method) {
-    if (isset($rules_map[$method_id])) {
-      $payment_method_options[$rules_map[$method_id]] = $method['title'];
+  // Only build the options array if payment method Rules are enabled.
+  if (!empty($event)) {
+    $payment_method = commerce_payment_method_load($method_id);
+    // Look for a Rule enabling this payment method.
+    foreach ($event->getIterator() as $rule) {
+      foreach ($rule->actions() as $action) {
+        // If an action is found, add its instance to the options array.
+        if ($action->getElementName() == 'commerce_payment_enable_' . $method_id) {
+          $instances[check_plain($payment_method['title'])][] = array(
+            'instance_id' => commerce_payment_method_instance_id($method_id, $rule),
+            'label' => check_plain($rule->label()),
+          );
+
+          // If this is the second instance for this payment method, turn
+          // on optgroups.
+          if (count($instances[check_plain($payment_method['title'])]) > 1) {
+            $optgroups = TRUE;
+          }
+        }
+      }
+    }
+
+    // Build an options array based on whether or not optgroups are necessary.
+    foreach ($instances as $optgroup => $values) {
+      foreach ($values as $value) {
+        if ($optgroups) {
+          $payment_method_options[$optgroup][$value['instance_id']] = $value['label'];
+        }
+        else {
+          $payment_method_options[$value['instance_id']] = $value['label'];
+        }
+      }
     }
   }
 

@@ -11,7 +11,7 @@
 function commerce_iats_cardonfile_credit_card_customer_code_settings_form($settings = NULL) {
   module_load_include('inc', 'commerce_payment', 'includes/commerce_payment.credit_card');
 
-  $form = commerce_iats_cardonfile_customer_code_settings_form_base($settings);
+  $form = commerce_iats_cardonfile_customer_code_settings_form_base($settings, 'iats_credit_card');
 
   // No invoice when creating customer codes.
   unset($form['invoice_prefix']);
