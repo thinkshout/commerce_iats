@@ -1019,7 +1019,10 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
       }
       else {
         $transaction->status = COMMERCE_PAYMENT_STATUS_FAILURE;
-        $message = array('Transaction failed.') . $auth_result;
+        $message = [
+          'Transaction failed.',
+          $auth_result,
+        ];
       }
     }
 
