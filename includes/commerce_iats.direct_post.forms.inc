@@ -58,7 +58,6 @@ function commerce_iats_direct_post_form_base($payment_method, $order) {
   );
 
   // Store order information in comment for future reference.
-
   // Get current payment method instance ID.
   $payment_method_instance_id = NULL;
   foreach ($order->payment_methods as $instance_id => $payment_method_instance) {
@@ -159,7 +158,7 @@ function commerce_iats_direct_post_credit_card_form($payment_method, $order) {
 
   $credit_card_types = commerce_iats_credit_card_types();
 
-  // Limit to the enabled card types
+  // Limit to the enabled card types.
   $enabled_cards = commerce_iats_enabled_credit_card_types($payment_method);
 
   $credit_card_mop = array();
@@ -245,7 +244,7 @@ function commerce_iats_direct_post_credit_card_customer_code_form($payment_metho
  *
  * @param array $payment_method
  *   The current payment method.
- * @param object  $order
+ * @param object $order
  *   The current order.
  *
  * @return array

@@ -746,8 +746,7 @@ function commerce_iats_settings_form_base(array $settings = NULL) {
     '#type' => 'textfield',
     '#title' => t('Direct Post Process Key'),
     '#description' => t('Process Key is required to process payments using the Direct Post Method.'),
-    '#default_value' => (isset($settings['direct_post']['process_key'])) ?
-        $settings['direct_post']['process_key'] : '',
+    '#default_value' => (isset($settings['direct_post']['process_key'])) ? $settings['direct_post']['process_key'] : '',
     '#states' => array(
       'visible' => array(
         ':input[name="parameter[payment_method][settings][payment_method][settings][direct_post][enable_direct_post]"]' => array('checked' => TRUE),
@@ -1040,7 +1039,7 @@ function commerce_iats_process_payment($payment_method, $payment_data, $order, $
         }
       }
       else {
-       $error_reason = $auth_result;
+        $error_reason = $auth_result;
       }
 
       drupal_set_message(
@@ -1191,7 +1190,7 @@ function commerce_iats_enabled_credit_card_types(array $payment_method) {
  */
 function commerce_iats_mask_credit_card_number($credit_card_number) {
   if (!empty($credit_card_number)) {
-   return str_repeat('X', strlen($credit_card_number) - 4) . substr($credit_card_number, -4);
+    return str_repeat('X', strlen($credit_card_number) - 4) . substr($credit_card_number, -4);
   }
   return '';
 }
@@ -1200,7 +1199,7 @@ function commerce_iats_mask_credit_card_number($credit_card_number) {
  * Formats an array of credit card data in a way appropriate for iATS.
  *
  * @param array $card_data
- *   Unformatted credit card data from form
+ *   Unformatted credit card data from form.
  *
  * @return array
  *   Formatted credit card data.
@@ -1234,6 +1233,7 @@ function commerce_iats_format_credit_card_data(array $card_data) {
 
 /**
  * Removes all non-numeric characters from a sort code.
+ *
  * Sort codes may be provided as three blocks of numbers,
  * separated by a space or dash character.
  *
@@ -1251,7 +1251,7 @@ function commerce_iats_format_sort_code($sort_code) {
  * Populate a request with address information for use in a iATS API request.
  *
  * @param array $request
- *   Request array
+ *   Request array.
  * @param object $order
  *   The order object containing the address information via a referenced
  *   customer profile.
@@ -1329,7 +1329,7 @@ function commerce_iats_get_formatted_date($timestamp) {
  * Gets an instance of an iATS Payments API service.
  *
  * @param string $service_name
- *   The iATS service to get. 'ProcessLink', 'CustomerLink', 'ReportLink'
+ *   The iATS service to get. 'ProcessLink', 'CustomerLink', 'ReportLink'.
  * @param array $payment_method
  *   The payment method, used to populate iATS API settings.
  *

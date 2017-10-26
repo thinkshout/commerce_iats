@@ -107,7 +107,7 @@ function commerce_iats_cardonfile_form_commerce_checkout_form_review_alter(&$for
   if (isset($form_state['order']->data['recurring'])) {
     $recurring_payment_methods = array(
       'iats_credit_card_customer_code',
-      'iats_ach_eft_customer_code'
+      'iats_ach_eft_customer_code',
     );
 
     if (isset($form['commerce_payment']['payment_methods'])
@@ -659,8 +659,7 @@ function commerce_iats_cardonfile_customer_code_settings_form_base(array $settin
     '#title' => t('Card on File payment method instance ID'),
     '#description' => 'Specify an alternative payment method to use to process Card on File transactions for cards created by this payment method.',
     '#options' => $payment_method_options,
-    '#default_value' => (isset($settings['cardonfile_payment_method'])) ?
-        $settings['cardonfile_payment_method'] : '',
+    '#default_value' => (isset($settings['cardonfile_payment_method'])) ? $settings['cardonfile_payment_method'] : '',
   );
 
   $form['allow_recurring'] = array(
@@ -708,7 +707,7 @@ function commerce_iats_cardonfile_can_create_cardonfile($customer_code) {
  *   that created a new customer code.
  * @param string $card_type
  *   The credit card type used during this transaction.
- *   ie. visa, mc
+ *   ie. visa, mc.
  *
  * @return bool
  *   TRUE or FALSE indicating success of saving card on file.
@@ -790,7 +789,7 @@ function commerce_iats_cardonfile_create_cardonfile($order, array $payment_metho
  *
  * @param string $payment_method_type
  *   The payment method type to use in callback method names.
- *   Currently 'credit_card' or 'ach_eft'
+ *   Currently 'credit_card' or 'ach_eft'.
  *
  * @return array
  *   Array of payment method callbacks.

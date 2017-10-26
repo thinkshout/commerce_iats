@@ -71,10 +71,8 @@ function commerce_iats_ach_eft_payment_form($fields = array(), $default = array(
     );
   }
 
-  /**
-   * Routing number used for USD currency only.
-   * 9 digits.
-   */
+  // Routing number used for USD currency only.
+  // 9 digits.
   if (isset($fields['routing_number'])) {
     $form['bank_account']['routing_number'] = array(
       '#type' => 'textfield',
@@ -101,10 +99,8 @@ function commerce_iats_ach_eft_payment_form($fields = array(), $default = array(
     );
   }
 
-  /**
-   * Transit number used for CAD currency only.
-   * 5 digits.
-   */
+  // Transit number used for CAD currency only.
+  // 5 digits.
   if (isset($fields['transit_number'])) {
     $form['bank_account']['transit_number'] = array(
       '#type' => 'textfield',
@@ -116,10 +112,8 @@ function commerce_iats_ach_eft_payment_form($fields = array(), $default = array(
     );
   }
 
-  /**
-   * Sort code used for GBP currency only.
-   * 6 digits in the format XX-XX-XX.
-   */
+  // Sort code used for GBP currency only.
+  // 6 digits in the format XX-XX-XX.
   if (isset($fields['sort_code'])) {
     $form['bank_account']['sort_code'] = array(
       '#type' => 'textfield',

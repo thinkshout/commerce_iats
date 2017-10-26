@@ -428,7 +428,7 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
     '#type' => 'container',
     '#attributes' => array(
       'class' => array(
-        'direct_debit_pane_left'
+        'direct_debit_pane_left',
       ),
     ),
   );
@@ -497,7 +497,7 @@ function commerce_iats_direct_debit_validation_pane_checkout_form($form, &$form_
     '#type' => 'container',
     '#attributes' => array(
       'class' => array(
-        'direct_debit_pane_right'
+        'direct_debit_pane_right',
       ),
     ),
   );

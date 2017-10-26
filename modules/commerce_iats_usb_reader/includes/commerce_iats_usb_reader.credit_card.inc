@@ -1,8 +1,8 @@
 <?php
+
 /**
  * @file
- * Enables use of an encrypted USB card reader with the
- * iATS credit card payment method.
+ * Enables use of a USB card reader with the iATS credit card payment method.
  */
 
 /**

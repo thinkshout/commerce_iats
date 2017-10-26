@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Administrative forms for the credit card processing functionality

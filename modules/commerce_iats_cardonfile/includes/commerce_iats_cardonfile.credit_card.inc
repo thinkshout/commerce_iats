@@ -56,8 +56,7 @@ function commerce_iats_cardonfile_credit_card_submit_form_validate($payment_meth
     'form_parents' => array_merge($form_parents, array('credit_card')),
   );
 
-  if (empty($pane_values['credit_card']['code']))
-  {
+  if (empty($pane_values['credit_card']['code'])) {
     unset($pane_values['credit_card']['code']);
   }
 
@@ -331,7 +330,6 @@ function commerce_iats_cardonfile_credit_card_update($form, &$form_state, $payme
   if (isset($form_state['values']['credit_card']['recurring'])
     && !empty($form_state['values']['credit_card']['recurring']['schedule_type'])) {
     // Updating a recurring payment.
-
     // Get default recurring payment duration.
     $payment_duration = variable_get('commerce_iats_recurring_payment_duration',
       COMMERCE_IATS_RECURRING_PAYMENT_DURATION);

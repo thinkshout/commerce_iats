@@ -58,7 +58,7 @@ function commerce_iats_cardonfile_ach_eft_card_form_page($op, $card_data, $accou
       return drupal_get_form('commerce_iats_cardonfile_ach_eft_card_form', $op, $card_data, $currency);
     }
   }
-  else if ($op == 'update') {
+  elseif ($op == 'update') {
     drupal_set_title(t('Update your @type bank account ending in @number', array('@type' => $card_data->card_type, '@number' => $card_data->card_number)));
 
     // This is not likely to happen, but if the payment method doesn't implement
@@ -104,19 +104,22 @@ function commerce_iats_cardonfile_ach_eft_card_form($form, &$form_state, $op, $c
       case 'USD':
         $payment_form = array_merge($form, commerce_iats_ach_eft_payment_form_usd($fields));
         break;
+
       case 'CAD':
         $payment_form = array_merge($form, commerce_iats_ach_eft_payment_form_cad($fields));
         break;
+
       case 'GBP':
         $payment_form = array_merge($form, commerce_iats_ach_eft_payment_form_gbp($fields));
         break;
+
       default:
         $payment_form = NULL;
         // Disable form validation until form is loaded.
         $form['#validate'] = array();
     }
   }
-  else if ($op == 'update') {
+  elseif ($op == 'update') {
     $defaults = array(
       'type' => $card_data->card_type,
       'owner' => $card_data->card_name,

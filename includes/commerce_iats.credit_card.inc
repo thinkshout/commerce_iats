@@ -32,8 +32,7 @@ function commerce_iats_credit_card_submit_form($payment_method, $pane_values, $c
 
     $form = commerce_payment_credit_card_form($fields);
 
-    if (strstr($_SERVER['HTTP_REFERER'], '/admin/'))
-    {
+    if (strstr($_SERVER['HTTP_REFERER'], '/admin/')) {
       // If the form is requested via the admin panel, CVV is optional.
       $form['credit_card']['code']['#required'] = FALSE;
     }
@@ -58,8 +57,7 @@ function commerce_iats_credit_card_submit_form_validate($payment_method, $pane_f
     'form_parents' => array_merge($form_parents, array('credit_card')),
   );
 
-  if (empty($pane_values['credit_card']['code']))
-  {
+  if (empty($pane_values['credit_card']['code'])) {
     unset($pane_values['credit_card']['code']);
   }
 
@@ -128,7 +126,7 @@ function commerce_iats_process_credit_card_payment($payment_method, $payment_dat
   );
 
   // Add the billing information.
-  if(commerce_iats_address($request, $order, 'commerce_customer_billing') === FALSE) {
+  if (commerce_iats_address($request, $order, 'commerce_customer_billing') === FALSE) {
     drupal_set_message(t('Unable to load order address.'), 'error');
     return NULL;
   }

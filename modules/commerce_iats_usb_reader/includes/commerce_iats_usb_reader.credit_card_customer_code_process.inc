@@ -98,18 +98,17 @@ function commerce_iats_usb_reader_credit_card_customer_code_process_submit_form_
       if ($pane_values['user']['user_type'] == 'new') {
         commerce_iats_usb_reader_create_new_user_cardonfile($order, $payment_method, $card_data, $response['CUSTOMERCODE'], $pane_values['user']['new_user']);
       }
-      else if ($pane_values['user']['user_type'] == 'existing') {
+      elseif ($pane_values['user']['user_type'] == 'existing') {
         $user_id = commerce_iats_usb_reader_parse_entity_id_from_autocomplete_result($pane_values['user']['existing_user']['user_lookup']);
         commerce_iats_usb_reader_create_existing_user_cardonfile($order, $payment_method, $card_data, $response['CUSTOMERCODE'], $user_id);
       }
     }
 
   }
-  else {
-    module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card_customer_code');
-    return commerce_iats_process_payment($payment_method, $pane_values, $order,
-      $charge, 'commerce_iats_create_customer_code');
-  }
+
+  module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.credit_card_customer_code');
+  return commerce_iats_process_payment($payment_method, $pane_values, $order,
+    $charge, 'commerce_iats_create_customer_code');
 }
 
 /**

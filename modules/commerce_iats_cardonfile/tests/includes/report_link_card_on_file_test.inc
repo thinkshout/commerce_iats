@@ -11,7 +11,6 @@ namespace iATS;
  * Test version of the iATS Payments ReportLink API.
  * Provides report data for test cases.
  */
-
 class ReportLinkCardOnFileTestService {
 
   /**
@@ -292,4 +291,5 @@ class ReportLinkCardOnFileTestService {
 
     return $report_data;
   }
+
 }

@@ -32,17 +32,22 @@ function commerce_iats_ach_eft_submit_form($payment_method, $pane_values, $check
 
     switch ($currency_code) {
       case 'USD':
-        return commerce_iats_ach_eft_payment_form_usd($fields);
+        $form = commerce_iats_ach_eft_payment_form_usd($fields);
         break;
+
       case 'CAD':
-        return commerce_iats_ach_eft_payment_form_cad($fields);
+        $form = commerce_iats_ach_eft_payment_form_cad($fields);
         break;
+
       case 'GBP':
-        return commerce_iats_ach_eft_payment_form_gbp($fields);
+        $form = commerce_iats_ach_eft_payment_form_gbp($fields);
         break;
+
       default:
-        return commerce_iats_ach_eft_payment_form($fields);
+        $form = commerce_iats_ach_eft_payment_form($fields);
     }
+
+    return $form;
   }
 }
 
@@ -108,10 +113,12 @@ function commerce_iats_ach_eft_currency_specific_account_number($bank_details, $
     case 'USD':
       $account_num .= $bank_details['routing_number'];
       break;
+
     case 'CAD':
       $account_num .= $bank_details['bank_number'];
       $account_num .= $bank_details['transit_number'];
       break;
+
     case 'GBP':
       $account_num .= commerce_iats_format_sort_code($bank_details['sort_code']);
       break;

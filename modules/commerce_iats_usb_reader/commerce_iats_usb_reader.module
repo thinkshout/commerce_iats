@@ -153,12 +153,11 @@ function commerce_iats_usb_reader_create_existing_user_cardonfile($order, $payme
 /**
  * Callback used to look up users by email address.
  *
+ * Outputs Email addresses and user IDs matching the given string in the format:
+ * "test@example.org [1]".
+ *
  * @param string $string
  *   The email address to look up. May be a partial email address.
- *
- * @return array
- *   Email addresses and user IDs matching the given string.
- *   Provided in the format: "test@example.org [1]"
  */
 function commerce_iats_usb_reader_users_autocomplete($string) {
   $query = new EntityFieldQuery();
@@ -187,7 +186,7 @@ function commerce_iats_usb_reader_users_autocomplete($string) {
  * Parses the entity ID from an autocomplete result retrieved from this module.
  *
  * @param string $result
- *   The autocomplete result in the format: "string [entity ID]"
+ *   The autocomplete result in the format: "string [entity ID]".
  *
  * @return mixed
  *   The entity ID or NULL if not found.

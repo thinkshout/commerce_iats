@@ -31,17 +31,22 @@ function commerce_iats_cardonfile_ach_eft_submit_form($payment_method, $pane_val
 
     switch ($currency_code) {
       case 'USD':
-        return commerce_iats_ach_eft_payment_form_usd($fields);
+        $form = commerce_iats_ach_eft_payment_form_usd($fields);
         break;
+
       case 'CAD':
-        return commerce_iats_ach_eft_payment_form_cad($fields);
+        $form = commerce_iats_ach_eft_payment_form_cad($fields);
         break;
+
       case 'GBP':
-        return commerce_iats_ach_eft_payment_form_gbp($fields);
+        $form = commerce_iats_ach_eft_payment_form_gbp($fields);
         break;
+
       default:
-        return commerce_iats_ach_eft_payment_form($fields);
+        $form = commerce_iats_ach_eft_payment_form($fields);
     }
+
+    return $form;
   }
 }
 
@@ -145,8 +150,6 @@ function commerce_iats_cardonfile_ach_eft_submit_form_submit($payment_method, $p
   module_load_include('inc', 'commerce_iats', 'includes/commerce_iats.ach_eft');
   return commerce_iats_process_payment($payment_method, $payment_data, $order, $charge, 'commerce_iats_process_ach_eft_payment');
 }
-
-
 
 /**
  * Card on File charge callback function.
@@ -356,7 +359,6 @@ function commerce_iats_cardonfile_ach_eft_update($form, &$form_state, $payment_m
   if (isset($form_state['values']['credit_card']['recurring'])
     && !empty($form_state['values']['credit_card']['recurring']['schedule_type'])) {
     // Updating a recurring payment.
-
     // Get default recurring payment duration.
     $payment_duration = variable_get('commerce_iats_recurring_payment_duration',
       COMMERCE_IATS_RECURRING_PAYMENT_DURATION);

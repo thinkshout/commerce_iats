@@ -1,5 +1,4 @@
 <?php
-
 /**
  * @file
  * Administrative forms for the ACH/EFT processing functionality

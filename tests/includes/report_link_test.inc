@@ -11,8 +11,8 @@ namespace iATS;
  * Test version of the iATS Payments ReportLink API.
  * Provides report data for test cases.
  */
-
 class ReportLinkTestService {
+
   /**
    * Gets successful ACH/EFT transactions data.
    *

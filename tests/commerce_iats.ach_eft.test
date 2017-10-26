@@ -124,7 +124,7 @@ class CommerceiATSACHEFTTestCase extends DrupalWebTestCase {
    */
   public function tearDown() {
     parent::tearDown();
-    variable_del('commerce_iats_service_suffix', '');
+    variable_del('commerce_iats_service_suffix');
     variable_del('commerce_iats_cardonfile_transactions_cron_name');
   }
 

@@ -40,17 +40,22 @@ function commerce_iats_cardonfile_ach_eft_customer_code_submit_form($payment_met
 
     switch ($currency_code) {
       case 'USD':
-        return commerce_iats_ach_eft_payment_form_usd($fields);
+        $form = commerce_iats_ach_eft_payment_form_usd($fields);
         break;
+
       case 'CAD':
-        return commerce_iats_ach_eft_payment_form_cad($fields);
+        $form = commerce_iats_ach_eft_payment_form_cad($fields);
         break;
+
       case 'GBP':
-        return commerce_iats_ach_eft_payment_form_gbp($fields);
+        $form = commerce_iats_ach_eft_payment_form_gbp($fields);
         break;
+
       default:
-        return commerce_iats_ach_eft_payment_form($fields);
+        $form = commerce_iats_ach_eft_payment_form($fields);
     }
+
+    return $form;
   }
 }
 

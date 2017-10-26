@@ -56,8 +56,7 @@ function commerce_iats_credit_card_customer_code_submit_form_validate($payment_m
     'form_parents' => array_merge($form_parents, array('credit_card')),
   );
 
-  if (empty($pane_values['credit_card']['code']))
-  {
+  if (empty($pane_values['credit_card']['code'])) {
     unset($pane_values['credit_card']['code']);
   }
 
