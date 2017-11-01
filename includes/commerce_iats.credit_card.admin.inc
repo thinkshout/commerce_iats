@@ -76,12 +76,6 @@ function commerce_iats_credit_card_refund_form_validate($form, &$form_state) {
     form_set_error('amount', t('You cannot refund more than you captured through iATS.'));
   }
 
-  // If the transaction is older than 120 days, display an error message and
-  // redirect.
-  if (time() - $transaction->created > 86400 * 120) {
-    drupal_set_message(t('This capture has passed its 120 day limit for issuing refunds.'), 'error');
-    drupal_goto('admin/commerce/orders/' . $form_state['order']->order_id . '/payment');
-  }
 }
 
 /**
