@@ -73,8 +73,10 @@ function commerce_iats_install() {
 /**
  * Add Line Item property to transactions for close tracking of refunds.
  */
-function commerce_iats_update_7000() {
-  _commerce_iats_initialize_line_item_property();
+function commerce_iats_update_7201() {
+  if (!db_field_exists('commerce_payment_transaction', 'line_item_id')) {
+    _commerce_iats_initialize_line_item_property();
+  }
 }
 
 /**
