@@ -16,36 +16,36 @@ class ReportLinkCardOnFileTestService {
   /**
    * Gets successful credit card transactions data.
    *
-   * @see iATS\ReportLink::getCreditCardJournal()
+   * @see iATS\ReportLink::getCreditCardApprovedSpecificDateXML()
    */
-  public function getCreditCardJournal() {
+  public function getCreditCardApprovedSpecificDateXML() {
     return $this->getTestCreditCardSuccessTransactionData();
   }
 
   /**
    * Gets rejected credit card transactions data.
    *
-   * @see iATS\ReportLink::getCreditCardReject()
+   * @see iATS\ReportLink::getCreditCardRejectSpecificDateXML()
    */
-  public function getCreditCardReject() {
+  public function getCreditCardRejectSpecificDateXML() {
     return $this->getTestCreditCardRejectTransactionData();
   }
 
   /**
    * Gets successful ACH/EFT transactions data.
    *
-   * @see iATS\ReportLink::getACHEFTJournal()
+   * @see iATS\ReportLink::getACHEFTApprovedSpecificDateXML()
    */
-  public function getACHEFTJournal() {
+  public function getACHEFTApprovedSpecificDateXML() {
     return $this->getTestACHEFTSuccessTransactionData();
   }
 
   /**
    * Gets rejected ACH/EFT transactions data.
    *
-   * @see iATS\ReportLink::getACHEFTReject()
+   * @see iATS\ReportLink::getACHEFTRejectSpecificDateXML()
    */
-  public function getACHEFTReject() {
+  public function getACHEFTRejectSpecificDateXML() {
     return $this->getTestACHEFTRejectTransactionData();
   }
 

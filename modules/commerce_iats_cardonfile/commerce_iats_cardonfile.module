@@ -466,7 +466,7 @@ function commerce_iats_cardonfile_populate_transaction_queue() {
   );
 
   // Get successful credit card transactions.
-  $credit_card_success_response = $iats->getCreditCardJournal($request);
+  $credit_card_success_response = $iats->getCreditCardApprovedSpecificDateXML($request);
 
   if (is_array($credit_card_success_response)) {
     foreach ($credit_card_success_response as $transaction) {
@@ -475,7 +475,7 @@ function commerce_iats_cardonfile_populate_transaction_queue() {
   }
 
   // Get successful ACH/EFT transactions.
-  $ach_eft_success_response = $iats->getACHEFTJournal($request);
+  $ach_eft_success_response = $iats->getACHEFTApprovedSpecificDateXML($request);
 
   if (is_array($ach_eft_success_response)) {
     foreach ($ach_eft_success_response as $transaction) {
@@ -484,7 +484,7 @@ function commerce_iats_cardonfile_populate_transaction_queue() {
   }
 
   // Get rejected credit card transactions.
-  $credit_card_reject_response = $iats->getCreditCardReject($request);
+  $credit_card_reject_response = $iats->getCreditCardRejectSpecificDateXML($request);
 
   if (is_array($credit_card_reject_response)) {
     foreach ($credit_card_reject_response as $transaction) {
@@ -493,7 +493,7 @@ function commerce_iats_cardonfile_populate_transaction_queue() {
   }
 
   // Get rejected ACH/EFT transactions.
-  $ach_eft_reject_response = $iats->getACHEFTReject($request);
+  $ach_eft_reject_response = $iats->getACHEFTRejectSpecificDateXML($request);
 
   if (is_array($ach_eft_reject_response)) {
     foreach ($ach_eft_reject_response as $transaction) {

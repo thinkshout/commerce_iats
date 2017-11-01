@@ -16,18 +16,18 @@ class ReportLinkTestService {
   /**
    * Gets successful ACH/EFT transactions data.
    *
-   * @see iATS\ReportLink::getACHEFTJournal()
+   * @see iATS\ReportLink::getACHEFTApprovedSpecificDateXML()
    */
-  public function getACHEFTJournal() {
+  public function getACHEFTApprovedSpecificDateXML() {
     return $this->getTestACHEFTSuccessTransactionData();
   }
 
   /**
    * Gets rejected ACH/EFT transactions data.
    *
-   * @see iATS\ReportLink::getACHEFTReject()
+   * @see iATS\ReportLink::getACHEFTRejectSpecificDateXML()
    */
-  public function getACHEFTReject() {
+  public function getACHEFTRejectSpecificDateXML() {
     return $this->getTestACHEFTRejectTransactionData();
   }
 

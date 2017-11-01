@@ -564,7 +564,7 @@ function commerce_iats_populate_ach_eft_transaction_queue() {
   );
 
   // Get successful ACH/EFT transactions.
-  $ach_eft_success_response = $iats->getACHEFTJournal($request);
+  $ach_eft_success_response = $iats->getACHEFTApprovedSpecificDateXML($request);
 
   if (is_array($ach_eft_success_response)) {
     foreach ($ach_eft_success_response as $transaction) {
@@ -573,7 +573,7 @@ function commerce_iats_populate_ach_eft_transaction_queue() {
   }
 
   // Get rejected ACH/EFT transactions.
-  $ach_eft_reject_response = $iats->getACHEFTReject($request);
+  $ach_eft_reject_response = $iats->getACHEFTRejectSpecificDateXML($request);
 
   if (is_array($ach_eft_reject_response)) {
     foreach ($ach_eft_reject_response as $transaction) {
