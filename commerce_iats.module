@@ -43,7 +43,7 @@ function commerce_iats_libraries_info() {
   $libraries['iatspayments'] = array(
     'name' => 'iATS Payments API',
     'vendor url' => 'https://github.com/iATSPayments/PHP',
-    'download url' => 'https://github.com/iATSPayments/PHP/archive/v1.0.tar.gz',
+    'download url' => 'https://github.com/iATSPayments/PHP/archive/v2.1.tar.gz',
     'path' => 'lib',
     'version callback' => 'commerce_iats_get_library_version',
     'version arguments' => array(
