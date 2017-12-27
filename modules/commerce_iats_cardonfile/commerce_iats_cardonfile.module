@@ -901,18 +901,16 @@ function commerce_iats_cardonfile_credit_card_create($form, $form_state, $paymen
   // Create the credit card remote ID (customer code) with iATS.
   $response = $iats->createCreditCardCustomerCode($request);
 
-  if ($response === FALSE || empty($response['CUSTOMERCODE'])) {
-    drupal_set_message(t('Failed at the payment processor with message: !message.', array(
-      '!message' => $response['AUTHORIZATIONRESULT']
-    )), 'error');
-  }
-  else {
+  if (($response !== FALSE) && !empty($response['CUSTOMERCODE'])) {
     // Save the card on file record with new remote ID.
     $card->remote_id = trim($response['CUSTOMERCODE']);
 
     if (commerce_cardonfile_save($card) === FALSE) {
       drupal_set_message(t('Your card details could not be stored.'), 'error');
     }
+  }
+  else {
+    $card = FALSE;
   }
 
   return $card;
@@ -1091,12 +1089,7 @@ function commerce_iats_cardonfile_ach_eft_create($form, $form_state, $payment_me
   // Create the ACH/EFT remote ID (customer code) with iATS.
   $response = $iats->createACHEFTCustomerCode($request);
 
-  if ($response === FALSE || empty($response['CUSTOMERCODE'])) {
-    drupal_set_message(t('Failed at the payment processor with message: !message.', array(
-      '!message' => $response['AUTHORIZATIONRESULT']
-    )), 'error');
-  }
-  else {
+  if (($response !== FALSE) && !empty($response['CUSTOMERCODE'])) {
     // Save the card on file record with new remote ID.
     $card->remote_id = trim($response['CUSTOMERCODE']);
 
@@ -1108,6 +1101,9 @@ function commerce_iats_cardonfile_ach_eft_create($form, $form_state, $payment_me
     if (commerce_cardonfile_save($card) === FALSE) {
       drupal_set_message(t('Your card details could not be stored.'), 'error');
     }
+  }
+  else {
+    $card = FALSE;
   }
 
   return $card;
